@@ -30,19 +30,23 @@
             <id>sk89q-repo</id>
             <url>https://maven.sk89q.com/repo/</url>
         </repository>
+		<repository>
+            <id>github-Towny</id>
+            <url>https://maven.pkg.github.com/TownyAdvanced/Towny</url>
+		</repository> 
     </repositories>
 
     <dependencies>
         <dependency>
             <groupId>com.destroystokyo.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.14.3-R0.1-SNAPSHOT</version>
+            <version>1.15.2-R0.1-SNAPSHOT/</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.14.3-R0.1-SNAPSHOT</version>
+            <version>1.15.2-R0.1-SNAPSHOT/</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -64,6 +68,12 @@
             <version>7.0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
+		<dependency>
+			<groupId>com.palmergames.bukkit.towny</groupId>
+			<artifactId>Towny</artifactId>
+			<version>0.94.0.12</version>
+			<scope>provided</scope>
+		</dependency>
     </dependencies>
 
     <build>

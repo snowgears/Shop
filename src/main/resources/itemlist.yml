@@ -1,0 +1,8 @@
+itemListing:
+   exampleitem:
+    ListType: price
+    material: CHEST
+    lore-contains: 'example lore'
+    name-contains: 'example name'
+    pricemin: '1 64'
+    pricemax: '2 64'

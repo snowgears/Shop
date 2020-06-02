@@ -39,6 +39,9 @@ enableGUI: true
 # WorldGuard plugin must be installed for this feature to work #
 hookWorldGuard: false
 
+#use towny shop plots. Towny must be installed for this feature to work#
+useTowny:false
+
 # This is the command alias that will be used as the base for all shop commands #
 commandAlias: shop
 
@@ -59,6 +62,10 @@ playEffects: true
 
 # This controls whether or not ender chests are able to be used as shops on the server #
 enableEnderChests: false
+
+#needs enable for WhitelistItems
+enableWhitelist: false
+
 
 # Add the names of worlds that you do not want shops to be able to be created in here #
 worldBlacklist:

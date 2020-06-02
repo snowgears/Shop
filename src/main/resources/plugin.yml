@@ -1,10 +1,10 @@
 name: "Shop"
 author: "Tanner Embry (SnowGears)"
 description: "Easily create shops to buy or sell items!"
-version: "1.8.1"
+version: "1.8.2"
 main: "com.snowgears.shop.Shop"
-api-version: "1.13"
-softdepend: [Vault, WorldGuard]
+api-version: "1.15"
+softdepend: [Vault, WorldGuard, Towny]
 permissions:
     shop.use:
         description: Allows player to use all shops.
