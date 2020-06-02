@@ -2,6 +2,3 @@ target
 *.iml
 .idea
 lib/
-/bin/
-.classpath
-.project
