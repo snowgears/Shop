@@ -602,10 +602,12 @@ public class ShopHandler {
     }
 
     private UUID uidFromString(String ownerString) {
+    	if(!ownerString.contains("(")) return UUID.fromString(ownerString);
         int index = ownerString.indexOf("(");
         String uidString = ownerString.substring(index + 1, ownerString.length() - 1);
         return UUID.fromString(uidString);
     }
+
 
     private ShopType typeFromString(String typeString) {
         if (typeString.contains("sell"))
