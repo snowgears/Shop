@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.logging.Logger;
 
-@SuppressWarnings({"FieldCanBeLocal", "unused", "ResultOfMethodCallIgnored", "ConstantConditions", "WeakerAccess", "BooleanMethodIsAlwaysInverted"})
+@SuppressWarnings({"unused"})
 public class Shop extends JavaPlugin {
     private static final Logger log = Logger.getLogger("Minecraft");
     private static Shop plugin;
@@ -55,11 +55,14 @@ public class Shop extends JavaPlugin {
     private ShopMessage shopMessage;
     private ItemNameUtil itemNameUtil;
     private PriceUtil priceUtil;
+    private CreationCheck creationCheck;
+
 
     private boolean usePerms;
     private boolean enableMetrics;
     private boolean enableGUI;
     private boolean useVault;
+    private boolean useTowny;
     private boolean hookWorldGuard;
     private String commandAlias;
     private DisplayType displayType;
@@ -95,6 +98,19 @@ public class Shop extends JavaPlugin {
             UtilMethods.copy(getResource("config.yml"), configFile);
         }
         config = YamlConfiguration.loadConfiguration(configFile);
+
+        File bwconfigFile = new File(getDataFolder(), "itemlist.yml");
+        if (!bwconfigFile.exists()) {
+        	bwconfigFile.getParentFile().mkdirs();
+            UtilMethods.copy(getResource("itemlist.yml"), bwconfigFile);
+        }
+        boolean wh=false;
+        if(config.get("WhitelistItems")==null)
+        	wh=false;
+        else if(config.getString("WhitelistItems").equalsIgnoreCase("true"))
+        	wh=true;
+        	
+        creationCheck=new CreationCheck(YamlConfiguration.loadConfiguration(bwconfigFile),wh);        
 
         File chatConfigFile = new File(getDataFolder(), "chatConfig.yml");
         if (!chatConfigFile.exists()) {
@@ -157,6 +173,7 @@ public class Shop extends JavaPlugin {
         playSounds = config.getBoolean("playSounds");
         playEffects = config.getBoolean("playEffects");
         useVault = config.getBoolean("useVault");
+        useTowny = config.getBoolean("useTowny");
         //TODO
 //        taxPercent = config.getDouble("taxPercent");
 
@@ -306,6 +323,10 @@ public class Shop extends JavaPlugin {
         return shopHandler;
     }
 
+    public CreationCheck getCreationCheck() {
+        return creationCheck;
+    }
+
     public ShopGuiHandler getGuiHandler() {
         return guiHandler;
     }
@@ -328,6 +349,9 @@ public class Shop extends JavaPlugin {
 
     public DisplayType getDisplayType() {
         return displayType;
+    }
+    public boolean towny() {
+        return useTowny;
     }
 
     public boolean checkItemDurability() {

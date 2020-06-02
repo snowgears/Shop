@@ -10,7 +10,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.UUID;
 
-@SuppressWarnings({"WeakerAccess", "UnusedReturnValue", "unused", "BooleanMethodIsAlwaysInverted"})
 public abstract class ShopGuiWindow {
     public enum GUIArea {
         TOP_BAR, BOTTOM_BAR, BODY
@@ -131,12 +130,10 @@ public abstract class ShopGuiWindow {
     }
 
     //TODO search will always be in top right and will search anything all items in page or in list
-    @SuppressWarnings("EmptyMethod")
     protected void makeMenuBarUpper() {
         //override in subclasses
     }
 
-    @SuppressWarnings("EmptyMethod")
     protected void makeMenuBarLower() {
         //override in subclasses
     }

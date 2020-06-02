@@ -11,7 +11,6 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.UUID;
 
-@SuppressWarnings("ConstantConditions")
 public class BuyShop extends AbstractShop {
     public BuyShop(Location signLoc, UUID player, double pri, int amt, Boolean admin) {
         super(signLoc, player, pri, amt, admin);
@@ -82,9 +81,6 @@ public class BuyShop extends AbstractShop {
 
         player.updateInventory();
 
-        if(issue != null){
-            return issue;
-        }
 
         //if there are no issues with the test/check transaction
         if(issue == null && isCheck){

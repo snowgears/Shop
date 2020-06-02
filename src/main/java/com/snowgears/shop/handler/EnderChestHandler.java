@@ -66,8 +66,7 @@ public class EnderChestHandler {
                 return; // could not make directory
             }
 
-            String owner = player.getName();
-            File currentFile = new File(enderDirectory, owner + " (" + player.getUniqueId().toString() + ").yml");
+            File currentFile = new File(enderDirectory, "("+player.getUniqueId().toString() + ").yml");
 
             if (!currentFile.exists() && !currentFile.createNewFile()) {
                 return; // could not create new file
@@ -111,7 +110,8 @@ public class EnderChestHandler {
             return;
 
         UUID owner = uidFromString(fileName);
-        ItemStack[] contents = ((List<ItemStack>) config.get("enderchest")).toArray(new ItemStack[0]);
+        @SuppressWarnings("unchecked")
+		ItemStack[] contents = ((List<ItemStack>) config.get("enderchest")).toArray(new ItemStack[0]);
         Inventory inv = Bukkit.createInventory(null, InventoryType.ENDER_CHEST);
         if (contents != null) {
             inv.setContents(contents);

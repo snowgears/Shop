@@ -37,12 +37,10 @@ public class PlayerInitializeShopEvent extends Event implements Cancellable {
     }
 
     @Override
-    @SuppressWarnings("NullableProblems")
     public HandlerList getHandlers() {
         return handlers;
     }
 
-    @SuppressWarnings("unused")
     public static HandlerList getHandlerList() {
         return handlers;
     }

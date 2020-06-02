@@ -118,6 +118,8 @@ public class DisplayUtil {
                             if (material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)
                                 standLocation = standLocation.add(0, 0, -rodOffset);
                             break;
+					default:
+						break;
                     }
                 } else if (material == Material.BOW) {
                     switch (facing) {
@@ -133,6 +135,8 @@ public class DisplayUtil {
                         case WEST:
                             standLocation = blockLocation.clone().add(0.85, -0.8, 0);
                             break;
+					default:
+						break;
                     }
                 } else if (Tag.BANNERS.isTagged(material)) {
                     switch (facing) {
@@ -148,6 +152,8 @@ public class DisplayUtil {
                         case WEST:
                             standLocation = blockLocation.clone().add(0.88, -1.4, 0);
                             break;
+					default:
+						break;
                     }
                 }
                 //the material is a simple, default item
@@ -165,6 +171,8 @@ public class DisplayUtil {
                         case WEST:
                             standLocation = blockLocation.clone().add(0.99, -1.4, 0.88);
                             break;
+					default:
+						break;
                     }
                 }
                 if (material == Material.SHIELD) {
@@ -182,6 +190,8 @@ public class DisplayUtil {
                         case WEST:
                             standLocation.add(-0.2, 0, -0.17);
                             break;
+					default:
+						break;
                     }
                 }
                 break;

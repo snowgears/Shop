@@ -178,7 +178,6 @@ public class InventoryUtils {
         }
     }
 
-    @SuppressWarnings("WeakerAccess")
     public static int getDurability(ItemStack stack) {
         if (stack.hasItemMeta()) {
             return ((Damageable) stack.getItemMeta()).getDamage();

@@ -73,7 +73,7 @@ public class ReflectionUtil {
      * @param obcClassName the path to the class
      * @return the found class at the specified path
      */
-    private synchronized static Class<?> getOBCClass(@SuppressWarnings("SameParameterValue") String obcClassName) {
+    private synchronized static Class<?> getOBCClass(String obcClassName) {
         if (loadedOBCClasses.containsKey(obcClassName)) {
             return loadedOBCClasses.get(obcClassName);
         }

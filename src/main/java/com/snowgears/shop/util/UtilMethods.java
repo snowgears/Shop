@@ -41,6 +41,8 @@ public class UtilMethods {
                 return 90;
             case NORTH_WEST:
                 return 135;
+		default:
+			break;
         }
         return 180;
     }
@@ -137,7 +139,7 @@ public class UtilMethods {
         return s != null && s.startsWith("***{") && (s.indexOf(',') != s.lastIndexOf(',')) && s.indexOf('}') != -1;
     }
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+ 
     public static boolean materialIsNonIntrusive(Material material) {
         if (nonIntrusiveMaterials.isEmpty()) {
             initializeNonIntrusiveMaterials();

@@ -14,6 +14,7 @@ import com.snowgears.shop.util.InventoryUtils;
 import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.util.UtilMethods;
 import com.snowgears.shop.util.WorldGuardHook;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -126,13 +127,20 @@ public class MiscListener implements Listener {
                     canCreateShopInRegion = WorldGuardHook.canCreateShop(player, b.getLocation());
                 } catch (NoClassDefFoundError ignore) {
                 }
+                if(Shop.getPlugin().towny()) {
+                	if(!com.palmergames.bukkit.towny.utils.ShopPlotUtil.doesPlayerHaveAbilityToEditShopPlot(player, b.getLocation())) { 
+                    player.sendMessage(ShopMessage.getMessage("interactionIssue", "regionRestriction", null, player));
+                    event.setCancelled(true);
+                    return;
+                	}
+                }
 
                 if (!canCreateShopInRegion) {
                     player.sendMessage(ShopMessage.getMessage("interactionIssue", "regionRestriction", null, player));
                     event.setCancelled(true);
                     return;
                 }
-
+                
                 try {
                     String line2 = UtilMethods.cleanNumberText(lines[1]);
                     amount = Integer.parseInt(line2);

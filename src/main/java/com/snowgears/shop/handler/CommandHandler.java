@@ -30,7 +30,7 @@ public class CommandHandler extends BukkitCommand {
 
     //TODO replace all of these messages
     @Override
-    public boolean execute(@SuppressWarnings("NullableProblems") CommandSender sender, @SuppressWarnings("NullableProblems") String label, String[] args) {
+    public boolean execute(CommandSender sender, String label, String[] args) {
         if (args.length == 0) {
             if (sender instanceof Player) {
                 Player player = (Player) sender;

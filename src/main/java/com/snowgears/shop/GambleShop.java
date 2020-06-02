@@ -13,7 +13,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.UUID;
 
-@SuppressWarnings("ConstantConditions")
 public class GambleShop extends AbstractShop {
     private ItemStack gambleItem;
 
@@ -36,7 +35,7 @@ public class GambleShop extends AbstractShop {
             if (isCheck) {
                 int shopItems = InventoryUtils.getAmount(this.getInventory(), gambleItem);
                 if (shopItems < gambleItem.getAmount())
-                    issue = TransactionError.INSUFFICIENT_FUNDS_SHOP;
+                	return TransactionError.INSUFFICIENT_FUNDS_SHOP;
             } else {
                 //remove items from shop
                 InventoryUtils.removeItem(this.getInventory(), gambleItem, this.getOwner());
@@ -48,7 +47,7 @@ public class GambleShop extends AbstractShop {
                 //check if player has enough currency
                 boolean hasFunds = EconomyUtils.hasSufficientFunds(player, player.getInventory(), this.getPrice());
                 if (!hasFunds)
-                    issue = TransactionError.INSUFFICIENT_FUNDS_PLAYER;
+                	return TransactionError.INSUFFICIENT_FUNDS_PLAYER;
             } else {
                 //remove currency from player
                 EconomyUtils.removeFunds(player, player.getInventory(), this.getPrice());
@@ -61,7 +60,7 @@ public class GambleShop extends AbstractShop {
                 if (isCheck) {
                     boolean hasRoom = EconomyUtils.canAcceptFunds(this.getOwner(), this.getInventory(), this.getPrice());
                     if (!hasRoom)
-                        issue = TransactionError.INVENTORY_FULL_SHOP;
+                    	return TransactionError.INVENTORY_FULL_SHOP;
                 } else {
                     //add currency to shop
                     EconomyUtils.addFunds(this.getOwner(), this.getInventory(), this.getPrice());
@@ -74,7 +73,7 @@ public class GambleShop extends AbstractShop {
                 //check if player has enough room to accept items
                 boolean hasRoom = InventoryUtils.hasRoom(player.getInventory(), gambleItem, player);
                 if (!hasRoom)
-                    issue = TransactionError.INVENTORY_FULL_PLAYER;
+                    return TransactionError.INVENTORY_FULL_PLAYER;
             } else {
                 //add items to player's inventory
                 InventoryUtils.addItem(player.getInventory(), gambleItem, player);
@@ -83,9 +82,6 @@ public class GambleShop extends AbstractShop {
 
         player.updateInventory();
 
-        if (issue != null) {
-            return issue;
-        }
 
         //if there are no issues with the test/check transaction
         if (issue == null && isCheck) {

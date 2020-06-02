@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-@SuppressWarnings({"FieldCanBeLocal", "MismatchedQueryAndUpdateOfCollection", "unused"})
 public class PriceUtil {
     public enum PriceMode {OFF, EXACT, MAXIMUM}
 
@@ -49,6 +48,7 @@ public class PriceUtil {
                 //String idAndMetadata = metadata.equals("0") ? id : (id + ":" + metadata);
                 String idAndMetadata = id + ":" + metadata;
                 prices.put(idAndMetadata, price);
+                reader.close();
             }
         } catch (IOException e) {
             System.out.println("[Shop] ERROR! Unable to initialize prices buffer reader. Turning off price enforcement and ignoring prices.tsv.");

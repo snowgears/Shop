@@ -141,6 +141,8 @@ public class TransactionListener implements Listener {
                 case INVENTORY_FULL_PLAYER:
                     player.sendMessage(ShopMessage.getMessage(actionType.toString(), "playerNoSpace", shop, player));
                     break;
+			default:
+				break;
             }
             sendEffects(false, player, shop);
             return;

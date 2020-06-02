@@ -21,6 +21,7 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.block.data.Directional;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -43,12 +44,12 @@ import java.util.Set;
 import java.util.UUID;
 
 
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings("deprecation")
 public class ShopHandler {
     public final Shop plugin;
 
     private HashMap<UUID, List<Location>> playerShops = new HashMap<>();
-    private HashMap<Location, AbstractShop> allShops = new HashMap<>();
+    private  HashMap<Location, AbstractShop> allShops = new HashMap<>();
     private ArrayList<Material> shopMaterials = new ArrayList<>();
     private UUID adminUUID;
 
@@ -254,7 +255,8 @@ public class ShopHandler {
         }.runTaskLaterAsynchronously(plugin, 20L);
     }
 
-    private void saveShopsDriver(UUID player) {
+    @SuppressWarnings("null")
+	private void saveShopsDriver(UUID player) {
         try {
 
             File fileDirectory = new File(plugin.getDataFolder(), "Data");
@@ -265,25 +267,40 @@ public class ShopHandler {
 
             String owner;
             File currentFile;
+            File oldFile;
             if (player.equals(adminUUID)) {
                 currentFile = new File(fileDirectory, "admin.yml");
+                oldFile=null;
             } else {
                 owner = Bukkit.getOfflinePlayer(player).getName();
-                currentFile = new File(fileDirectory, owner + " (" + player.toString() + ").yml");
+                //TODO remove playername to it Gotta find the rest of instances reading
+                currentFile = new File(fileDirectory, player.toString() + ".yml");
+                oldFile = new File(fileDirectory, owner+" ("+player.toString() + ").yml");
+                
             }
             owner = currentFile.getName().substring(0, currentFile.getName().length() - 4); //remove .yml
-
+            YamlConfiguration config = null;
             if (!currentFile.exists()) {
                 //noinspection ResultOfMethodCallIgnored
-                currentFile.createNewFile();
+                if(oldFile!=null||oldFile.exists()) {
+                	YamlConfiguration configtemp = YamlConfiguration.loadConfiguration(oldFile);
+            		ConfigurationSection ff= configtemp.getConfigurationSection(owner+" ("+player.toString() + ")");
+            		currentFile.createNewFile();
+            		config = YamlConfiguration.loadConfiguration(currentFile);
+            		config.set(player.toString(), ff);
+            		oldFile.delete();
+            	}else currentFile.createNewFile();
             } else {
                 //noinspection ResultOfMethodCallIgnored
                 currentFile.delete();
                 //noinspection ResultOfMethodCallIgnored
                 currentFile.createNewFile();
+                config = YamlConfiguration.loadConfiguration(currentFile);
             }
-            YamlConfiguration config = YamlConfiguration.loadConfiguration(currentFile);
-
+            if(config==null) {
+            	System.out.println("error with user "+player.toString());
+            	return;
+            }
             List<AbstractShop> shopList = getShops(player);
             if (shopList.isEmpty()) {
                 //noinspection ResultOfMethodCallIgnored
@@ -385,7 +402,6 @@ public class ShopHandler {
     }
 
 
-    @SuppressWarnings("ConstantConditions")
     private void loadShopsFromConfig(YamlConfiguration config) {
         if (config.getConfigurationSection("shops") == null)
             return;
@@ -460,7 +476,6 @@ public class ShopHandler {
     //==============================================================================//
 
 
-    @SuppressWarnings("ConstantConditions")
     private void backwardsCompatibleLoadShopsFromConfig(YamlConfiguration config) {
         if (config.getConfigurationSection("shops") == null)
             return;
@@ -499,7 +514,6 @@ public class ShopHandler {
     //            LEGACY WAY OF LOADING SHOPS FROM CONFIG FOR TRANSFERRING          //
     //==============================================================================//
 
-    @SuppressWarnings("ConstantConditions")
     private void loadShopsFromLegacyConfig(YamlConfiguration config) {
 
         if (config.getConfigurationSection("shops") == null)
@@ -633,7 +647,6 @@ public class ShopHandler {
         return enchants;
     }
 
-    @SuppressWarnings("deprecation")
     private MaterialData dataFromString(String dataString) {
         int index = dataString.indexOf("(");
         String materialString = dataString.substring(0, index);

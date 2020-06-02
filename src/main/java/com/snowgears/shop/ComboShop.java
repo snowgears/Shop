@@ -11,7 +11,6 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.UUID;
 
-@SuppressWarnings("ConstantConditions")
 public class ComboShop extends AbstractShop {
     private double priceBuy;
     private double priceSell;
@@ -168,10 +167,6 @@ public class ComboShop extends AbstractShop {
         }
 
         player.updateInventory();
-
-        if (issue != null) {
-            return issue;
-        }
 
         //if there are no issues with the test/check transaction
         if (issue == null && isCheck) {

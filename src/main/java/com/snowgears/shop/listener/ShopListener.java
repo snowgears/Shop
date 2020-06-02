@@ -1,12 +1,16 @@
 package com.snowgears.shop.listener;
 
 import com.snowgears.shop.AbstractShop;
+import com.snowgears.shop.CreationCheck;
 import com.snowgears.shop.GambleShop;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopType;
+import com.snowgears.shop.event.PlayerInitializeShopEvent;
 import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.util.UtilMethods;
 import com.snowgears.shop.util.WorldGuardHook;
+
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.block.Barrel;
@@ -266,7 +270,22 @@ public class ShopListener implements Listener {
             event.setCancelled(true);
         }
     }
-
+    @EventHandler
+    public void onShopCreate(PlayerInitializeShopEvent  event) {
+    	CreationCheck ItemList= Shop.getPlugin().getCreationCheck();
+    	AbstractShop shop=event.getShop();
+    	if(ItemList.testfor(event.getPlayer().getInventory().getItemInMainHand(), shop.getPrice(), shop.getAmount())) {
+    		event.setCancelled(true);
+    		shop.delete();
+    		Player player=event.getPlayer();
+    		String message=ShopMessage.getMessage("interactionIssue", "createIssue", null, player);
+    		if(message.isEmpty())
+    			message=ChatColor.GOLD+"Shop creation failed";
+    		player.sendMessage(message);
+    	}
+    		
+    	
+    }
     //===================================================================================//
     //              ENDER CHEST HANDLING EVENTS
     //===================================================================================//

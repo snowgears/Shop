@@ -11,7 +11,6 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.UUID;
 
-@SuppressWarnings("ConstantConditions")
 public class SellShop extends AbstractShop {
     public SellShop(Location signLoc, UUID player, double pri, int amt, Boolean admin) {
         super(signLoc, player, pri, amt, admin);
@@ -32,7 +31,7 @@ public class SellShop extends AbstractShop {
             if (isCheck) {
                 int shopItems = InventoryUtils.getAmount(this.getInventory(), is);
                 if (shopItems < is.getAmount())
-                    issue = TransactionError.INSUFFICIENT_FUNDS_SHOP;
+                	return TransactionError.INSUFFICIENT_FUNDS_SHOP;
             } else {
                 //remove items from shop
                 InventoryUtils.removeItem(this.getInventory(), is, this.getOwner());
@@ -44,7 +43,7 @@ public class SellShop extends AbstractShop {
                 //check if player has enough currency
                 boolean hasFunds = EconomyUtils.hasSufficientFunds(player, player.getInventory(), this.getPrice());
                 if (!hasFunds)
-                    issue = TransactionError.INSUFFICIENT_FUNDS_PLAYER;
+                    return TransactionError.INSUFFICIENT_FUNDS_PLAYER;
             } else {
                 //remove currency from player
                 EconomyUtils.removeFunds(player, player.getInventory(), this.getPrice());
@@ -57,7 +56,7 @@ public class SellShop extends AbstractShop {
                 if (isCheck) {
                     boolean hasRoom = EconomyUtils.canAcceptFunds(this.getOwner(), this.getInventory(), this.getPrice());
                     if (!hasRoom)
-                        issue = TransactionError.INVENTORY_FULL_SHOP;
+                    	return TransactionError.INVENTORY_FULL_SHOP;
                 } else {
                     //add currency to shop
                     EconomyUtils.addFunds(this.getOwner(), this.getInventory(), this.getPrice());
@@ -70,7 +69,7 @@ public class SellShop extends AbstractShop {
                 //check if player has enough room to accept items
                 boolean hasRoom = InventoryUtils.hasRoom(player.getInventory(), is, player);
                 if (!hasRoom)
-                    issue = TransactionError.INVENTORY_FULL_PLAYER;
+                	return TransactionError.INVENTORY_FULL_PLAYER;
             } else {
                 //add items to player's inventory
                 InventoryUtils.addItem(player.getInventory(), is, player);
@@ -79,9 +78,6 @@ public class SellShop extends AbstractShop {
 
         player.updateInventory();
 
-        if (issue != null) {
-            return issue;
-        }
 
         //if there are no issues with the test/check transaction
         if (issue == null && isCheck) {

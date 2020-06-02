@@ -7,7 +7,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
 public class ClearLaggListener implements Listener {
-    private final Shop plugin;
+    @SuppressWarnings("unused")
+	private final Shop plugin;
 
     public ClearLaggListener(Shop instance) {
         plugin = instance;

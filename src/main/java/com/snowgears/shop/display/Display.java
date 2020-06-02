@@ -304,6 +304,8 @@ public class Display {
                     else
                         offset.setZ(-space);
                     break;
+			default:
+				break;
             }
         }
         return offset;

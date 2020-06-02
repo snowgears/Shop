@@ -27,7 +27,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.UUID;
 
-@SuppressWarnings("WeakerAccess")
 public abstract class AbstractShop {
     protected Location signLocation;
     protected Location chestLocation;

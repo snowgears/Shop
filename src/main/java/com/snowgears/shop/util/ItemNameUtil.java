@@ -1,7 +1,6 @@
 package com.snowgears.shop.util;
 
 import org.apache.commons.lang.WordUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -20,21 +19,15 @@ public class ItemNameUtil {
                 return meta.getLocalizedName();
             }
         }
-        try {
-            // try Paper's API
-            return Bukkit.getItemFactory().getI18NDisplayName(item);
-        } catch (NoSuchMethodError e) {
+         
             return getBackupName(item.getType());
-        }
+        
     }
 
     public String getName(Material material) {
-        try {
-            // try Paper's API
-            return Bukkit.getItemFactory().getI18NDisplayName(new ItemStack(material));
-        } catch (NoSuchMethodError e) {
+        
             return getBackupName(material);
-        }
+        
     }
 
     private String getBackupName(Material material) {
