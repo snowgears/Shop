@@ -66,7 +66,7 @@ public class EnderChestHandler {
                 return; // could not make directory
             }
 
-            File currentFile = new File(enderDirectory, "("+player.getUniqueId().toString() + ").yml");
+            File currentFile = new File(enderDirectory, player.getUniqueId().toString() + ".yml");
 
             if (!currentFile.exists() && !currentFile.createNewFile()) {
                 return; // could not create new file
@@ -120,6 +120,7 @@ public class EnderChestHandler {
     }
 
     private UUID uidFromString(String ownerString) {
+    	if(!ownerString.contains("(")) return UUID.fromString(ownerString);
         int index = ownerString.indexOf("(");
         int lastIndex = ownerString.indexOf(")");
         String uidString = ownerString.substring(index + 1, lastIndex);

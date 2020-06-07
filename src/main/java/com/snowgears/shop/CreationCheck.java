@@ -18,16 +18,23 @@ public CreationCheck(YamlConfiguration from,boolean wh) {
 	whitelist=wh;
 }
 
-public boolean testfor(ItemStack i, double price, int amount) {
+public boolean testfor(ItemStack i, double price, int amount, ShopType shopType) { 
 	if(i == null) return false;
 	ConfigurationSection section = listfile.getConfigurationSection("itemListing");
 	for(String sec:section.getKeys(false)) {
-		System.out.println(sec);
 		ConfigurationSection testfor=listfile.getConfigurationSection("itemListing."+sec);
 			//material check
 			if(testfor.getString("material")==null) 
 				continue;
 			if(i.getType() != Material.getMaterial(testfor.getString("material"))) continue;
+			
+			//shoptype check
+			if(testfor.get("ShopType")!=null) { 
+				if(!(shopType.toString().equalsIgnoreCase(testfor.getString("ShopType"))||testfor.getString("ShopType").equalsIgnoreCase("all"))) 
+				{
+					continue;
+				}
+			}
 			
 			//lorecheck
 			if(testfor.get("lore-contains")!=null) { 
@@ -49,6 +56,7 @@ public boolean testfor(ItemStack i, double price, int amount) {
 				} else continue;
 				} else continue;
 			}
+			
 			//ListType is important
 			if(testfor.getString("ListType") != null) {
 				String type=testfor.getString("ListType");

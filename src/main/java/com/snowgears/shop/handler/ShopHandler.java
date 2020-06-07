@@ -161,9 +161,11 @@ public class ShopHandler {
     public void addShop(AbstractShop shop) {
 
         //this is to remove a bug that caused one shop to be saved to multiple files at one point
+    	//changed removed old shop instead of just returning. If they are able to create
+    	//another in the same location... The sing is gone
         AbstractShop s = getShop(shop.getSignLocation());
         if (s != null) {
-            return;
+        	removeShop(s);
         }
         allShops.put(shop.getSignLocation(), shop);
 

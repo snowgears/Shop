@@ -271,12 +271,13 @@ public class ShopListener implements Listener {
         }
     }
     @EventHandler
-    public void onShopCreate(PlayerInitializeShopEvent  event) {
+    public void onShopCreate(PlayerInitializeShopEvent event) {
     	CreationCheck ItemList= Shop.getPlugin().getCreationCheck();
     	AbstractShop shop=event.getShop();
-    	if(ItemList.testfor(event.getPlayer().getInventory().getItemInMainHand(), shop.getPrice(), shop.getAmount())) {
+    	if(ItemList.testfor(event.getPlayer().getInventory().getItemInMainHand(), shop.getPrice(), shop.getAmount(),shop.getType())) {
     		event.setCancelled(true);
     		shop.delete();
+    		
     		Player player=event.getPlayer();
     		String message=ShopMessage.getMessage("interactionIssue", "createIssue", null, player);
     		if(message.isEmpty())
