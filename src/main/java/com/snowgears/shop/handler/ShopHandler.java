@@ -79,8 +79,9 @@ public class ShopHandler {
     }
 
     public AbstractShop getShopByChest(Block shopChest) {
+    	BlockFace[] directions = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
         if (shopChest.getState() instanceof ShulkerBox) {
-            BlockFace[] directions = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
+            
             AbstractShop shop;
             for (BlockFace direction : directions) {
                 shop = this.getShop(shopChest.getRelative(direction).getLocation());
@@ -117,10 +118,16 @@ public class ShopHandler {
                     }
                 }
             }
-            AbstractShop as=null;
             for (Block chestBlock : chestBlocks) {
-            	as=this.getShopNearBlock(chestBlock);
-            	if(as!=null) return as;
+            AbstractShop shop;
+            for (BlockFace direction : directions) {
+                shop = this.getShop(chestBlock.getRelative(direction).getLocation());
+                if (shop != null) {
+                    //make sure the shop sign you found is actually attached to the correct shop
+                    if (shop.getChestLocation().equals(chestBlock.getLocation()))
+                        return shop;
+                }
+            }
             }
         }
         return null;
