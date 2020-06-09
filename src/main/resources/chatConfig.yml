@@ -110,6 +110,8 @@ interaction:
       opDestroy: "&7You have destroyed a gambling shop owned by [server name]."
 
 interaction_issue:
+   createIssue: "&6Shop creation failed."
+   existingShop: "&6A shop already exists on that chest."
    createLine2: "&cThe amount (line 2) needs to be a positive number."
    createLine3: "&cThe price (line 3) needs to be a positive number."
    createNoItem: "&cYou must be holding the item you want to [shop type]"

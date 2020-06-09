@@ -6,3 +6,4 @@ itemListing:
     name-contains: 'example name'
     pricemin: '1 64'
     pricemax: '2 64'
+    ShopType: all

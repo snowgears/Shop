@@ -61,7 +61,6 @@ public abstract class AbstractShop {
     }
 
     public static AbstractShop create(Location signLoc, UUID player, double pri, double priCombo, int amt, Boolean admin, ShopType shopType) {
-
         switch (shopType) {
             case SELL:
                 return new SellShop(signLoc, player, pri, amt, admin);

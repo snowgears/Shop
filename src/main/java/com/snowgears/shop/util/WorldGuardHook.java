@@ -4,6 +4,7 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.Flags;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
@@ -22,7 +23,16 @@ public class WorldGuardHook {
         try {
             registry.register(flag);
         } catch (FlagConflictException | IllegalStateException e) {
-            flag = (StateFlag) registry.get("allow-shop");
+        	Flag<?> before = registry.get("allow-shop");
+        	if (before instanceof StateFlag) {
+            flag = (StateFlag) before;
+        	}else { 
+        	flag = new StateFlag("shop-area", false);
+        	before = registry.get("shop-area");
+        	if (before instanceof StateFlag) {
+                flag = (StateFlag) before;
+            	}
+        	}
         }
         ENABLE_SHOP = flag;
     }

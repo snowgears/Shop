@@ -20,7 +20,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.ShulkerBox;
-import org.bukkit.block.data.Directional;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
@@ -95,8 +94,6 @@ public class ShopHandler {
         }
 
         if (this.isChest(shopChest)) {
-            BlockFace chestFacing = ((Directional) shopChest.getState().getBlockData()).getFacing();
-
             ArrayList<Block> chestBlocks = new ArrayList<>();
             chestBlocks.add(shopChest);
 
@@ -120,22 +117,10 @@ public class ShopHandler {
                     }
                 }
             }
-
+            AbstractShop as=null;
             for (Block chestBlock : chestBlocks) {
-                Block signBlock = chestBlock.getRelative(chestFacing);
-                if (Tag.WALL_SIGNS.isTagged(signBlock.getType())) {
-                    Directional sign = (Directional) signBlock.getState().getBlockData();
-                    if (chestFacing == sign.getFacing()) {
-                        AbstractShop shop = this.getShop(signBlock.getLocation());
-                        if (shop != null)
-                            return shop;
-                    }
-                } else if (!(holder instanceof DoubleChest)) {
-                    AbstractShop shop = this.getShop(signBlock.getLocation());
-                    //delete the shop if it doesn't have a sign
-                    if (shop != null)
-                        shop.delete();
-                }
+            	as=this.getShopNearBlock(chestBlock);
+            	if(as!=null) return as;
             }
         }
         return null;
@@ -275,7 +260,6 @@ public class ShopHandler {
                 oldFile=null;
             } else {
                 owner = Bukkit.getOfflinePlayer(player).getName();
-                //TODO remove playername to it Gotta find the rest of instances reading
                 currentFile = new File(fileDirectory, player.toString() + ".yml");
                 oldFile = new File(fileDirectory, owner+" ("+player.toString() + ").yml");
                 

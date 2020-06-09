@@ -37,7 +37,7 @@ public class Display {
         Random random = new Random();
 
         AbstractShop shop = this.getShop();
-
+        boolean dis=Shop.getPlugin().getConfig().getBoolean("displayName");
         if (shop.getItemStack() == null)
             return;
 
@@ -71,12 +71,15 @@ public class Display {
                 case ITEM:
                     //Drop initial display item
                     Item i1 = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(false), item);
+
+                    i1.setCustomNameVisible(dis);
                     i1.setVelocity(new Vector(0, 0.1, 0));
                     i1.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
                     entities.add(i1);
 
                     //Drop the barter display item
                     Item i2 = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(true), barterItem);
+                    i2.setCustomNameVisible(dis);
                     i2.setVelocity(new Vector(0, 0.1, 0));
                     i2.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
                     entities.add(i2);
@@ -111,12 +114,14 @@ public class Display {
                     //Drop initial display item
                     Item item1 = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(false), item);
                     item1.setVelocity(new Vector(0, 0.1, 0));
+                    item1.setCustomNameVisible(dis);
                     item1.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
                     entities.add(item1);
 
                     //Drop the barter display item
                     Item item2 = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(true), barterItem);
                     item2.setVelocity(new Vector(0, 0.1, 0));
+                    item2.setCustomNameVisible(false);
                     item2.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
                     entities.add(item2);
                     break;
@@ -132,6 +137,7 @@ public class Display {
                     Item i = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(false), item);
                     i.setVelocity(new Vector(0, 0.1, 0));
                     i.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
+                    i.setCustomNameVisible(dis);
                     entities.add(i);
                     break;
                 case LARGE_ITEM:
@@ -154,6 +160,7 @@ public class Display {
                     Item caseDisplayItem = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(false), item);
                     caseDisplayItem.setVelocity(new Vector(0, 0.1, 0));
                     caseDisplayItem.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
+                    caseDisplayItem.setCustomNameVisible(dis);
                     entities.add(caseDisplayItem);
                     break;
             }

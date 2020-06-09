@@ -4,6 +4,7 @@ import com.snowgears.shop.AbstractShop;
 import com.snowgears.shop.SellShop;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopType;
+import com.snowgears.shop.display.Display;
 import com.snowgears.shop.display.DisplayType;
 import com.snowgears.shop.event.PlayerCreateShopEvent;
 import com.snowgears.shop.event.PlayerDestroyShopEvent;
@@ -255,25 +256,15 @@ public class MiscListener implements Listener {
                     if (player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator")))
                         isAdmin = true;
                 }
-
-                //make sure that the sign is in front of the chest, unless it is a shulker box or barrel
-                if (chest.getState().getBlockData() instanceof Directional && chest.getType() != Material.BARREL) {
-                    Directional container = (Directional) chest.getState().getBlockData();
-                    if (container.getFacing() == facing && chest.getRelative(facing).getLocation().equals(signBlock.getLocation())) {
-                        chest.getRelative(facing).setType(UtilMethods.getWallEquivalentMaterial(signBlock.getType()));
-                    } else {
-                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "direction", null, player));
-                        return;
-                    }
-                } else {
-                    existingShop = plugin.getShopHandler().getShopByChest(chest);
+				
+                    existingShop = plugin.getShopHandler().getShopNearBlock(chest);
                     if (existingShop != null) {
-                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "direction", null, player));
+                        player.sendMessage(ShopMessage.getMessage("interactionIssue", "existingShop", null, player));
                         return;
                     } else {
-                        chest.getRelative(facing).setType(UtilMethods.getWallEquivalentMaterial(signBlock.getType()));
+                        event.getBlock().setType(UtilMethods.getWallEquivalentMaterial(signBlock.getType()));
                     }
-                }
+                
 
                 // this is needed for all signs now, to correct rotation
                 final Sign newSign = (Sign) chest.getRelative(facing).getState();
@@ -336,7 +327,7 @@ public class MiscListener implements Listener {
                 }.runTaskLater(plugin, 1200L); //1 minute
             }
         }
-    }
+}
 
     //this method calls PlayerInitializeShopEvent
     @EventHandler(ignoreCancelled = true)
@@ -488,6 +479,9 @@ public class MiscListener implements Listener {
                 }
 
                 player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "destroy", shop, player));
+                //fix the bug with left display prob
+                Display d= new Display(shop.getSignLocation());
+                if(d.getType()!=DisplayType.NONE) {d.remove();}
                 shop.delete();
                 plugin.getShopHandler().saveShops(shop.getOwnerUUID());
             }
@@ -503,6 +497,9 @@ public class MiscListener implements Listener {
                     }
 
                     player.sendMessage(ShopMessage.getMessage(shop.getType().toString(), "opDestroy", shop, player));
+                    //fix the bug with left display
+                    Display d= new Display(shop.getSignLocation());
+                    if(d.getType()!=DisplayType.NONE) {d.remove();}
                     shop.delete();
                     plugin.getShopHandler().saveShops(shop.getOwnerUUID());
                 } else
