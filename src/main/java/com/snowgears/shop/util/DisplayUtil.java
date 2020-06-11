@@ -60,6 +60,19 @@ public class DisplayUtil {
 
         return stand;
     }
+  //this spawns an armorstand at a location, with the item on it
+    public static ArmorStand createItemlessDisplay(Location blockLocation, BlockFace facing) {
+
+        Location standLocation = getStandLocation(blockLocation, null, facing, ItemType.HAND);
+        ArmorStand stand = (ArmorStand) blockLocation.getWorld().spawnEntity(standLocation, EntityType.ARMOR_STAND);
+
+        stand.setSmall(true);
+        stand.setGravity(false);
+        stand.setVisible(false);
+        stand.setBasePlate(false);
+
+        return stand;
+    }
 
     private static ItemType getItemType(ItemStack itemStack) {
         Material type = itemStack.getType();
@@ -94,7 +107,23 @@ public class DisplayUtil {
                 break;
             case HAND:
                 standLocation = blockLocation;
-
+                if(material==null)
+                	switch (facing) {
+	                    case NORTH:
+	                        standLocation = blockLocation.clone().add(0.5, -0.8, 0.5);
+	                        return standLocation;
+	                    case EAST:
+	                        standLocation = blockLocation.clone().add(0.5, -0.8, 0.5);
+	                        return standLocation;
+	                    case SOUTH:
+	                        standLocation = blockLocation.clone().add(0.5, -0.8, 0.5);
+	                        return standLocation;
+	                    case WEST:
+	                        standLocation = blockLocation.clone().add(0.5, -0.8, 0.5);
+	                        return standLocation;
+					default:
+						break;
+                }
                 if (isTool(material)) {
                     double rodOffset = 0.1;
                     switch (facing) {

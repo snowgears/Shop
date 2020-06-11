@@ -25,7 +25,7 @@ public class Display {
     private Location shopSignLocation;
     private DisplayType type;
     private ArrayList<Entity> entities;
-    private DisplayType[] cycle = {DisplayType.NONE, DisplayType.ITEM, DisplayType.GLASS_CASE, DisplayType.LARGE_ITEM};
+    private DisplayType[] cycle = {DisplayType.NONE, DisplayType.ITEM, DisplayType.ITEM_NAME, DisplayType.GLASS_CASE, DisplayType.LARGE_ITEM};
 
     public Display(Location shopSignLocation) {
         this.shopSignLocation = shopSignLocation;
@@ -84,6 +84,30 @@ public class Display {
                     i2.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
                     entities.add(i2);
                     break;
+                case ITEM_NAME:
+                    //Drop initial display item
+                    Item in1 = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(false), item);
+
+                    in1.setCustomNameVisible(dis);
+                    in1.setVelocity(new Vector(0, 0.1, 0));
+                    in1.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
+                    entities.add(in1);
+                    
+                    
+
+                    //Drop the barter display item
+                    Item in2 = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(true), barterItem);
+                    in2.setCustomNameVisible(dis);
+                    in2.setVelocity(new Vector(0, 0.1, 0));
+                    in2.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
+                    entities.add(in2); 
+                    
+
+                    ArmorStand standin1 = DisplayUtil.createItemlessDisplay(shop.getChestLocation().getBlock().getRelative(BlockFace.UP).getLocation(), shop.getFacing());
+                    standin1.setCustomName(Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack())+" : "+Shop.getPlugin().getItemNameUtil().getName(shop.getSecondaryItemStack()));
+                    standin1.setCustomNameVisible(true);
+                    entities.add(standin1);
+                    break;
                 case LARGE_ITEM:
                     //put first large display down
                     Location leftLoc = shop.getChestLocation().getBlock().getRelative(BlockFace.UP).getLocation();
@@ -132,6 +156,18 @@ public class Display {
             switch (displayType) {
                 case NONE:
                     //do nothing
+                    break;
+                 case ITEM_NAME:
+                    Item in = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(false), item);
+                    in.setVelocity(new Vector(0, 0.1, 0));
+                    in.setPickupDelay(Integer.MAX_VALUE); //stop item from being picked up ever
+                    in.setCustomNameVisible(dis);
+                    entities.add(in);
+                    
+                    ArmorStand standin = DisplayUtil.createItemlessDisplay(shop.getChestLocation().getBlock().getRelative(BlockFace.UP).getLocation(), shop.getFacing());
+                    standin.setCustomName(Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack()));
+                    standin.setCustomNameVisible(true);
+                    entities.add(standin);
                     break;
                 case ITEM:
                     Item i = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(false), item);

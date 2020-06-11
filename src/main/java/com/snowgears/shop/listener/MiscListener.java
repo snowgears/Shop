@@ -181,10 +181,10 @@ public class MiscListener implements Listener {
 
                         String[] multiplePrices = line3.split(" ");
                         if (multiplePrices.length > 1) {
-                            price = Integer.parseInt(multiplePrices[0]);
-                            priceCombo = Integer.parseInt(multiplePrices[1]);
+                            price = Double.parseDouble(multiplePrices[0]);
+                            priceCombo = Double.parseDouble(multiplePrices[1]);
                         } else {
-                            price = Integer.parseInt(line3);
+                            price = Double.parseDouble(line3);
                         }
 
                     } catch (NumberFormatException e) {
@@ -257,7 +257,7 @@ public class MiscListener implements Listener {
                         isAdmin = true;
                 }
 				
-                    existingShop = plugin.getShopHandler().getShopNearBlock(chest);
+                    existingShop = plugin.getShopHandler().getShopByChest(chest);
                     if (existingShop != null) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "existingShop", null, player));
                         return;
