@@ -1,7 +1,11 @@
 package com.snowgears.shop.util;
 
+import java.util.Iterator;
+import java.util.Map.Entry;
+
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -19,8 +23,19 @@ public class ItemNameUtil {
                 return meta.getLocalizedName();
             }
         }
-         
+         	if(item.getType()!=Material.ENCHANTED_BOOK)
             return getBackupName(item.getType());
+         	else {
+         		Iterator<Entry<Enchantment, Integer>> it=item.getEnchantments().entrySet().iterator();
+         		if(it.hasNext())
+         			return WordUtils.capitalizeFully(it.next().getKey().toString().replace("_", " ").toLowerCase());
+         		else
+         			 return getBackupName(item.getType());
+         		//if a ordering method is found. I dont know best way to order
+         		/*for(Entry<Enchantment, Integer> s:item.getEnchantments().entrySet()) {
+         			s.getKey();
+         		}*/
+         	}
         
     }
 
