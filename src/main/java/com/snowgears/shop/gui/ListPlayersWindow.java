@@ -26,6 +26,7 @@ public class ListPlayersWindow extends ShopGuiWindow {
         makeMenuBarUpper();
         makeMenuBarLower();
 
+        Bukkit.getScheduler().runTaskAsynchronously(Shop.getPlugin(), ()->{
         List<OfflinePlayer> owners = Shop.getPlugin().getShopHandler().getShopOwners();
         owners.sort(new OfflinePlayerNameComparator());
 
@@ -47,6 +48,7 @@ public class ListPlayersWindow extends ShopGuiWindow {
         } else {
             page.setItem(53, this.getNextPageIcon());
         }
+        });
     }
 
     private ItemStack createIcon(OfflinePlayer owner) {

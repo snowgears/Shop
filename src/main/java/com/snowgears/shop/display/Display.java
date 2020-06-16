@@ -5,6 +5,7 @@ import com.snowgears.shop.Shop;
 import com.snowgears.shop.ShopType;
 import com.snowgears.shop.util.DisplayUtil;
 import com.snowgears.shop.util.UtilMethods;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -16,6 +17,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -25,7 +27,7 @@ public class Display {
     private Location shopSignLocation;
     private DisplayType type;
     private ArrayList<Entity> entities;
-    private DisplayType[] cycle = {DisplayType.NONE, DisplayType.ITEM, DisplayType.ITEM_NAME, DisplayType.GLASS_CASE, DisplayType.LARGE_ITEM};
+    private DisplayType[] cycle = {DisplayType.NONE, DisplayType.ITEM, /*DisplayType.ITEM_NAME,*/ DisplayType.GLASS_CASE, DisplayType.LARGE_ITEM};
 
     public Display(Location shopSignLocation) {
         this.shopSignLocation = shopSignLocation;
@@ -85,6 +87,7 @@ public class Display {
                     entities.add(i2);
                     break;
                 case ITEM_NAME:
+				    //TODO Either fix the restart armor stand staying isDisplay() or remove
                     //Drop initial display item
                     Item in1 = shop.getChestLocation().getWorld().dropItem(this.getItemDropLocation(false), item);
 
@@ -106,6 +109,7 @@ public class Display {
                     ArmorStand standin1 = DisplayUtil.createItemlessDisplay(shop.getChestLocation().getBlock().getRelative(BlockFace.UP).getLocation(), shop.getFacing());
                     standin1.setCustomName(Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack())+" : "+Shop.getPlugin().getItemNameUtil().getName(shop.getSecondaryItemStack()));
                     standin1.setCustomNameVisible(true);
+                    standin1.setMetadata("shop", new FixedMetadataValue(Shop.getPlugin(), Boolean.valueOf(true)));
                     entities.add(standin1);
                     break;
                 case LARGE_ITEM:
@@ -167,6 +171,7 @@ public class Display {
                     ArmorStand standin = DisplayUtil.createItemlessDisplay(shop.getChestLocation().getBlock().getRelative(BlockFace.UP).getLocation(), shop.getFacing());
                     standin.setCustomName(Shop.getPlugin().getItemNameUtil().getName(shop.getItemStack()));
                     standin.setCustomNameVisible(true);
+                    standin.setMetadata("shop", new FixedMetadataValue(Shop.getPlugin(), Boolean.valueOf(true)));
                     entities.add(standin);
                     break;
                 case ITEM:
@@ -364,6 +369,9 @@ public class Display {
             } else if (entity.getType() == EntityType.ARMOR_STAND) {
                 if (UtilMethods.containsLocation(entity.getCustomName())) {
                     return true;
+                }
+                else if(entity.getMetadata("shop") != null && entity.getMetadata("shop") == new FixedMetadataValue(Shop.getPlugin(), Boolean.valueOf(true))) {
+                	return true;
                 }
             }
         } catch (NoSuchFieldError error) {
