@@ -39,6 +39,10 @@ enableGUI: true
 # WorldGuard plugin must be installed for this feature to work #
 hookWorldGuard: false
 
+# Setting this to true will force all Shops to be created in a towny shop plot#
+# The Towny plugin must be installed for this feature to work #
+useTowny: false
+
 # This is the command alias that will be used as the base for all shop commands #
 commandAlias: shop
 

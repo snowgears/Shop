@@ -51,6 +51,7 @@ public class Shop extends JavaPlugin {
     private boolean usePerms;
     private boolean enableMetrics;
     private boolean enableGUI;
+    private boolean useTowny;
     private boolean useVault;
     private boolean hookWorldGuard;
     private String commandAlias;
@@ -155,6 +156,10 @@ public class Shop extends JavaPlugin {
         playSounds = config.getBoolean("playSounds");
         playEffects = config.getBoolean("playEffects");
         useVault = config.getBoolean("useVault");
+        if(config.contains("useTowny"))
+        	useTowny = config.getBoolean("useTowny");
+        else config.set("useTowny", false);
+
         //TODO
 //        taxPercent = config.getDouble("taxPercent");
 
@@ -326,7 +331,11 @@ public class Shop extends JavaPlugin {
     public boolean useVault() {
         return useVault;
     }
-
+    
+    public boolean towny() {
+        return useTowny;
+    }
+    
     public boolean hookWorldGuard(){
         return hookWorldGuard;
     }
