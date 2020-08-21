@@ -22,7 +22,7 @@ public class BarterShop extends AbstractShop {
     //TODO incorporate # of orders at a time into this transaction
     @Override
     public TransactionError executeTransaction(int orders, Player player, boolean isCheck, ShopType transactionType) {
-    	
+
         TransactionError issue = null;
 
         ItemStack is = this.getItemStack();
@@ -83,12 +83,7 @@ public class BarterShop extends AbstractShop {
         }
 
         player.updateInventory();
-        /*  Why?
-         * 	When will issue be not null?
-        if(issue != null){
-            return issue;
-        }
-        */
+
 
         //if there are no issues with the test/check transaction
         if(issue == null && isCheck){

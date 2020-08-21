@@ -36,8 +36,7 @@ public class EnderChestHandler {
         return null;
     }
 
-    @SuppressWarnings("deprecation")
-	public void saveInventory(final OfflinePlayer player, Inventory inv){
+    public void saveInventory(final OfflinePlayer player, Inventory inv){
         //do not save enderchest contents of admin shops
         if(player.getUniqueId().equals(plugin.getShopHandler().getAdminUUID()))
             return;
@@ -108,8 +107,7 @@ public class EnderChestHandler {
             return;
 
         UUID owner = uidFromString(fileName);
-        @SuppressWarnings("unchecked")
-		ItemStack[] contents = ((List<ItemStack>) config.get("enderchest")).toArray(new ItemStack[0]);
+        ItemStack[] contents = ((List<ItemStack>) config.get("enderchest")).toArray(new ItemStack[0]);
         Inventory inv = Bukkit.createInventory(null, InventoryType.ENDER_CHEST);
         inv.setContents(contents);
         enderChestInventories.put(owner, inv);

@@ -82,12 +82,6 @@ public class BuyShop extends AbstractShop {
 
         player.updateInventory();
 
-        /*  Why?
-         * 	When will issue be not null?
-        if(issue != null){
-            return issue;
-        }
-        */
 
         //if there are no issues with the test/check transaction
         if(issue == null && isCheck){

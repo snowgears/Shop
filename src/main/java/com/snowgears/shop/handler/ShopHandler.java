@@ -243,7 +243,7 @@ public class ShopHandler {
             return;
 
         BukkitScheduler scheduler = plugin.getServer().getScheduler();
-        scheduler.scheduleAsyncDelayedTask(plugin, new Runnable() {
+        scheduler.runTaskLaterAsynchronously(plugin, new Runnable() {
             @Override
             public void run() {
                 playersSavingShops.add(player);
