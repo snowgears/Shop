@@ -78,7 +78,6 @@ public class Shop extends JavaPlugin {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public void onEnable() {
         plugin = this;
 

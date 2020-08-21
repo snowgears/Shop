@@ -187,7 +187,8 @@ public abstract class AbstractShop {
 
     //setter methods
 
-    public void setItemStack(ItemStack is) {
+    @SuppressWarnings("deprecation")
+	public void setItemStack(ItemStack is) {
         this.item = is.clone();
         if(!Shop.getPlugin().checkItemDurability()) {
             if (item.getType().getMaxDurability() > 0)
@@ -196,7 +197,8 @@ public abstract class AbstractShop {
         //this.display.spawn();
     }
 
-    public void setSecondaryItemStack(ItemStack is) {
+    @SuppressWarnings("deprecation")
+	public void setSecondaryItemStack(ItemStack is) {
         this.secondaryItem = is.clone();
         if(!Shop.getPlugin().checkItemDurability()) {
             if (secondaryItem.getType().getMaxDurability() > 0)
@@ -321,7 +323,8 @@ public abstract class AbstractShop {
         return;
     }
 
-    protected void formatAndSendFancyMessage(String message, Player player){
+    @SuppressWarnings("deprecation")
+	protected void formatAndSendFancyMessage(String message, Player player){
         if(message == null)
             return;
 
@@ -352,7 +355,7 @@ public abstract class AbstractShop {
                 }
                 // Prepare a BaseComponent array with the itemJson as a text component
                 BaseComponent[] hoverEventComponents = new BaseComponent[]{ new TextComponent(itemJson) }; // The only element of the hover events basecomponents is the item json
-                HoverEvent event = new HoverEvent(HoverEvent.Action.SHOW_ITEM, hoverEventComponents);
+				HoverEvent event = new HoverEvent(HoverEvent.Action.SHOW_ITEM, hoverEventComponents);
 
                 builder.event(event);
             }

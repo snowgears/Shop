@@ -112,7 +112,8 @@ public class ShopGUIListener implements Listener {
                                 uuid = Shop.getPlugin().getShopHandler().getAdminUUID();
                             }
                             else {
-                                OfflinePlayer p = Bukkit.getOfflinePlayer(name);
+                                @SuppressWarnings("deprecation")
+								OfflinePlayer p = Bukkit.getOfflinePlayer(name);
                                 if(p != null)
                                     uuid = p.getUniqueId();
                             }
