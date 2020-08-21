@@ -187,7 +187,6 @@ public abstract class AbstractShop {
 
     //setter methods
 
-    @SuppressWarnings("deprecation")
 	public void setItemStack(ItemStack is) {
         this.item = is.clone();
         if(!Shop.getPlugin().checkItemDurability()) {
@@ -197,7 +196,6 @@ public abstract class AbstractShop {
         //this.display.spawn();
     }
 
-    @SuppressWarnings("deprecation")
 	public void setSecondaryItemStack(ItemStack is) {
         this.secondaryItem = is.clone();
         if(!Shop.getPlugin().checkItemDurability()) {
@@ -323,7 +321,6 @@ public abstract class AbstractShop {
         return;
     }
 
-    @SuppressWarnings("deprecation")
 	protected void formatAndSendFancyMessage(String message, Player player){
         if(message == null)
             return;
