@@ -321,7 +321,7 @@ public abstract class AbstractShop {
         return;
     }
 
-	protected void formatAndSendFancyMessage(String message, Player player){
+    protected void formatAndSendFancyMessage(String message, Player player){
         if(message == null)
             return;
 
@@ -352,7 +352,7 @@ public abstract class AbstractShop {
                 }
                 // Prepare a BaseComponent array with the itemJson as a text component
                 BaseComponent[] hoverEventComponents = new BaseComponent[]{ new TextComponent(itemJson) }; // The only element of the hover events basecomponents is the item json
-				HoverEvent event = new HoverEvent(HoverEvent.Action.SHOW_ITEM, hoverEventComponents);
+                HoverEvent event = new HoverEvent(HoverEvent.Action.SHOW_ITEM, hoverEventComponents);
 
                 builder.event(event);
             }
