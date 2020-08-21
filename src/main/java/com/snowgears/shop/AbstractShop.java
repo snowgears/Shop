@@ -187,7 +187,7 @@ public abstract class AbstractShop {
 
     //setter methods
 
-	public void setItemStack(ItemStack is) {
+    public void setItemStack(ItemStack is) {
         this.item = is.clone();
         if(!Shop.getPlugin().checkItemDurability()) {
             if (item.getType().getMaxDurability() > 0)
@@ -196,7 +196,7 @@ public abstract class AbstractShop {
         //this.display.spawn();
     }
 
-	public void setSecondaryItemStack(ItemStack is) {
+    public void setSecondaryItemStack(ItemStack is) {
         this.secondaryItem = is.clone();
         if(!Shop.getPlugin().checkItemDurability()) {
             if (secondaryItem.getType().getMaxDurability() > 0)
