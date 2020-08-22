@@ -33,7 +33,7 @@ public class BarterShop extends AbstractShop {
             if(isCheck) {
                 int shopItems = InventoryUtils.getAmount(this.getInventory(), is);
                 if (shopItems < is.getAmount())
-                    return TransactionError.INSUFFICIENT_FUNDS_SHOP;
+                    issue= TransactionError.INSUFFICIENT_FUNDS_SHOP;
             }
             else {
                 //remove items from shop
@@ -46,7 +46,7 @@ public class BarterShop extends AbstractShop {
                 //check if player has enough barter items
                 int playerItems = InventoryUtils.getAmount(player.getInventory(), is2);
                 if (playerItems < is2.getAmount())
-                    return TransactionError.INSUFFICIENT_FUNDS_PLAYER;
+                    issue= TransactionError.INSUFFICIENT_FUNDS_PLAYER;
             }
             else {
                 //remove barter items from player
@@ -60,7 +60,7 @@ public class BarterShop extends AbstractShop {
                 if(isCheck) {
                     boolean hasRoom = InventoryUtils.hasRoom(this.getInventory(), is2, this.getOwner());
                     if (!hasRoom)
-                        return TransactionError.INVENTORY_FULL_SHOP;
+                        issue= TransactionError.INVENTORY_FULL_SHOP;
                 }
                 else {
                     //add barter items to shop
@@ -74,7 +74,7 @@ public class BarterShop extends AbstractShop {
                 //check if player has enough room to accept items
                 boolean hasRoom = InventoryUtils.hasRoom(player.getInventory(), is, player);
                 if (!hasRoom)
-                    return TransactionError.INVENTORY_FULL_PLAYER;
+                    issue= TransactionError.INVENTORY_FULL_PLAYER;
             }
             else {
                 //add items to player's inventory
@@ -83,8 +83,9 @@ public class BarterShop extends AbstractShop {
         }
 
         player.updateInventory();
-
-
+        if(issue != null){
+            return issue;
+        }
         //if there are no issues with the test/check transaction
         if(issue == null && isCheck){
 
@@ -92,7 +93,7 @@ public class BarterShop extends AbstractShop {
             Bukkit.getPluginManager().callEvent(e);
 
             if(e.isCancelled())
-                return TransactionError.CANCELLED;
+            	return TransactionError.CANCELLED;
 
             //run the transaction again without the check clause
             return executeTransaction(orders, player, false, transactionType);
