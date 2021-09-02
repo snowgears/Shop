@@ -156,7 +156,7 @@ public abstract class ShopGuiWindow {
     }
 
     protected ItemStack getPrevPageIcon(){
-        ItemStack icon = new ItemStack(Material.RED_STAINED_GLASS_PANE, 1);
+        ItemStack icon = new ItemStack(Material.STAINED_GLASS_PANE, 1, (byte)14); //14 is red
 
         ItemMeta meta = icon.getItemMeta();
         meta.setDisplayName("Previous Page");
@@ -166,7 +166,7 @@ public abstract class ShopGuiWindow {
     }
 
     protected ItemStack getNextPageIcon(){
-        ItemStack icon = new ItemStack(Material.RED_STAINED_GLASS_PANE, 1);
+        ItemStack icon = new ItemStack(Material.STAINED_GLASS_PANE, 1, (byte)14); //14 is red
 
         ItemMeta meta = icon.getItemMeta();
         meta.setDisplayName("Next Page");

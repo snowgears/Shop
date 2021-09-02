@@ -1,8 +1,7 @@
 name: Shop
 author: SnowGears
 description: Easily create shops to buy or sell items!
-version: 1.8.3
-api-version: 1.13
+version: 1.8.2.10
 main: com.snowgears.shop.Shop
 softdepend: [Vault, WorldGuard, Towny]
 permissions:

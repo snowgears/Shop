@@ -12,7 +12,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
-import org.bukkit.block.data.type.WallSign;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -161,7 +160,7 @@ public class ShopHandler {
             if(this.isChest(block.getRelative(face))){
                 Block shopChest = block.getRelative(face);
                 for(BlockFace newFace : faces){
-                    if(shopChest.getRelative(newFace).getBlockData() instanceof WallSign){
+                    if(shopChest.getRelative(newFace).getType() == Material.WALL_SIGN){
                         AbstractShop shop = getShop(shopChest.getRelative(newFace).getLocation());
                         if(shop != null)
                             return shop;
@@ -698,15 +697,5 @@ public class ShopHandler {
         chestMaterials.add(Material.TRAPPED_CHEST);
         if(plugin.useEnderChests())
             chestMaterials.add(Material.ENDER_CHEST);
-
-        try{
-            for(Material m : Tag.SHULKER_BOXES.getValues()){
-                chestMaterials.add(m);
-            }
-        } catch (NoClassDefFoundError e) {} catch (NoSuchFieldError e) {}
-
-        try{
-            chestMaterials.add(Material.BARREL);
-        } catch (NoSuchFieldError e) {}
     }
 }

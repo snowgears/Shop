@@ -16,22 +16,16 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import static com.snowgears.shop.util.UtilMethods.isMCVersion17Plus;
 
 public abstract class AbstractShop {
 
@@ -122,7 +116,8 @@ public abstract class AbstractShop {
     public boolean load() {
         if (signLocation != null) {
             try {
-                facing = ((WallSign) signLocation.getBlock().getBlockData()).getFacing();
+                final org.bukkit.material.Sign sign = (org.bukkit.material.Sign) signLocation.getBlock().getState().getData();
+                facing = sign.getFacing();
                 chestLocation = signLocation.getBlock().getRelative(facing.getOppositeFace()).getLocation();
                 this.setGuiIcon();
                 return true;
@@ -158,10 +153,9 @@ public abstract class AbstractShop {
         return signLocation;
     }
 
-    public WallSign getSign(){
-        BlockData signBlockData = this.getSignLocation().getBlock().getBlockData();
-        if(signBlockData instanceof WallSign){
-            return (WallSign)signBlockData;
+    public org.bukkit.material.Sign getSign(){
+        if(this.getSignLocation().getBlock().getType() == Material.WALL_SIGN){
+            return (org.bukkit.material.Sign) signLocation.getBlock().getState().getData();
         }
         return null;
     }
@@ -333,13 +327,11 @@ public abstract class AbstractShop {
                 lore.add(ShopMessage.formatMessage(loreLine, this, null, false));
             }
         }
+        lore.add(ChatColor.GRAY+""+UtilMethods.getCleanLocation(this.signLocation, true));
 
         ItemMeta iconMeta = guiIcon.getItemMeta();
         iconMeta.setDisplayName(name);
         iconMeta.setLore(lore);
-
-        PersistentDataContainer container = iconMeta.getPersistentDataContainer();
-        container.set(Shop.getPlugin().getSignLocationNameSpacedKey(), PersistentDataType.STRING, UtilMethods.getCleanLocation(this.getSignLocation(), true));
 
         guiIcon.setItemMeta(iconMeta);
     }
@@ -394,15 +386,6 @@ public abstract class AbstractShop {
                     signBlock.setLine(3, lines[3]);
                 }
 
-                if(isMCVersion17Plus()) {
-                    if (Shop.getPlugin().getGlowingSignText()) {
-                        signBlock.setGlowingText(true);
-                    }
-                    else{
-                        signBlock.setGlowingText(false);
-                    }
-                }
-
                 signBlock.update(true);
             }
         }, 2L);
@@ -411,13 +394,8 @@ public abstract class AbstractShop {
     public void delete() {
         display.remove(null);
 
-        if(UtilMethods.isMCVersion17Plus() && Shop.getPlugin().getDisplayLightLevel() > 0) {
-            Block displayBlock = this.getChestLocation().getBlock().getRelative(BlockFace.UP);
-            displayBlock.setType(Material.AIR);
-        }
-
         Block b = this.getSignLocation().getBlock();
-        if (b.getBlockData() instanceof WallSign) {
+        if (b.getType() == Material.WALL_SIGN) {
             Sign signBlock = (Sign) b.getState();
             signBlock.setLine(0, "");
             signBlock.setLine(1, "");

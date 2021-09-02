@@ -6,7 +6,7 @@
 
     <groupId>com.snowgears.shop</groupId>
     <artifactId>Shop</artifactId>
-    <version>1.8.3</version>
+    <version>1.8.2.10</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -32,71 +32,16 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.17-R0.1-SNAPSHOT</version>
+            <version>1.12.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>org.spigotmc</groupId>-->
-<!--            <artifactId>spigot</artifactId>-->
-<!--            <version>1.17.1-R0.1-SNAPSHOT</version>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.spigotmc</groupId>
-            <artifactId>spigot17R1</artifactId>
-            <version>1.17.1-R0.1-SNAPSHOT</version>
+            <artifactId>spigot12R1</artifactId>
+            <version>1.12.2</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/craftbukkit/spigot-1.17.1.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot16R3</artifactId>
-            <version>1.16-R0.3-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/craftbukkit/spigot-1.16.5.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot16R2</artifactId>
-            <version>1.16-R0.2-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/craftbukkit/spigot-1.16.3.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot16R1</artifactId>
-            <version>1.16-R0.1-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/craftbukkit/spigot-1.16.1.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot15R1</artifactId>
-            <version>1.15-R0.1-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/craftbukkit/spigot-1.15.2.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot14R1</artifactId>
-            <version>1.14-R0.1-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/craftbukkit/spigot-1.14.4.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot13R2</artifactId>
-            <version>1.13-R0.2-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/craftbukkit/spigot-1.13.2.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot13R1</artifactId>
-            <version>1.13-R0.1-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/craftbukkit/spigot-1.13.jar</systemPath>
+            <systemPath>${project.basedir}/craftbukkit/spigot-1.12.2.jar</systemPath>
         </dependency>
 
         <dependency>

@@ -12,7 +12,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
@@ -167,12 +166,7 @@ public abstract class AbstractDisplay {
                         frameLocation = shop.getChestLocation().clone().add(0,1,0);
                     }
 
-                    if(UtilMethods.isMCVersion17Plus() && Shop.getPlugin().getGlowingItemFrame()){
-                        spawnItemFramePacket(player, shop.getItemStack(), frameLocation, shop.getFacing(), true);
-                    }
-                    else {
-                        spawnItemFramePacket(player, shop.getItemStack(), frameLocation, shop.getFacing(), false);
-                    }
+                    spawnItemFramePacket(player, shop.getItemStack(), frameLocation, shop.getFacing(), false);
                     break;
             }
         }
@@ -192,13 +186,6 @@ public abstract class AbstractDisplay {
 
             //push the tag slightly closer to the front of the shop so it doesnt collide with the display and hide the text
             lowerTagLocation = UtilMethods.pushLocationInDirection(lowerTagLocation, this.getShop().getFacing(), 0.2);
-
-            Block displayBlock = lowerTagLocation.getBlock();
-            if(UtilMethods.isMCVersion14Plus() && this.isChunkLoaded()) {
-                if (displayBlock.getType() == Material.BARREL || displayBlock.getRelative(BlockFace.DOWN).getType() == Material.BARREL) {
-                    lowerTagLocation = lowerTagLocation.add(0, .25, 0);
-                }
-            }
 
             double verticalAddition = 0;
             //iterate through list backwards to build from bottom -> up
@@ -444,7 +431,7 @@ public abstract class AbstractDisplay {
 
     protected boolean playerIsViewingSign(Player player) {
         Block block = player.getTargetBlock(null, 8);
-        if (block.getBlockData() instanceof WallSign) {
+        if (block.getType() == Material.WALL_SIGN) {
             AbstractShop shopObj = Shop.getPlugin().getShopHandler().getShop(block.getLocation());
             if (shopObj != null) {
                 AbstractShop ownShopObj = Shop.getPlugin().getShopHandler().getShop(this.shopSignLocation);

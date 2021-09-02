@@ -1,14 +1,14 @@
 package com.snowgears.shop.display.version;
 
-import com.mojang.datafixers.util.Pair;
 import com.snowgears.shop.display.AbstractDisplay;
 import com.snowgears.shop.util.ArmorStandData;
-import net.minecraft.server.v1_16_R1.*;
+import net.minecraft.server.v1_12_R1.*;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_16_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_16_R1.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_16_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -17,30 +17,32 @@ import org.bukkit.util.EulerAngle;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class Display_1_16R1 extends AbstractDisplay {
+public class Display_1_12R1 extends AbstractDisplay {
 
-    public Display_1_16R1(Location shopSignLocation) {
+    public Display_1_12R1(Location shopSignLocation) {
         super(shopSignLocation);
     }
 
     @Override
     protected void spawnItemPacket(Player player, ItemStack is, Location location) {
 
-        net.minecraft.server.v1_16_R1.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(is);
+        net.minecraft.server.v1_12_R1.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(is);
         EntityItem entityItem = new EntityItem(((CraftWorld)location.getWorld()).getHandle(), location.getX(), location.getY(), location.getZ(), nmsItemStack);
         int entityID = entityItem.getId();
         this.entityIDs.add(entityID);
 
         entityItem.setItemStack(nmsItemStack);
         entityItem.setInvulnerable(true);
-        entityItem.setFireTicks(-1);
+        entityItem.setOnFire(-1);
         entityItem.setNoGravity(true);
-        entityItem.persist = true;
-        entityItem.setMot(new Vec3D(0.0D, 0.0D, 0.0D));
+        //entityItem.persist = true;
+        entityItem.motX = 0.0D;
+        entityItem.motY = 0.0D;
+        entityItem.motZ = 0.0D;
         entityItem.pickupDelay = 2147483647;
 
         PacketPlayOutEntityDestroy entityDestroyPacket = new PacketPlayOutEntityDestroy(new int[]{entityID});
-        PacketPlayOutSpawnEntity entitySpawnPacket = new PacketPlayOutSpawnEntity(entityItem);
+        PacketPlayOutSpawnEntity entitySpawnPacket = new PacketPlayOutSpawnEntity(entityItem, 2, 1);
         PacketPlayOutEntityVelocity entityVelocityPacket = new PacketPlayOutEntityVelocity(entityItem);
         PacketPlayOutEntityMetadata entityMetadataPacket = new PacketPlayOutEntityMetadata(entityID, entityItem.getDataWatcher(), true);
 
@@ -57,11 +59,12 @@ public class Display_1_16R1 extends AbstractDisplay {
         Location location = armorStandData.getLocation();
         WorldServer worldServer = ((CraftWorld) location.getWorld()).getHandle();
 
-        EntityArmorStand armorStand = new EntityArmorStand(EntityTypes.ARMOR_STAND, worldServer);
+        EntityArmorStand armorStand = new EntityArmorStand(worldServer, location.getX(), location.getY(), location.getZ());
         armorStand.setLocation(location.getX(), location.getY(), location.getZ(), (float)armorStandData.getYaw(), 0);
 
         if(text != null) {
-            armorStand.setCustomName(IChatBaseComponent.ChatSerializer.a("{\"text\": \"" + text + "\"}"));
+            armorStand.setCustomName(ChatColor.translateAlternateColorCodes('&', text));
+            //armorStand.setCustomName(IChatBaseComponent.ChatSerializer.a("{\"text\": \"" + text + "\"}"));
             this.addDisplayTag(player, armorStand.getId());
         }
         else{
@@ -83,7 +86,7 @@ public class Display_1_16R1 extends AbstractDisplay {
         armorStand.setNoGravity(true);
         armorStand.setInvulnerable(true);
         armorStand.setInvisible(true);
-        armorStand.persist = true;
+        //armorStand.persist = true;
         armorStand.collides = false;
 
         if(armorStandData.isSmall()) {
@@ -98,12 +101,11 @@ public class Display_1_16R1 extends AbstractDisplay {
         if(text == null){
             ArrayList equipmentList = new ArrayList();
             if(armorStandData.getEquipmentSlot() == EquipmentSlot.HAND){
-                equipmentList.add(new Pair(EnumItemSlot.MAINHAND, CraftItemStack.asNMSCopy(armorStandData.getEquipment())));
+                spawnEntityEquipmentPacket = new PacketPlayOutEntityEquipment(armorStand.getId(), EnumItemSlot.MAINHAND, CraftItemStack.asNMSCopy(armorStandData.getEquipment()));
             }
             else {
-                equipmentList.add(new Pair(EnumItemSlot.valueOf(armorStandData.getEquipmentSlot().toString()), CraftItemStack.asNMSCopy(armorStandData.getEquipment())));
+                spawnEntityEquipmentPacket = new PacketPlayOutEntityEquipment(armorStand.getId(), EnumItemSlot.valueOf(armorStandData.getEquipmentSlot().toString()), CraftItemStack.asNMSCopy(armorStandData.getEquipment()));
             }
-            spawnEntityEquipmentPacket = new PacketPlayOutEntityEquipment(armorStand.getId(), equipmentList);
         }
 
         sendPacket(player, spawnEntityLivingPacket);
@@ -117,15 +119,18 @@ public class Display_1_16R1 extends AbstractDisplay {
     protected void spawnItemFramePacket(Player player, ItemStack is, Location location, BlockFace facing, boolean isGlowing){
 
         WorldServer worldServer = ((CraftWorld) location.getWorld()).getHandle();
+        BlockPosition blockPosition = new BlockPosition(location.getX(), location.getY(), location.getZ());
 
-        EntityItemFrame itemFrame = new EntityItemFrame(EntityTypes.ITEM_FRAME, worldServer);
+        EntityItemFrame itemFrame = new EntityItemFrame(worldServer, blockPosition, EnumDirection.valueOf(facing.toString()));
         int entityID = itemFrame.getId();
         this.entityIDs.add(entityID);
         itemFrame.setLocation(location.getX(), location.getY(), location.getZ(),0f,0f);
         itemFrame.setItem(CraftItemStack.asNMSCopy(is));
         itemFrame.setDirection(EnumDirection.valueOf(facing.toString()));
+        itemFrame.setInvulnerable(true);
+        itemFrame.setNoGravity(true);
 
-        PacketPlayOutSpawnEntity entitySpawnPacket = new PacketPlayOutSpawnEntity(itemFrame); //do i need to specify 71 as additional argument for item frame here?
+        PacketPlayOutSpawnEntity entitySpawnPacket = new PacketPlayOutSpawnEntity(itemFrame, 71);
         PacketPlayOutEntityMetadata entityMetadataPacket = new PacketPlayOutEntityMetadata(entityID, itemFrame.getDataWatcher(), true);
 
         sendPacket(player, entitySpawnPacket);

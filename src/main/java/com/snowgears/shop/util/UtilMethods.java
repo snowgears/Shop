@@ -5,12 +5,10 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Directional;
-import org.bukkit.block.data.type.WallSign;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 
@@ -177,9 +175,9 @@ public class UtilMethods {
     // -1 - RIGHT SIDE
     // 0 - EXACT CENTER
     public static int calculateSideFromClickedSign(Player player, Block signBlock){
-        if(!(signBlock.getBlockData() instanceof WallSign))
+        if(!(signBlock.getType() == Material.WALL_SIGN))
             return 0;
-        WallSign s = (WallSign)signBlock.getBlockData();
+        org.bukkit.material.Sign s = (org.bukkit.material.Sign) signBlock.getState().getData();
         BlockFace attachedFace = s.getFacing().getOppositeFace();
         Location chest = signBlock.getRelative(attachedFace).getLocation().add(0.5,0.5,0.5);
         Location head = player.getLocation().add(0, player.getEyeHeight(), 0);
@@ -256,15 +254,6 @@ public class UtilMethods {
             return (int)(dur * 100);
         }
         return 100;
-    }
-
-    public static String getItemName(ItemStack is){
-        ItemMeta itemMeta = is.getItemMeta();
-
-        if (itemMeta.getDisplayName() == null || itemMeta.getDisplayName().isEmpty())
-            return capitalize(is.getType().name().replace("_", " ").toLowerCase());
-        else
-            return itemMeta.getDisplayName();
     }
 
     public static boolean stringStartsWithUUID(String name){
@@ -420,60 +409,20 @@ public class UtilMethods {
             if(!m.isSolid())
                 nonIntrusiveMaterials.add(m);
         }
-        try{
-            nonIntrusiveMaterials.add(Material.WARPED_WALL_SIGN);
-            nonIntrusiveMaterials.add(Material.ACACIA_WALL_SIGN);
-            nonIntrusiveMaterials.add(Material.BIRCH_WALL_SIGN);
-            nonIntrusiveMaterials.add(Material.CRIMSON_WALL_SIGN);
-            nonIntrusiveMaterials.add(Material.DARK_OAK_WALL_SIGN);
-            nonIntrusiveMaterials.add(Material.JUNGLE_WALL_SIGN);
-            nonIntrusiveMaterials.add(Material.OAK_WALL_SIGN);
-            nonIntrusiveMaterials.add(Material.SPRUCE_WALL_SIGN);
-        } catch(NoSuchFieldError e){
-            nonIntrusiveMaterials.add(Material.LEGACY_WALL_SIGN);
-        }
+        nonIntrusiveMaterials.add(Material.WALL_SIGN);
         nonIntrusiveMaterials.remove(Material.WATER);
         nonIntrusiveMaterials.remove(Material.LAVA);
         nonIntrusiveMaterials.remove(Material.FIRE);
-        nonIntrusiveMaterials.remove(Material.END_PORTAL);
-        nonIntrusiveMaterials.remove(Material.NETHER_PORTAL);
-        nonIntrusiveMaterials.remove(Material.SKELETON_SKULL);
-        nonIntrusiveMaterials.remove(Material.WITHER_SKELETON_SKULL);
-        nonIntrusiveMaterials.remove(Material.PLAYER_HEAD);
-        nonIntrusiveMaterials.remove(Material.CREEPER_HEAD);
-
-        try{ nonIntrusiveMaterials.add(Material.LIGHT); } catch(NoSuchFieldError e){}
+        nonIntrusiveMaterials.remove(Material.ENDER_PORTAL);
+        nonIntrusiveMaterials.remove(Material.PORTAL);
+        nonIntrusiveMaterials.remove(Material.SKULL);
     }
 
     public static BlockFace getDirectionOfChest(Block block){
-        if(block.getBlockData() instanceof Directional){
-            return ((Directional)block.getBlockData()).getFacing();
+        if(block.getState().getData() instanceof Directional){
+            return ((Directional)block.getState().getData()).getFacing();
         }
         return null;
-    }
-
-    //returns if Minecraft version 1.17 or above
-    public static boolean isMCVersion17Plus(){
-        //LIGHT only available in MC 1.17+
-        try {
-            if(Material.LIGHT != null)
-                return true;
-        } catch (NoSuchFieldError e) {
-            return false;
-        }
-        return false;
-    }
-
-    //returns if Minecraft version 1.14 or above
-    public static boolean isMCVersion14Plus(){
-        //LIGHT only available in MC 1.17+
-        try {
-            if(Material.BARREL != null)
-                return true;
-        } catch (NoSuchFieldError e) {
-            return false;
-        }
-        return false;
     }
 
     //this takes a dirty (pre-cleaned) string and finds how much to multiply the final by

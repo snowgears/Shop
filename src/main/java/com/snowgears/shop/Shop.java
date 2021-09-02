@@ -347,6 +347,9 @@ public class Shop extends JavaPlugin {
         guiHandler.loadIconsAndTitles();
         enderChestHandler = new EnderChestHandler(plugin);
 
+        //TODO just trying out the service manager for API access
+        //this.getServer().getServicesManager().register(ShopHandlerInterface.class, shopHandler, plugin, ServicePriority.High);
+
         getServer().getPluginManager().registerEvents(displayListener, this);
         getServer().getPluginManager().registerEvents(shopListener, this);
         getServer().getPluginManager().registerEvents(transactionListener, this);

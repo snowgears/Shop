@@ -16,8 +16,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 
 import java.io.File;
 import java.io.IOException;
@@ -91,7 +89,7 @@ public class ShopGuiHandler {
             }
             else{
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerUUID);
-                playerHead = new ItemStack(Material.PLAYER_HEAD);
+                playerHead = new ItemStack(Material.SKULL_ITEM, 1, (short)3);
                 itemMeta = playerHead.getItemMeta();
 
                 //System.out.println("[Shop] player was not null. Adding owning player to icon skin");
@@ -122,11 +120,10 @@ public class ShopGuiHandler {
             lore.add(ShopMessage.formatMessage(loreLine, null, null, false));
         }
 
+        lore.add(ChatColor.GRAY+""+playerUUID.toString());
+
         itemMeta.setDisplayName(name);
         itemMeta.setLore(lore);
-
-        PersistentDataContainer container = itemMeta.getPersistentDataContainer();
-        container.set(Shop.getPlugin().getPlayerUUIDNameSpacedKey(), PersistentDataType.STRING, playerUUID.toString());
 
         playerHead.setItemMeta(itemMeta);
 
@@ -244,6 +241,11 @@ public class ShopGuiHandler {
             String type = config.getString("icons."+parentKey+"."+childKey+".type");
             String name = config.getString("icons."+parentKey+"."+childKey+".name");
 
+            int data = -1;
+            try{
+                data = config.getInt("icons."+parentKey+"."+childKey+".data");
+            } catch(Exception e){}
+
             if(name != null && translateColors)
                 name = ChatColor.translateAlternateColorCodes('&', name);
 
@@ -260,21 +262,24 @@ public class ShopGuiHandler {
 
             ItemStack icon = null;
             if(type != null) {
-                icon = new ItemStack(Material.valueOf(type.toUpperCase()));
+                if(data != -1)
+                    icon = new ItemStack(Material.valueOf(type.toUpperCase()), 1, (byte)data);
+                else
+                    icon = new ItemStack(Material.valueOf(type.toUpperCase()));
             }
             else if(childKey.equals("set_gamble")){
                 icon = plugin.getGambleDisplayItem().clone();
             }
             else if(parentKey.equals("list")){
                 if(childKey.equals("player")) {
-                    icon = new ItemStack(Material.PLAYER_HEAD, 1, (short) 3);
+                    icon = new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
                 }
             }
             else if(childKey.equals("shop_icon")){
                 icon = new ItemStack(Material.DIRT); // just a placeholder. will replace with the item shop is selling later
             }
             else if(childKey.equals("player_icon")){
-                icon = new ItemStack(Material.PLAYER_HEAD); // just a placeholder. will replace with the player head of shop later
+                icon = new ItemStack(Material.SKULL_ITEM, 1, (short)3); // just a placeholder. will replace with the player head of shop later
             }
 
             if(icon != null) {

@@ -60,12 +60,14 @@ icons:
          lore:
             - "&7Search for a specific player or item."
       last_page:
-         type: "RED_STAINED_GLASS_PANE"
+         type: "STAINED_GLASS_PANE"
+         data: 14
          name: "Previous Page"
          lore:
             - "&7Go back."
       next_page:
-         type: "RED_STAINED_GLASS_PANE"
+         type: "STAINED_GLASS_PANE"
+         data: 14
          name: "Next Page"
          lore:
             - "&7Go forward."
@@ -77,8 +79,9 @@ icons:
             - "&7List all shops"
             - "&7you own on the server."
       list_players:
-         type: "PLAYER_HEAD"
+         type: "SKULL_ITEM"
          name: "Player Shops"
+         data: 3
          lore:
             - "&7List all players"
             - "&7with shops on the server."
@@ -88,49 +91,55 @@ icons:
          lore:
             - "&7Find a shop by an item"
       settings:
-         type: "GOLDEN_AXE"
+         type: "GOLD_AXE"
          name: "Settings"
          lore:
             - "&7Change your shop"
             - "&7notification settings."
       commands:
-         type: "ENCHANTING_TABLE"
+         type: "ENCHANTMENT_TABLE"
          name: "Commands"
          lore:
             - "&7Run commands available to operators."
    settings:
       notify_owner_on:
-         type: "LIME_WOOL"
+         type: "WOOL"
+         data: 5
          name: "Sales Notifications (owner)"
          lore:
             - "&7You will be notified"
             - "&7when players purchase from your shops."
       notify_owner_off:
-         type: "RED_WOOL"
+         type: "WOOL"
+         data: 14
          name: "Sales Notifications (owner)"
          lore:
             - "&7You will not be notified"
             - "&7when players purchase from your shops."
       notify_user_on:
-         type: "LIME_WOOL"
+         type: "WOOL"
+         data: 5
          name: "Sales Notifications (user)"
          lore:
             - "&7You will be notified"
             - "&7when you make purchases from shops."
       notify_user_off:
-         type: "RED_WOOL"
+         type: "WOOL"
+         data: 14
          name: "Sales Notifications (user)"
          lore:
             - "&7You will not be notified"
             - "&7when you make purchases from shops."
       notify_stock_on:
-         type: "LIME_WOOL"
+         type: "WOOL"
+         data: 5
          name: "Stock Notifications (owner)"
          lore:
             - "&7You will be notified"
             - "&7when your shops run out of stock or space."
       notify_stock_off:
-         type: "RED_WOOL"
+         type: "WOOL"
+         data: 14
          name: "Stock Notifications (owner)"
          lore:
             - "&7You will not be notified"
@@ -160,7 +169,7 @@ icons:
             - "&7Refresh all of the"
             - "&7shop displays on the server."
       reload:
-         type: "COBWEB"
+         type: "WEB"
          name: "Reload Plugin"
          lore:
             - "&7Reload the shop plugin."

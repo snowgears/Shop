@@ -10,10 +10,8 @@ import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.util.WorldGuardHook;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -78,7 +76,7 @@ public class ShopListener implements Listener {
         } catch (NoSuchMethodError error) {}
 
         if(event.getAction() == Action.RIGHT_CLICK_BLOCK){
-            if(event.getClickedBlock().getBlockData() instanceof WallSign){
+            if(event.getClickedBlock().getType() == Material.WALL_SIGN){
                 AbstractShop shop = plugin.getShopHandler().getShop(event.getClickedBlock().getLocation());
                 if (shop == null || !shop.isInitialized())
                     return;
@@ -137,7 +135,7 @@ public class ShopListener implements Listener {
                     return;
                 }
 
-                if((!plugin.getShopHandler().isChest(shop.getChestLocation().getBlock())) || !(shop.getSignLocation().getBlock().getBlockData() instanceof WallSign)){
+                if((!plugin.getShopHandler().isChest(shop.getChestLocation().getBlock())) || !(shop.getSignLocation().getBlock().getType() == Material.WALL_SIGN)){
                     shop.delete();
                     return;
                 }
@@ -153,7 +151,7 @@ public class ShopListener implements Listener {
                 //player is sneaking and clicks a chest of a shop
                 if(player.isSneaking()){
                     //don't print sales info and cancel event if player is holding a sign (may be trying to place directly onto chest)
-                    if(!Tag.SIGNS.isTagged(player.getInventory().getItemInMainHand().getType())) {
+                    if(player.getInventory().getItemInMainHand().getType() != Material.SIGN) {
                         shop.printSalesInfo(player);
                         event.setCancelled(true);
                         if(plugin.getDisplayTagOption() == DisplayTagOption.RIGHT_CLICK_CHEST){
@@ -214,7 +212,7 @@ public class ShopListener implements Listener {
         while (blockIterator.hasNext()) {
 
             Block block = blockIterator.next();
-            if (Tag.WALL_SIGNS.isTagged(block.getType())) {
+            if (block.getType() == Material.WALL_SIGN) {
                 shop = plugin.getShopHandler().getShop(block.getLocation());
             } else if (plugin.getShopHandler().isChest(block)) {
                 shop = plugin.getShopHandler().getShopByChest(block);

@@ -7,8 +7,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.Damageable;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -130,22 +128,13 @@ public class InventoryUtils {
         if(i1.getType() != i2.getType())
             return false;
 
-        ItemMeta i1Meta = i1.getItemMeta();
-        ItemMeta i2Meta = i2.getItemMeta();
         //only have the option to ignore durability if the item can be damaged
-        if(i1Meta instanceof Damageable) {
-            Damageable i1Damagable = (Damageable)i1Meta;
-            Damageable i2Damagable = (Damageable)i2Meta;
-
-            if (!Shop.getPlugin().checkItemDurability() && i1Damagable.getDamage() != i2Damagable.getDamage()) {
+        if(i1.getType().getMaxDurability() != 0) {
+            if (!Shop.getPlugin().checkItemDurability() && i1.getDurability() != i2.getDurability()) {
                 ItemStack itemStack1 = i1.clone();
                 ItemStack itemStack2 = i2.clone();
 
-                ItemMeta is1 = itemStack1.getItemMeta();
-                Damageable is1Damagable = (Damageable)is1;
-                is1Damagable.setDamage(i2Damagable.getDamage());
-                itemStack1.setItemMeta((ItemMeta)is1Damagable);
-
+                itemStack1.setDurability(i2.getDurability());
                 return itemStack1.isSimilar(itemStack2);
             }
         }
@@ -159,13 +148,13 @@ public class InventoryUtils {
 //                return true;
 //        }
 
-        //fix NBT attributes for cached older items to be compatible with Spigot serializer updates
-        if (i1Meta != null && i2Meta != null && i1Meta.hasAttributeModifiers() && i2Meta.hasAttributeModifiers()) {
-            i1Meta.setAttributeModifiers(i1Meta.getAttributeModifiers());
-            i2Meta.setAttributeModifiers(i2Meta.getAttributeModifiers());
-            i1.setItemMeta(i1Meta);
-            i2.setItemMeta(i2Meta);
-        }
+//        //fix NBT attributes for cached older items to be compatible with Spigot serializer updates
+//        if (i1Meta != null && i2Meta != null && i1Meta.hasAttributeModifiers() && i2Meta.hasAttributeModifiers()) {
+//            i1Meta.setAttributeModifiers(i1Meta.getAttributeModifiers());
+//            i2Meta.setAttributeModifiers(i2Meta.getAttributeModifiers());
+//            i1.setItemMeta(i1Meta);
+//            i2.setItemMeta(i2Meta);
+//        }
 
         return i1.isSimilar(i2);
     }

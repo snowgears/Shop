@@ -8,6 +8,7 @@ import com.snowgears.shop.util.PlayerSettings;
 import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.util.UtilMethods;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -15,8 +16,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataType;
 
+import java.util.List;
 import java.util.UUID;
 
 public class ShopGUIListener implements Listener {
@@ -116,40 +117,45 @@ public class ShopGUIListener implements Listener {
                         //ItemStack playerIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.LIST_PLAYER, null, null); //for some reason this is returning null
                         //ItemStack adminPlayerIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.LIST_PLAYER_ADMIN, null, null);
 
-                        String playerUUIDString = clicked.getItemMeta().getPersistentDataContainer().get(plugin.getPlayerUUIDNameSpacedKey(), PersistentDataType.STRING);
-                        UUID uuid;
-                        try {
-                            uuid = UUID.fromString(playerUUIDString);
-                        }catch(IllegalArgumentException e){
+                        List<String> headLore = clicked.getItemMeta().getLore();
+                        if(headLore != null && !headLore.isEmpty()) {
+                            String playerUUIDString = ChatColor.stripColor(headLore.get(headLore.size()-1));
+                            UUID uuid;
+                            try {
+                                uuid = UUID.fromString(playerUUIDString);
+                            } catch (IllegalArgumentException e) {
+                                return;
+                            }
+
+                            ListShopsWindow shopsWindow = new ListShopsWindow(player.getUniqueId(), uuid);
+                            shopsWindow.setPrevWindow(window);
+                            plugin.getGuiHandler().setWindow(player, shopsWindow);
                             return;
                         }
-
-                        ListShopsWindow shopsWindow = new ListShopsWindow(player.getUniqueId(), uuid);
-                        shopsWindow.setPrevWindow(window);
-                        plugin.getGuiHandler().setWindow(player, shopsWindow);
-                        return;
                     }
                     else if(window instanceof ListShopsWindow || window instanceof ListSearchResultsWindow){
 
-                        String signLocation = clicked.getItemMeta().getPersistentDataContainer().get(plugin.getSignLocationNameSpacedKey(), PersistentDataType.STRING);
-                        if(signLocation != null){
-                            Location loc = UtilMethods.getLocation(signLocation);
-                            AbstractShop shop = plugin.getShopHandler().getShop(loc);
+                        List<String> shopIconLore = clicked.getItemMeta().getLore();
+                        if(shopIconLore != null && !shopIconLore.isEmpty()) {
+                            String signLocation = ChatColor.stripColor(shopIconLore.get(shopIconLore.size()-1));
+                            if (signLocation != null) {
+                                Location loc = UtilMethods.getLocation(signLocation);
+                                AbstractShop shop = plugin.getShopHandler().getShop(loc);
 
-                            if(shop != null){
-                                if(Shop.getPlugin().usePerms()){
-                                    if(player.hasPermission("shop.operator") || player.hasPermission("shop.gui.teleport")){
-                                        shop.teleportPlayer(player);
-                                        plugin.getGuiHandler().closeWindow(player);
+                                if (shop != null) {
+                                    if (Shop.getPlugin().usePerms()) {
+                                        if (player.hasPermission("shop.operator") || player.hasPermission("shop.gui.teleport")) {
+                                            shop.teleportPlayer(player);
+                                            plugin.getGuiHandler().closeWindow(player);
+                                        }
+                                    } else {
+                                        if (player.isOp()) {
+                                            shop.teleportPlayer(player);
+                                            plugin.getGuiHandler().closeWindow(player);
+                                        }
                                     }
+                                    return;
                                 }
-                                else{
-                                    if(player.isOp()){
-                                        shop.teleportPlayer(player);
-                                        plugin.getGuiHandler().closeWindow(player);
-                                    }
-                                }
-                                return;
                             }
                         }
                     }

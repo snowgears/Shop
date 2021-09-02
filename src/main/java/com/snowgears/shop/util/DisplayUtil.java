@@ -1,11 +1,9 @@
 package com.snowgears.shop.util;
 
-import com.snowgears.shop.Shop;
 import com.snowgears.shop.display.AbstractDisplay;
-import com.snowgears.shop.display.version.*;
+import com.snowgears.shop.display.version.Display_1_12R1;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -14,9 +12,8 @@ import org.bukkit.entity.Item;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.EulerAngle;
+
 
 public class DisplayUtil {
 
@@ -141,7 +138,7 @@ public class DisplayUtil {
         if(isHeldBlock(type)){
             return EquipmentSlot.HAND;
         }
-        else if(sType.contains("_HELMET") || type == Material.PLAYER_HEAD || type.isBlock()){
+        else if(sType.contains("_HELMET") || type == Material.SKULL_ITEM || type.isBlock()){
             return EquipmentSlot.HEAD;
         }
         else if(sType.contains("_CHESTPLATE") || type == Material.ELYTRA){
@@ -196,22 +193,22 @@ public class DisplayUtil {
                     switch (facing){
                         case NORTH:
                             standLocation = blockLocation.clone().add(0.7, -1.3, 0.6);
-                            if(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)
+                            if(material == Material.FISHING_ROD || material == Material.CARROT_STICK)
                                 standLocation = standLocation.add(rodOffset, 0, 0);
                             break;
                         case EAST:
                             standLocation = blockLocation.clone().add(0.425, -1.3, 0.7);
-                            if(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)
+                            if(material == Material.FISHING_ROD || material == Material.CARROT_STICK)
                                 standLocation = standLocation.add(0, 0, rodOffset);
                             break;
                         case SOUTH:
                             standLocation = blockLocation.clone().add(0.3, -1.3, 0.42);
-                            if(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)
+                            if(material == Material.FISHING_ROD || material == Material.CARROT_STICK)
                                 standLocation = standLocation.add(-rodOffset, 0, 0);
                             break;
                         case WEST:
                             standLocation = blockLocation.clone().add(0.6, -1.3, 0.3);
-                            if(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)
+                            if(material == Material.FISHING_ROD || material == Material.CARROT_STICK)
                                 standLocation = standLocation.add(0, 0, -rodOffset);
                             break;
                     }
@@ -229,22 +226,6 @@ public class DisplayUtil {
                             break;
                         case WEST:
                             standLocation = blockLocation.clone().add(0.85, -0.8, 0);
-                            break;
-                    }
-                }
-                else if(UtilMethods.isMCVersion14Plus() && material == Material.CROSSBOW){
-                    switch (facing){
-                        case NORTH:
-                            standLocation = blockLocation.clone().add(0.25, -1.6, 0.44);
-                            break;
-                        case EAST:
-                            standLocation = blockLocation.clone().add(0.6, -1.6, 0.25);
-                            break;
-                        case SOUTH:
-                            standLocation = blockLocation.clone().add(0.8, -1.6, 0.6);
-                            break;
-                        case WEST:
-                            standLocation = blockLocation.clone().add(0.4, -1.6, 0.75);
                             break;
                     }
                 }
@@ -345,16 +326,13 @@ public class DisplayUtil {
                 isShield = true;
         } catch (NoSuchFieldError e) {}
 
-        if(isTool(material) && !(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)){
+        if(isTool(material) && !(material == Material.FISHING_ROD || material == Material.CARROT_STICK)){
             return toolAngle;
         }
         else if(material == Material.BOW){
             return bowAngle;
         }
-        else if(UtilMethods.isMCVersion14Plus() && material == Material.CROSSBOW){
-            return crossBowAngle;
-        }
-        else if(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK){
+        else if(material == Material.FISHING_ROD || material == Material.CARROT_STICK){
             return rodAngle;
         }
         else if(isShield){
@@ -398,7 +376,7 @@ public class DisplayUtil {
 
     public static boolean isHeldNonItem(Material material){
         String sType = material.toString().toUpperCase();
-        if(isTool(material) || sType.contains("SWORD") || material == Material.BOW || material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK || material == Material.CROSSBOW)
+        if(isTool(material) || sType.contains("SWORD") || material == Material.BOW || material == Material.FISHING_ROD || material == Material.CARROT_STICK)
             return true;
         return false;
     }
@@ -408,7 +386,7 @@ public class DisplayUtil {
         return (sMaterial.contains("_AXE") || sMaterial.contains("_HOE") || sMaterial.contains("_PICKAXE")
                 || sMaterial.contains("_SPADE") || sMaterial.contains("_SWORD")
                 || material == Material.BONE || material == Material.STICK  || material == Material.BLAZE_ROD
-                || material == Material.CARROT_ON_A_STICK || material == Material.FISHING_ROD);
+                || material == Material.CARROT_STICK || material == Material.FISHING_ROD);
     }
 
     public static boolean isChest(Material material){
@@ -418,12 +396,12 @@ public class DisplayUtil {
 
     public static boolean isFence(Material material){
         String sMaterial = material.toString().toUpperCase();
-        return (sMaterial.contains("FENCE") && (material != Material.IRON_BARS) && !sMaterial.contains("GATE"));
+        return (sMaterial.contains("FENCE") && (material != Material.IRON_FENCE) && !sMaterial.contains("GATE"));
     }
 
     public static boolean isArmor(Material material){
         String sMaterial = material.toString().toUpperCase();
-        if(material == Material.PLAYER_HEAD){
+        if(material == Material.SKULL_ITEM){
             return true;
         }
         else if(sMaterial.contains("_BOOTS") || sMaterial.contains("_CHESTPLATE") || sMaterial.contains("_LEGGINGS") || sMaterial.contains("HELMET")){
@@ -439,23 +417,24 @@ public class DisplayUtil {
             switch (material) {
                 case LADDER:
                 case VINE:
-                case RAIL:
+                case RAILS:
                 case POWERED_RAIL:
                 case ACTIVATOR_RAIL:
                 case DETECTOR_RAIL:
                 case TRIPWIRE_HOOK:
                 case LEVER:
                 case TORCH:
-                case COBWEB:
-                case TALL_GRASS:
+                case WEB:
+                case LONG_GRASS:
                 case DEAD_BUSH:
-                case POPPY:
-                case DANDELION:
+                case RED_ROSE:
+                case YELLOW_FLOWER:
                 case BROWN_MUSHROOM:
                 case RED_MUSHROOM:
-                case REDSTONE_TORCH:
-                case IRON_BARS:
-                case LILY_PAD:
+                case REDSTONE_TORCH_ON:
+                case REDSTONE_TORCH_OFF:
+                case IRON_FENCE:
+                case WATER_LILY:
                 case HOPPER:
                 case BARRIER:
                 case CHORUS_PLANT:
@@ -484,43 +463,11 @@ public class DisplayUtil {
     }
 
     public static AbstractDisplay getDisplayForNMSVersion(Location signLocation){
-        switch(Shop.getPlugin().getNmsBullshitHandler().getNmsVersion()){
-            case "1_13_R1":
-                return new Display_1_13R1(signLocation);
-            case "1_13_R2":
-                return new Display_1_13R2(signLocation);
-            case "1_14_R1":
-                return new Display_1_14R1(signLocation);
-            case "1_15_R1":
-                return new Display_1_15R1(signLocation);
-            case "1_16_R1":
-                return new Display_1_16R1(signLocation);
-            case "1_16_R2":
-                return new Display_1_16R2(signLocation);
-            case "1_16_R3":
-                return new Display_1_16R3(signLocation);
-                default:
-                    return new Display_1_17R1(signLocation);
-        }
+        return new Display_1_12R1(signLocation);
     }
 
     public static boolean isDisplay(Entity entity){
-        boolean foundLegacy = isDisplayLegacy(entity);
-        if(foundLegacy)
-            return true;
-        if(UtilMethods.isMCVersion14Plus()) {
-            PersistentDataContainer persistentData = entity.getPersistentDataContainer();
-            if (persistentData != null) {
-                try {
-                    int dataDisplay = persistentData.get(new NamespacedKey(Shop.getPlugin(), "display"), PersistentDataType.INTEGER);
-                    return (dataDisplay == 1);
-                } catch (NullPointerException e) {
-                    return false;
-                }
-            }
-            return false;
-        }
-        return false;
+        return isDisplayLegacy(entity);
     }
 
     private static boolean isDisplayLegacy(Entity entity){

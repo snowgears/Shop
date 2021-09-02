@@ -12,12 +12,8 @@ import com.snowgears.shop.shop.ShopType;
 import com.snowgears.shop.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.Tag;
 import org.bukkit.block.*;
 import org.bukkit.block.data.Directional;
-import org.bukkit.block.data.Rotatable;
-import org.bukkit.block.data.type.Light;
-import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -31,6 +27,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.MaterialData;
 
 import java.util.ArrayList;
 
@@ -53,7 +50,7 @@ public class MiscListener implements Listener {
 
         Block b = event.getBlockClicked();
 
-        if (b.getBlockData() instanceof WallSign) {
+        if (b.getType() == Material.WALL_SIGN) {
             AbstractShop shop = plugin.getShopHandler().getShop(b.getLocation());
             if (shop != null)
                 event.setCancelled(true);
@@ -73,24 +70,14 @@ public class MiscListener implements Listener {
 
         if(!(b.getState() instanceof Sign))
             return;
-
         BlockFace signDirection = null;
         Block chest = null;
-        if(b.getBlockData() instanceof WallSign) {
-            signDirection = ((WallSign) b.getBlockData()).getFacing();
-            chest = b.getRelative(signDirection.getOppositeFace());
-        }
-        else if(b.getBlockData() instanceof Rotatable){ //regular sign post
-            signDirection = ((Rotatable) b.getBlockData()).getRotation();
-            //adjust the sign direction to cordinal direction if its not already one
-            if( signDirection.toString().indexOf('_') != -1) {
-                String adjustedDirString = signDirection.toString().substring(0, signDirection.toString().indexOf('_'));
-                signDirection = BlockFace.valueOf(adjustedDirString);
-            }
-            chest = b.getRelative(signDirection.getOppositeFace());
-        }
+        final org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData(); //TODO for some reason this has thrown cast errors
+
+        if (sign.isWallSign())
+            chest = b.getRelative(sign.getAttachedFace());
         else
-            return;
+            chest = b.getRelative(sign.getFacing().getOppositeFace());
 
         double price = 0;
         double priceCombo = 0;
@@ -299,16 +286,18 @@ public class MiscListener implements Listener {
                     }
 
 
-                    if (!(b.getBlockData() instanceof WallSign)) {
+                    if (!(b.getType() == Material.WALL_SIGN)) {
                         if (!b.getType().toString().contains("_SIGN")) {
                             return;
                         }
                         String wallSignString = b.getType().toString().replaceAll("_SIGN", "_WALL_SIGN");
                         b.setType(Material.valueOf(wallSignString));
 
-                        Directional wallSignData = (Directional) b.getBlockData();
+                        Directional wallSignData = (Directional) b.getState().getData();
                         wallSignData.setFacing(signDirection);
-                        b.setBlockData(wallSignData);
+                        //b.setBlockData(wallSignData);
+                        b.getState().setData((MaterialData)wallSignData);
+                        b.getState().update();
                     }
                     signBlock.update();
 
@@ -320,14 +309,6 @@ public class MiscListener implements Listener {
 
                     if (e.isCancelled())
                         return;
-
-                    if(UtilMethods.isMCVersion17Plus() && plugin.getDisplayLightLevel() > 0) {
-                        Block displayBlock = shop.getChestLocation().getBlock().getRelative(BlockFace.UP);
-                        displayBlock.setType(Material.LIGHT);
-                        Light data = (Light) displayBlock.getBlockData();
-                        data.setLevel(plugin.getDisplayLightLevel());
-                        displayBlock.setBlockData(data);
-                    }
 
                     if (type == ShopType.GAMBLE) {
                         shop.setItemStack(plugin.getGambleDisplayItem());
@@ -363,7 +344,7 @@ public class MiscListener implements Listener {
                             //the shop has still not been initialized with an item from a player
                             if (!shop.isInitialized()) {
                                 plugin.getShopHandler().removeShop(shop);
-                                if (b.getBlockData() instanceof WallSign) {
+                                if (b.getType() == Material.WALL_SIGN) {
                                     String[] lines = ShopMessage.getTimeoutSignLines(shop);
                                     Sign sign = (Sign) b.getState();
                                     sign.setLine(0, lines[0]);
@@ -397,7 +378,7 @@ public class MiscListener implements Listener {
         if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
             final Block clicked = event.getClickedBlock();
 
-            if (clicked.getBlockData() instanceof WallSign) {
+            if (clicked.getType() == Material.WALL_SIGN) {
                 AbstractShop shop = plugin.getShopHandler().getShop(clicked.getLocation());
                 if (shop == null) {
                     return;
@@ -455,16 +436,6 @@ public class MiscListener implements Listener {
                 }
 
                 ItemStack shopItem = player.getInventory().getItemInMainHand();
-
-                try {
-                    //stop the edge case of shulker boxes being able to be used in shulker chests
-                    if (Tag.SHULKER_BOXES.isTagged(shopItem.getType())) {
-                        if (shop.getChestLocation().getBlock().getState() instanceof ShulkerBox) {
-                            event.setCancelled(true);
-                            return;
-                        }
-                    }
-                } catch (NoSuchFieldError e) {}
 
                 if (shop.getItemStack() == null) {
 
@@ -536,7 +507,7 @@ public class MiscListener implements Listener {
         //refresh the shop display even if the event was cancelled as sometimes items can bug out and fall through chest
         if (event.isCancelled()) {
             Block b = event.getBlock();
-            if (b.getBlockData() instanceof WallSign) {
+            if (b.getType() == Material.WALL_SIGN) {
                 AbstractShop shop = plugin.getShopHandler().getShop(b.getLocation());
                 if (shop != null) {
                     if (shop.getDisplay().getType() == DisplayType.ITEM) {
@@ -550,7 +521,7 @@ public class MiscListener implements Listener {
         Block b = event.getBlock();
         Player player = event.getPlayer();
 
-        if (b.getBlockData() instanceof WallSign) {
+        if (b.getType() == Material.WALL_SIGN) {
             AbstractShop shop = plugin.getShopHandler().getShop(b.getLocation());
             if (shop == null)
                 return;

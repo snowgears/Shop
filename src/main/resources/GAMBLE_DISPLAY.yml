@@ -4,10 +4,10 @@
 
 GAMBLE_DISPLAY:
   ==: org.bukkit.inventory.ItemStack
-  v: 2567
-  type: PLAYER_HEAD
+  type: SKULL_ITEM
+  damage: 3
   meta:
     ==: ItemMeta
     meta-type: SKULL
     display-name: Random Item
-    internal: H4sIAAAAAAAAAE3OPU7DMBjG8RcEUkm5CJurkKAOHSqCWoe+LkndpM7WD5cktUPVJlWdG7BzEHYkVo7AzoaEOAMZGR/9f8NjAVhwOdlUSj3sntaZkm04pSsAOPv4fn97/uq3Xz6936v7H2aB1ZCt3JWZ3F9Aq5THstrJvdXgkxacR3NVSXiVxifJLCWrma+WhrrN5hOixjTf3tAiMotb6lLd9GHfHZnuP+uU89hRwvbTpAiqhY7IyA6VHIadpZ4e2IA6qFnGPKyxZqngwmCMNg4ileShElqYMVeZ4MERNSXMS3TC70zCkWDMclFPr1GLGvnGIH90aNHproNer3kPf4H6QngGAQAA
+    internal: H4sIAAAAAAAAAE2PzWqDQBzE/y0UrPQxehXWjzV4yCFUIbtErYmarLeoK7rZtcFoE/tcfcB67GEYht/MYXQAHd4Ol0nKz+Gr6STX4JnU8I44slcetgzPq0rDcT1klDbCBm8s3LgVN00L66Avoysfxo7fXkEb+WOcBn7TAeBJg5f8LCcOv3ymqDi1qD5RWc3EXXJ6QDIm4roifT6XH8QlauHbjbubvX9dPJ6PWDKbtkWfTKXK0c7eS77dm5XKvpmIuugnuDOxcZjI5tCiHUtrWSjahn4tIkEwU8E99i8mOyZWmAZzpJJFoRMpKplY3M+s0I/aOK1QKApBetNrkvV6eQB/IuRRgxwBAAA=
