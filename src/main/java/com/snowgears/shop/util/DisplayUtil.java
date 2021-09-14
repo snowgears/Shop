@@ -1,7 +1,8 @@
 package com.snowgears.shop.util;
 
+import com.snowgears.shop.Shop;
 import com.snowgears.shop.display.AbstractDisplay;
-import com.snowgears.shop.display.version.Display_1_12R1;
+import com.snowgears.shop.display.version.*;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
@@ -437,11 +438,17 @@ public class DisplayUtil {
                 case WATER_LILY:
                 case HOPPER:
                 case BARRIER:
-                case CHORUS_PLANT:
-                case STRUCTURE_VOID:
-                case END_ROD:
                     return true;
             }
+
+            try {
+                switch (material) {
+                    case CHORUS_PLANT:
+                    case STRUCTURE_VOID:
+                    case END_ROD:
+                        return true;
+                }
+            } catch(NoSuchFieldError e){ }
         }
         return false;
     }
@@ -463,7 +470,18 @@ public class DisplayUtil {
     }
 
     public static AbstractDisplay getDisplayForNMSVersion(Location signLocation){
-        return new Display_1_12R1(signLocation);
+        switch(Shop.getPlugin().getNmsBullshitHandler().getNmsVersion()){
+            case "1_12_R1":
+                return new Display_1_12R1(signLocation);
+            case "1_11_R1":
+                return new Display_1_11R1(signLocation);
+            case "1_10_R1":
+                return new Display_1_10R1(signLocation);
+            case "1_9_R2":
+                return new Display_1_9R2(signLocation);
+            default:
+                return new Display_1_8R3(signLocation);
+        }
     }
 
     public static boolean isDisplay(Entity entity){
@@ -475,6 +493,10 @@ public class DisplayUtil {
             if (entity.getType() == EntityType.DROPPED_ITEM) {
                 ItemMeta itemMeta = ((Item) entity).getItemStack().getItemMeta();
                 if (itemMeta != null && UtilMethods.containsLocation(itemMeta.getDisplayName())) {
+                    return true;
+                }
+                //even more of a legacy check
+                else if(itemMeta != null && UtilMethods.stringStartsWithUUID(itemMeta.getDisplayName())) {
                     return true;
                 }
             } else if (entity.getType() == EntityType.ARMOR_STAND) {

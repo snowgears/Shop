@@ -78,7 +78,7 @@ public class CreativeSelectionListener implements Listener {
                     return;
                 }
 
-                if (player.getInventory().getItemInMainHand().getType() == Material.AIR) {
+                if (player.getInventory().getItemInHand().getType() == Material.AIR) {
                     if (shop.getType() == ShopType.SELL) {
                         message = ShopMessage.getMessage("interactionIssue", "noItem", shop, player);
                         if(message != null && !message.isEmpty())

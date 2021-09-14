@@ -14,12 +14,9 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 
@@ -358,21 +355,62 @@ public class ShopHandler {
     }
 
     public void removeLegacyDisplays(){
-        for (World world : plugin.getServer().getWorlds()) {
-            for (Entity entity : world.getEntities()) {
-                if(DisplayUtil.isDisplay(entity)){
-                    entity.remove();
-                }
-                //make to sure to clear items from old version of plugin too
-                else if (entity.getType() == EntityType.DROPPED_ITEM) {
-                    ItemMeta itemMeta = ((Item) entity).getItemStack().getItemMeta();
-                    if (UtilMethods.stringStartsWithUUID(itemMeta.getDisplayName())) {
-                        entity.remove();
+        for (UUID ownerUUID : plugin.getShopHandler().getShopOwnerUUIDs()) {
+            for (AbstractShop shop : plugin.getShopHandler().getShops(ownerUUID)) {
+                if(shop.getDisplay().isChunkLoaded()) {
+                    for (Entity entity : shop.getSignLocation().getWorld().getNearbyEntities(shop.getSignLocation(), 2, 2, 2)) {
+                        if(DisplayUtil.isDisplay(entity)) {
+                            System.out.println("[Shop] removed legacy display at "+UtilMethods.getCleanLocation(entity.getLocation(), true));
+                            entity.remove();
+                        }
                     }
+                }
+                //chunk shop is in is not loaded
+                else {
+                    shop.getSignLocation().getWorld().getChunkAt(shop.getSignLocation()).load();
+                    for (Entity entity : shop.getSignLocation().getWorld().getNearbyEntities(shop.getSignLocation(), 2, 2, 2)) {
+                        if (DisplayUtil.isDisplay(entity)) {
+                            System.out.println("[Shop] removed legacy display at "+UtilMethods.getCleanLocation(entity.getLocation(), true));
+                            entity.remove();
+                        }
+                    }
+                    shop.getSignLocation().getWorld().getChunkAt(shop.getSignLocation()).unload();
                 }
             }
         }
     }
+
+    //TODO boolean includeUnloadedChunks?
+//    public void removeLegacyDisplays(){
+//        for (World world : plugin.getServer().getWorlds()) {
+//            for (Entity entity : world.getEntities()) {
+//                if(DisplayUtil.isDisplay(entity)){
+//                    if(!entity.getWorld().getChunkAt(entity.getLocation()).isLoaded()){
+//                        entity.getWorld().getChunkAt(entity.getLocation()).load();
+//                        entity.remove();
+//                        entity.getWorld().getChunkAt(entity.getLocation()).unload();
+//                    }
+//                    else {
+//                        entity.remove();
+//                    }
+//                }
+//                //make to sure to clear items from old version of plugin too
+//                else if (entity.getType() == EntityType.DROPPED_ITEM) {
+//                    ItemMeta itemMeta = ((Item) entity).getItemStack().getItemMeta();
+//                    if (UtilMethods.stringStartsWithUUID(itemMeta.getDisplayName())) {
+//                        if(!entity.getWorld().getChunkAt(entity.getLocation()).isLoaded()){
+//                            entity.getWorld().getChunkAt(entity.getLocation()).load();
+//                            entity.remove();
+//                            entity.getWorld().getChunkAt(entity.getLocation()).unload();
+//                        }
+//                        else {
+//                            entity.remove();
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     public void saveShops(final UUID player){
         if(playersSavingShops.contains(player))
@@ -416,7 +454,14 @@ public class ShopHandler {
                 currentFile.delete();
                 currentFile.createNewFile();
             }
-            YamlConfiguration config = YamlConfiguration.loadConfiguration(currentFile);
+
+            YamlConfiguration config = null;
+            try {
+                config = YamlConfiguration.loadConfiguration(currentFile);
+            } catch (IllegalArgumentException e){
+                System.out.println("[Shop] ERROR LOADING CURRENT FILE: "+currentFile.getName());
+                e.printStackTrace();
+            }
 
             List<AbstractShop> shopList = getShops(player);
             if (shopList.isEmpty()) {

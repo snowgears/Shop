@@ -95,7 +95,11 @@ public class ShopGuiHandler {
                 //System.out.println("[Shop] player was not null. Adding owning player to icon skin");
                 if (offlinePlayer == null)
                     return;
-                ((SkullMeta)itemMeta).setOwningPlayer(offlinePlayer);
+                try {
+                    ((SkullMeta) itemMeta).setOwningPlayer(offlinePlayer);
+                } catch (NoSuchMethodError e) {
+                    ((SkullMeta) itemMeta).setOwner(offlinePlayer.getName());
+                }
             }
 
         }

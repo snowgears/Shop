@@ -430,7 +430,7 @@ public abstract class AbstractDisplay {
     }
 
     protected boolean playerIsViewingSign(Player player) {
-        Block block = player.getTargetBlock(null, 8);
+        Block block = player.getTargetBlock((Set<Material>)null, 8);
         if (block.getType() == Material.WALL_SIGN) {
             AbstractShop shopObj = Shop.getPlugin().getShopHandler().getShop(block.getLocation());
             if (shopObj != null) {

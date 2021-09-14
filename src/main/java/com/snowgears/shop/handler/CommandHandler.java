@@ -135,7 +135,7 @@ public class CommandHandler extends BukkitCommand {
                             return true;
                         }
                         else{
-                            ItemStack handItem = player.getInventory().getItemInMainHand();
+                            ItemStack handItem = player.getInventory().getItemInHand();
                             if(handItem == null || handItem.getType() == Material.AIR){
                                 sendCommandMessage("error_nohand", player);
                                 return true;
@@ -157,8 +157,8 @@ public class CommandHandler extends BukkitCommand {
                         sendCommandMessage("not_authorized", player);
                         return true;
                     }
-                    if(player.getInventory().getItemInMainHand() != null && player.getInventory().getItemInMainHand().getType() != Material.AIR)
-                        plugin.setGambleDisplayItem(player.getInventory().getItemInMainHand());
+                    if(player.getInventory().getItemInHand() != null && player.getInventory().getItemInHand().getType() != Material.AIR)
+                        plugin.setGambleDisplayItem(player.getInventory().getItemInHand());
                     else {
                         sendCommandMessage("error_nohand", player);
                         return true;
@@ -167,6 +167,22 @@ public class CommandHandler extends BukkitCommand {
             }
         } else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("item") && args[1].equalsIgnoreCase("refresh")) {
+                if (sender instanceof Player) {
+                    Player player = (Player) sender;
+                    if ((plugin.usePerms() && !player.hasPermission("shop.operator")) || (!plugin.usePerms() && !player.isOp())) {
+                        sendCommandMessage("not_authorized", player);
+                        return true;
+                    }
+                    plugin.getShopHandler().refreshShopDisplays(null);
+                    plugin.getShopHandler().removeLegacyDisplays();
+                    sendCommandMessage("itemrefresh_output", player);
+                } else {
+                    plugin.getShopHandler().refreshShopDisplays(null);
+                    plugin.getShopHandler().removeLegacyDisplays();
+                    sender.sendMessage("[Shop] The display items on all of the shops have been refreshed.");
+                }
+            }
+            else if (args[0].equalsIgnoreCase("item") && args[1].equalsIgnoreCase("refreshall")) {
                 if (sender instanceof Player) {
                     Player player = (Player) sender;
                     if ((plugin.usePerms() && !player.hasPermission("shop.operator")) || (!plugin.usePerms() && !player.isOp())) {

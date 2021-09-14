@@ -47,14 +47,18 @@ public class ItemNameUtil {
 
         if(item.getItemMeta() != null && item.getItemMeta() instanceof PotionMeta){
             String name = getName(item.getType());
-            PotionData data = ((PotionMeta) item.getItemMeta()).getBasePotionData();
-            name += " {"+UtilMethods.capitalize(data.getType().name().replace("_", " ").toLowerCase());
-            if(data.isUpgraded())
-                name += " 2";
-            if(data.isExtended())
-                name += " - extended";
-            name += "}";
-            return name;
+            PotionData data = null;
+            try {
+                data = ((PotionMeta) item.getItemMeta()).getBasePotionData();
+
+                name += " {" + UtilMethods.capitalize(data.getType().name().replace("_", " ").toLowerCase());
+                if (data.isUpgraded())
+                    name += " 2";
+                if (data.isExtended())
+                    name += " - extended";
+                name += "}";
+                return name;
+            } catch(NoSuchMethodError e){ } //1.8 doesn't have getBasePotionData() method
         }
 //
 //        String format = ""+item.getTypeId()+":"+item.getData().getData();
@@ -68,7 +72,10 @@ public class ItemNameUtil {
 
     public String getName(Material material){
         ItemStack is = new ItemStack(material);
-        String name = is.getItemMeta().getLocalizedName();
+        String name = null;
+        try {
+            is.getItemMeta().getLocalizedName();
+        } catch (NoSuchMethodError e) { } //1.8 doesn't have getLocalizedName() method
         if(name == null || name.isEmpty()){
             return UtilMethods.capitalize(is.getType().name().replace("_", " ").toLowerCase());
         }

@@ -397,7 +397,7 @@ public class MiscListener implements Listener {
                     }
                 }
 
-                if (player.getInventory().getItemInMainHand().getType() == Material.AIR) {
+                if (player.getInventory().getItemInHand().getType() == Material.AIR) {
                     return;
                 }
 
@@ -435,7 +435,7 @@ public class MiscListener implements Listener {
                     }
                 }
 
-                ItemStack shopItem = player.getInventory().getItemInMainHand();
+                ItemStack shopItem = player.getInventory().getItemInHand();
 
                 if (shop.getItemStack() == null) {
 

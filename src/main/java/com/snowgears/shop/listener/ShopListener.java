@@ -151,7 +151,7 @@ public class ShopListener implements Listener {
                 //player is sneaking and clicks a chest of a shop
                 if(player.isSneaking()){
                     //don't print sales info and cancel event if player is holding a sign (may be trying to place directly onto chest)
-                    if(player.getInventory().getItemInMainHand().getType() != Material.SIGN) {
+                    if(player.getInventory().getItemInHand().getType() != Material.SIGN) {
                         shop.printSalesInfo(player);
                         event.setCancelled(true);
                         if(plugin.getDisplayTagOption() == DisplayTagOption.RIGHT_CLICK_CHEST){

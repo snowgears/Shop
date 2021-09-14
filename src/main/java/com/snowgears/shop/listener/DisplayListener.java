@@ -37,7 +37,7 @@ public class DisplayListener implements Listener {
                 for (Player player : plugin.getServer().getOnlinePlayers()) {
                     if (player != null) {
                         try {
-                            Block block = player.getTargetBlock(null, 8);
+                            Block block = player.getTargetBlock((Set<Material>)null, 8);
                             if (block.getType() == Material.WALL_SIGN) {
                                 AbstractShop shopObj = plugin.getShopHandler().getShop(block.getLocation());
                                 if (shopObj != null) {
