@@ -115,7 +115,7 @@ public class GambleShop extends AbstractShop {
             return executeTransaction(orders, player, false, transactionType);
         }
 
-        this.shuffleGambleItem();
+        this.shuffleGambleItem(player);
 
         //set isPerformaingTransaction after shuffling is done
         //this.isPerformingTransaction = false;
@@ -123,14 +123,14 @@ public class GambleShop extends AbstractShop {
         return TransactionError.NONE;
     }
 
-    public void shuffleGambleItem(){
+    public void shuffleGambleItem(Player player){
 
         this.setItemStack(gambleItem.clone());
         this.setAmount(gambleItem.getAmount());
         final DisplayType initialDisplayType = this.getDisplay().getType();
         this.getDisplay().setType(DisplayType.ITEM, false);
         this.gambleItem = Shop.getPlugin().getDisplayListener().getRandomItem(this);
-        this.getDisplay().spawn(null); //TODO maybe only show what item player got to the player themselves???
+        this.getDisplay().spawn(player); //TODO maybe only show what item player got to the player themselves???
 
         new BukkitRunnable() {
             @Override
@@ -138,11 +138,11 @@ public class GambleShop extends AbstractShop {
                 setItemStack(Shop.getPlugin().getGambleDisplayItem());
                 if(initialDisplayType == null) {
                     display.setType(Shop.getPlugin().getDisplayType(), false);
-                    getDisplay().spawn(null); //TODO maybe only show what item player got to the player themselves???
+                    getDisplay().spawn(player); //TODO maybe only show what item player got to the player themselves???
                 }
                 else {
                     display.setType(initialDisplayType, false);
-                    getDisplay().spawn(null); //TODO maybe only show what item player got to the player themselves???
+                    getDisplay().spawn(player); //TODO maybe only show what item player got to the player themselves???
                 }
                 isPerformingTransaction = false;
             }

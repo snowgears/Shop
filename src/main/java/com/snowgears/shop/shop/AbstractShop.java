@@ -137,8 +137,9 @@ public abstract class AbstractShop {
     public int getStock() {
         if(this.isAdmin)
             return Integer.MAX_VALUE;
-        if(this.getInventory() == null || this.getItemStack() == null)
+        if(this.getInventory() == null || this.getItemStack() == null) {
             return 0;
+        }
         return InventoryUtils.getAmount(this.getInventory(), this.getItemStack()) / this.getAmount();
     }
 

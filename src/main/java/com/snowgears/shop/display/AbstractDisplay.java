@@ -27,14 +27,14 @@ public abstract class AbstractDisplay {
 
     protected Location shopSignLocation;
     protected DisplayType type;
-    protected ArrayList<Integer> entityIDs;
+    protected HashMap<UUID, ArrayList<Integer>> entityIDs; //player UUID. display entities
     protected HashMap<UUID, ArrayList<Integer>> displayTagEntityIDs; //player UUID. display tags
     protected int chunkX;
     protected int chunkZ;
 
     public AbstractDisplay(Location shopSignLocation) {
         this.shopSignLocation = shopSignLocation;
-        entityIDs = new ArrayList<>();
+        entityIDs = new HashMap<>();
         displayTagEntityIDs = new HashMap<>();
 
         chunkX = UtilMethods.floor(shopSignLocation.getBlockX()) >> 4;
@@ -170,6 +170,10 @@ public abstract class AbstractDisplay {
                     break;
             }
         }
+//        if(player != null) {
+//            Shop.getPlugin().getShopHandler().addActiveShopDisplay(player, this.shopSignLocation);
+//        }
+
         //shop.updateSign();
     }
 
@@ -250,7 +254,7 @@ public abstract class AbstractDisplay {
         this.type = type;
     }
 
-    public void cycleType(){
+    public void cycleType(Player player){
         if(getShop().getFacing() == null)
             return;
         DisplayType[] cycle = Shop.getPlugin().getDisplayCycle();
@@ -330,7 +334,8 @@ public abstract class AbstractDisplay {
         }
 
         this.setType(cycle[index], true);
-        this.spawn(null);
+        this.spawn(player);
+        Shop.getPlugin().getShopHandler().addActiveShopDisplay(player, this.shopSignLocation);
         getShop().updateSign();
 
         Shop.getPlugin().getShopHandler().saveShops(getShop().getOwnerUUID());
@@ -340,6 +345,9 @@ public abstract class AbstractDisplay {
         removeDisplayEntities(player, false);
         removeDisplayEntities(player, true);
 
+//        if(player != null) {
+//            Shop.getPlugin().getShopHandler().removeActiveShopDisplay(player, this.shopSignLocation);
+//        }
         //if(player == null)
         //    entityIDs.clear();
         //if(displayTagEntityIDs != null) {
@@ -482,6 +490,17 @@ public abstract class AbstractDisplay {
         displayTagEntityIDs.put(player.getUniqueId(), tagIDs);
     }
 
+    protected void addEntityID(Player player, int entityID){
+        if(player == null)
+            return;
+        ArrayList<Integer> entityIDs = this.entityIDs.get(player.getUniqueId());
+        if(entityIDs == null){
+            entityIDs = new ArrayList<>();
+        }
+        entityIDs.add(entityID);
+        this.entityIDs.put(player.getUniqueId(), entityIDs);
+    }
+
     protected ArrayList<Integer> getAllDisplayTagEntityIDs(){
         ArrayList<Integer> allDisplayTagEntityIDs = new ArrayList<>();
         if(displayTagEntityIDs != null) {
@@ -490,6 +509,16 @@ public abstract class AbstractDisplay {
             }
         }
         return allDisplayTagEntityIDs;
+    }
+
+    protected ArrayList<Integer> getAllEntityIDs(){
+        ArrayList<Integer> allEntityIDs = new ArrayList<>();
+        if(entityIDs != null) {
+            for (Map.Entry<UUID, ArrayList<Integer>> entry : entityIDs.entrySet()) {
+                allEntityIDs.addAll(entry.getValue());
+            }
+        }
+        return allEntityIDs;
     }
 
     protected Iterator<Integer> getDisplayEntityIDIterator(Player player, boolean onlyDisplayTags){
@@ -505,7 +534,16 @@ public abstract class AbstractDisplay {
             }
         }
         else {
-            entityIterator = this.entityIDs.iterator();
+            //entityIterator = this.entityIDs.iterator();
+            if(player == null){
+                entityIterator = getAllEntityIDs().iterator();
+            }
+            else{
+                if(this.entityIDs.get(player.getUniqueId()) == null){
+                    this.entityIDs.put(player.getUniqueId(), new ArrayList<>());
+                }
+                entityIterator = this.entityIDs.get(player.getUniqueId()).iterator();
+            }
         }
         return entityIterator;
     }

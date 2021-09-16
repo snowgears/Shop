@@ -109,7 +109,7 @@ public class CommandHandler extends BukkitCommand {
                         p.closeInventory();
                     }
                 }
-                plugin.getShopHandler().refreshShopDisplays(null);
+                //plugin.getShopHandler().refreshShopDisplays(null);
                 plugin.getShopHandler().removeLegacyDisplays();
 
             }
@@ -173,11 +173,11 @@ public class CommandHandler extends BukkitCommand {
                         sendCommandMessage("not_authorized", player);
                         return true;
                     }
-                    plugin.getShopHandler().refreshShopDisplays(null);
+                    //plugin.getShopHandler().refreshShopDisplays(null);
                     plugin.getShopHandler().removeLegacyDisplays();
                     sendCommandMessage("itemrefresh_output", player);
                 } else {
-                    plugin.getShopHandler().refreshShopDisplays(null);
+                    //plugin.getShopHandler().refreshShopDisplays(null);
                     plugin.getShopHandler().removeLegacyDisplays();
                     sender.sendMessage("[Shop] The display items on all of the shops have been refreshed.");
                 }
@@ -189,11 +189,11 @@ public class CommandHandler extends BukkitCommand {
                         sendCommandMessage("not_authorized", player);
                         return true;
                     }
-                    plugin.getShopHandler().refreshShopDisplays(null);
+                    //plugin.getShopHandler().refreshShopDisplays();
                     plugin.getShopHandler().removeLegacyDisplays();
                     sendCommandMessage("itemrefresh_output", player);
                 } else {
-                    plugin.getShopHandler().refreshShopDisplays(null);
+                    //plugin.getShopHandler().refreshShopDisplays(null);
                     plugin.getShopHandler().removeLegacyDisplays();
                     sender.sendMessage("[Shop] The display items on all of the shops have been refreshed.");
                 }

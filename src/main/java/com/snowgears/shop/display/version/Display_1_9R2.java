@@ -29,7 +29,7 @@ public class Display_1_9R2 extends AbstractDisplay {
         net.minecraft.server.v1_9_R2.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(is);
         EntityItem entityItem = new EntityItem(((CraftWorld)location.getWorld()).getHandle(), location.getX(), location.getY(), location.getZ(), nmsItemStack);
         int entityID = entityItem.getId();
-        this.entityIDs.add(entityID);
+        this.addEntityID(player, entityID);
 
         NBTTagCompound nbtTagCompound = new NBTTagCompound();
         nbtTagCompound.setBoolean("Marker", true);
@@ -84,7 +84,7 @@ public class Display_1_9R2 extends AbstractDisplay {
             this.addDisplayTag(player, armorStand.getId());
         }
         else{
-            this.entityIDs.add(armorStand.getId());
+            this.addEntityID(player, armorStand.getId());
         }
         armorStand.setCustomNameVisible(text != null);
         armorStand.setInvisible(true);
@@ -147,7 +147,7 @@ public class Display_1_9R2 extends AbstractDisplay {
 
         EntityItemFrame itemFrame = new EntityItemFrame(worldServer, blockPosition, EnumDirection.valueOf(facing.toString()));
         int entityID = itemFrame.getId();
-        this.entityIDs.add(entityID);
+        this.addEntityID(player, entityID);
         itemFrame.setLocation(location.getX(), location.getY(), location.getZ(),0f,0f);
         itemFrame.setItem(CraftItemStack.asNMSCopy(is));
         itemFrame.setDirection(EnumDirection.valueOf(facing.toString()));

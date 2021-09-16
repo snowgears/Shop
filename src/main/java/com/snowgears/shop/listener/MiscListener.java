@@ -179,17 +179,17 @@ public class MiscListener implements Listener {
                             if (multiplePrices[0].contains("."))
                                 price = Double.parseDouble(multiplePrices[0]);
                             else
-                                price = Integer.parseInt(multiplePrices[0]);
+                                price = Long.parseLong(multiplePrices[0]);
 
                             if (multiplePrices[1].contains("."))
                                 priceCombo = Double.parseDouble(multiplePrices[1]);
                             else
-                                priceCombo = Integer.parseInt(multiplePrices[1]);
+                                priceCombo = Long.parseLong(multiplePrices[1]);
                         } else {
                             if (line3.contains("."))
                                 price = Double.parseDouble(line3);
                             else
-                                price = Integer.parseInt(line3);
+                                price = Long.parseLong(line3);
                         }
 
                         price *= multiplyValue;
@@ -205,10 +205,10 @@ public class MiscListener implements Listener {
 
                         String[] multiplePrices = line3.split(" ");
                         if (multiplePrices.length > 1) {
-                            price = Integer.parseInt(multiplePrices[0]);
-                            priceCombo = Integer.parseInt(multiplePrices[1]);
+                            price = Long.parseLong(multiplePrices[0]);
+                            priceCombo = Long.parseLong(multiplePrices[1]);
                         } else {
-                            price = Integer.parseInt(line3);
+                            price = Long.parseLong(line3);
                         }
                     } catch (NumberFormatException e) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "line3", null, player));
@@ -310,12 +310,13 @@ public class MiscListener implements Listener {
                     if (e.isCancelled())
                         return;
 
+
                     if (type == ShopType.GAMBLE) {
                         shop.setItemStack(plugin.getGambleDisplayItem());
                         shop.setAmount(1);
                         plugin.getShopHandler().addShop(shop);
                         shop.getDisplay().setType(DisplayType.LARGE_ITEM, false);
-                        shop.getDisplay().spawn(null);
+                        shop.getDisplay().spawn(player);
                         shop.updateSign();
 
                         String message = ShopMessage.getMessage(shop.getType().toString(), "create", shop, player);
@@ -407,7 +408,7 @@ public class MiscListener implements Listener {
                     if (!UtilMethods.materialIsNonIntrusive(aboveShop.getType())) {
                         if(plugin.forceDisplayToNoneIfBlocked()){
                             shop.getDisplay().setType(DisplayType.NONE, false);
-                            shop.getDisplay().spawn(null);
+                            shop.getDisplay().spawn(player);
                             shop.updateSign();
                         }
                         else {
@@ -461,7 +462,7 @@ public class MiscListener implements Listener {
                         }
                     }
                     else {
-                        shop.getDisplay().spawn(null);
+                        shop.getDisplay().spawn(player);
                         shop.updateSign();
                         String message = ShopMessage.getMessage(shop.getType().toString(), "create", shop, player);
                         if(message != null && !message.isEmpty())
@@ -480,7 +481,7 @@ public class MiscListener implements Listener {
 
                         if(shop.getSecondaryItemStack() == null)
                             shop.setSecondaryItemStack(shopItem);
-                        shop.getDisplay().spawn(null);
+                        shop.getDisplay().spawn(player);
                         shop.updateSign();
                         String message = ShopMessage.getMessage(shop.getType().toString(), "create", shop, player);
                         if(message != null && !message.isEmpty())
@@ -511,7 +512,7 @@ public class MiscListener implements Listener {
                 AbstractShop shop = plugin.getShopHandler().getShop(b.getLocation());
                 if (shop != null) {
                     if (shop.getDisplay().getType() == DisplayType.ITEM) {
-                        shop.getDisplay().spawn(null);
+                        shop.getDisplay().spawn(event.getPlayer());
                         shop.updateSign();
                     }
                 }
@@ -643,6 +644,21 @@ public class MiscListener implements Listener {
     }
 
     @EventHandler
+    public void onBreakBlockUnderShop(BlockBreakEvent event){
+       //if the block under a chest has been broken, check that its a shop chest
+        if(DisplayUtil.isChest(event.getBlock().getRelative(BlockFace.UP).getType())){
+            AbstractShop shop = plugin.getShopHandler().getShopByChest(event.getBlock().getRelative(BlockFace.UP));
+            if(shop != null){
+                //if it is a shop chest, don't allow it to be broken unless its by the owner or someone with permission
+                Player player = event.getPlayer();
+                if(!(shop.getOwnerUUID().equals(player.getUniqueId()) || player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator")))){
+                    event.setCancelled(true);
+                }
+            }
+        }
+    }
+
+    @EventHandler
     public void onShopExpansion(BlockPlaceEvent event) {
         Block b = event.getBlockPlaced();
         Player player = event.getPlayer();
@@ -655,7 +671,7 @@ public class MiscListener implements Listener {
             doubleChestFaces.add(BlockFace.WEST);
 
             //find out if the player placed a chest next to an already active shop
-            AbstractShop shop = plugin.getShopHandler().getShopNearBlock(b);
+            AbstractShop shop = plugin.getShopHandler().getShopTouchingBlock(b);
             if (shop == null || (b.getType() != shop.getChestLocation().getBlock().getType()))
                 return;
             else if(b.getType() == Material.ENDER_CHEST)

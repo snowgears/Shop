@@ -89,7 +89,7 @@ public class ShopListener implements Listener {
 
                     //player has permission to change another player's shop display
                     if(player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator"))) {
-                        shop.getDisplay().cycleType();
+                        shop.getDisplay().cycleType(player);
                         event.setCancelled(true);
                         return;
                     }
@@ -98,7 +98,7 @@ public class ShopListener implements Listener {
                     if(plugin.usePerms() && !player.hasPermission("shop.setdisplay"))
                         return;
 
-                    shop.getDisplay().cycleType();
+                    shop.getDisplay().cycleType(player);
                     event.setCancelled(true);
                     return;
                 }
@@ -327,7 +327,8 @@ public class ShopListener implements Listener {
                     plugin.getEnderChestHandler().saveInventory(player, inv);
                 }
 
-                plugin.getShopHandler().refreshShopDisplays(player);
+                plugin.getShopHandler().clearShopDisplaysNearPlayer(player);
+                plugin.getShopHandler().processShopDisplaysNearPlayer(player);
             }
         }, 2L);
     }
@@ -342,13 +343,14 @@ public class ShopListener implements Listener {
 
     @EventHandler (ignoreCancelled = true)
     public void onTeleport(PlayerTeleportEvent event){
-        if(!event.getTo().getWorld().getUID().equals(event.getFrom().getWorld().getUID())) {
+        plugin.getShopHandler().processShopDisplaysNearPlayer(event.getPlayer());
+        //if(!event.getTo().getWorld().getUID().equals(event.getFrom().getWorld().getUID())) {
             plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
                 public void run() {
-                    plugin.getShopHandler().refreshShopDisplays(event.getPlayer());
+                    plugin.getShopHandler().processShopDisplaysNearPlayer(event.getPlayer());
                 }
             }, 5L);
-        }
+        //}
     }
 
     @EventHandler

@@ -1,12 +1,12 @@
 package com.snowgears.shop.gui;
 
 
+import com.snowgears.shop.Shop;
+import com.snowgears.shop.handler.ShopGuiHandler;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.UUID;
 
@@ -37,7 +37,7 @@ public abstract class ShopGuiWindow {
     public boolean scrollPageNext(){
         ItemStack nextPageIcon = page.getItem(53);
 
-        if(nextPageIcon != null && nextPageIcon.getType().toString().contains("STAINED_GLASS_PANE")){
+        if(nextPageIcon != null){
             //set the previous scroll page
             page.setItem(45, this.getPrevPageIcon());
 
@@ -53,7 +53,7 @@ public abstract class ShopGuiWindow {
     public boolean scrollPagePrev(){
         ItemStack nextPageIcon = page.getItem(45);
 
-        if(nextPageIcon != null && nextPageIcon.getType().toString().contains("STAINED_GLASS_PANE")){
+        if(nextPageIcon != null){
             //set the next scroll page
             page.setItem(53, this.getNextPageIcon());
 
@@ -156,32 +156,14 @@ public abstract class ShopGuiWindow {
     }
 
     protected ItemStack getPrevPageIcon(){
-        ItemStack icon = new ItemStack(Material.STAINED_GLASS_PANE, 1, (byte)14); //14 is red
-
-        ItemMeta meta = icon.getItemMeta();
-        meta.setDisplayName("Previous Page");
-        icon.setItemMeta(meta);
-
-        return icon;
+        return Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.MENUBAR_LAST_PAGE, null, null);
     }
 
     protected ItemStack getNextPageIcon(){
-        ItemStack icon = new ItemStack(Material.STAINED_GLASS_PANE, 1, (byte)14); //14 is red
-
-        ItemMeta meta = icon.getItemMeta();
-        meta.setDisplayName("Next Page");
-        icon.setItemMeta(meta);
-
-        return icon;
+        return Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.MENUBAR_NEXT_PAGE, null, null);
     }
 
     protected ItemStack getBackIcon(){
-        ItemStack icon = new ItemStack(Material.BARRIER);
-
-        ItemMeta meta = icon.getItemMeta();
-        meta.setDisplayName("Back");
-        icon.setItemMeta(meta);
-
-        return icon;
+        return Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.MENUBAR_BACK, null, null);
     }
 }

@@ -22,19 +22,22 @@ import org.bukkit.scheduler.BukkitScheduler;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class ShopHandler {
 
-    public Shop plugin = Shop.getPlugin();
+    public Shop plugin;
 
-    private HashMap<UUID, List<Location>> playerShops = new HashMap<>();
-    private HashMap<Location, AbstractShop> allShops = new HashMap<>();
+    private ConcurrentHashMap<Location, AbstractShop> allShops = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<UUID, List<Location>> playerShops = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, List<Location>> chunkShops = new ConcurrentHashMap<>(); //String key = world_x_z
+    private ConcurrentHashMap<UUID, HashSet<Location>> playersWithActiveShopDisplays = new ConcurrentHashMap<>();
 
     //all loading of shops happens async at onEnable()
     //shops that still need to calculate their facing direction based on sign are considered "unloaded"
     //we will be loading these shops at time of chunkload and resaving them so they are saved with the 'facing' variable
-    private HashMap<String, List<Location>> unloadedShopsByChunk = new HashMap<>();
+    private ConcurrentHashMap<String, List<Location>> unloadedShopsByChunk = new ConcurrentHashMap<>();
     private ArrayList<Material> chestMaterials = new ArrayList<>();
     private UUID adminUUID;
     private BlockFace[] directions = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
@@ -81,7 +84,7 @@ public class ShopHandler {
                             shop = this.getShop(leftChest.getBlock().getRelative(direction).getLocation());
                             if (shop != null) {
                                 //make sure the shop sign you found is actually attached to the correct shop
-                                if (leftChest.equals(shop.getChestLocation()) || rightChest.equals(shop.getChestLocation()))
+                                if (leftChest.getLocation().equals(shop.getChestLocation()) || rightChest.getLocation().equals(shop.getChestLocation()))
                                     return shop;
                             }
                             shop = this.getShop(rightChest.getBlock().getRelative(direction).getLocation());
@@ -151,7 +154,7 @@ public class ShopHandler {
         return null;
     }
 
-    public AbstractShop getShopNearBlock(Block block){
+    public AbstractShop getShopTouchingBlock(Block block){
         BlockFace[] faces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
         for(BlockFace face : faces){
             if(this.isChest(block.getRelative(face))){
@@ -168,16 +171,6 @@ public class ShopHandler {
         return null;
     }
 
-    public List<AbstractShop> getShopsInChunk(Chunk chunk){
-        List<AbstractShop> shopList = new ArrayList<>();
-        for(Map.Entry<Location, AbstractShop> shopEntry : this.allShops.entrySet()){
-            if(shopEntry.getValue().getDisplay().isInChunk(chunk)){
-                shopList.add(shopEntry.getValue());
-            }
-        }
-        return shopList;
-    }
-
     public void addShop(AbstractShop shop) {
 
         //this is to remove a bug that caused one shop to be saved to multiple files at one point
@@ -187,11 +180,20 @@ public class ShopHandler {
         }
         allShops.put(shop.getSignLocation(), shop);
 
-        List<Location> shopLocations = getShopLocations(shop.getOwnerUUID());
-        if(!shopLocations.contains(shop.getSignLocation())) {
-            shopLocations.add(shop.getSignLocation());
-            playerShops.put(shop.getOwnerUUID(), shopLocations);
+        List<Location> playerShopLocations = getShopLocations(shop.getOwnerUUID());
+        if(!playerShopLocations.contains(shop.getSignLocation())) {
+            playerShopLocations.add(shop.getSignLocation());
+            playerShops.put(shop.getOwnerUUID(), playerShopLocations);
         }
+
+        String chunkKey = getChunkKey(shop.getSignLocation());
+        List<Location> chunkShopLocations = getShopLocations(chunkKey);
+        //System.out.println("[Shop] 1 - chunkShopLocations "+chunkShopLocations);
+        if(!chunkShopLocations.contains(shop.getSignLocation())) {
+            chunkShopLocations.add(shop.getSignLocation());
+            chunkShops.put(chunkKey, chunkShopLocations);
+        }
+
         plugin.getGuiHandler().reloadPlayerHeadIcon(shop.getOwnerUUID());
     }
 
@@ -201,10 +203,18 @@ public class ShopHandler {
             allShops.remove(shop.getSignLocation());
         }
         if(playerShops.containsKey(shop.getOwnerUUID())){
-            List<Location> shopLocations = getShopLocations(shop.getOwnerUUID());
-            if(shopLocations.contains(shop.getSignLocation())) {
-                shopLocations.remove(shop.getSignLocation());
-                playerShops.put(shop.getOwnerUUID(), shopLocations);
+            List<Location> playerShopLocations = getShopLocations(shop.getOwnerUUID());
+            if(playerShopLocations.contains(shop.getSignLocation())) {
+                playerShopLocations.remove(shop.getSignLocation());
+                playerShops.put(shop.getOwnerUUID(), playerShopLocations);
+            }
+        }
+        String chunkKey = getChunkKey(shop.getSignLocation());
+        if(chunkShops.containsKey(chunkKey)){
+            List<Location> chunkShopLocations = getShopLocations(chunkKey);
+            if(chunkShopLocations.contains(shop.getSignLocation())) {
+                chunkShopLocations.remove(shop.getSignLocation());
+                chunkShops.put(chunkKey, chunkShopLocations);
             }
         }
 
@@ -212,7 +222,7 @@ public class ShopHandler {
     }
 
     public void processUnloadedShopsInChunk(Chunk chunk){
-        String key = chunk.getWorld().getName()+"_"+chunk.getX()+"_"+chunk.getZ();
+        String key = getChunkKey(chunk);
         if(unloadedShopsByChunk.containsKey(key)){
             //System.out.println("[Shop] chunk contained unloaded shops.");
             List<UUID> playerUUIDs = new ArrayList<>();
@@ -223,7 +233,7 @@ public class ShopHandler {
                     boolean signExists = shop.load();
                     if(signExists) {
                         //System.out.println("[Shop] shop loaded. sign exists.");
-                        shop.getDisplay().spawn(null);
+                        //shop.getDisplay().spawn(null); //no longer spawning displays in chunk load for all players
                         if (!playerUUIDs.contains(shop.getOwnerUUID())) {
                             playerUUIDs.add(shop.getOwnerUUID());
                         }
@@ -245,10 +255,7 @@ public class ShopHandler {
     }
 
     public void addUnloadedShopToChunkList(AbstractShop shop){
-        //Chunk chunk = shop.getSignLocation().getChunk();
-        int chunkX = UtilMethods.floor(shop.getSignLocation().getBlockX()) >> 4;
-        int chunkZ = UtilMethods.floor(shop.getSignLocation().getBlockZ()) >> 4;
-        String chunkKey = shop.getSignLocation().getWorld().getName()+"_"+chunkX+"_"+chunkZ;
+        String chunkKey = getChunkKey(shop.getSignLocation());
         List<Location> shopLocations = getUnloadedShopsByChunk(chunkKey);
         if(!shopLocations.contains(shop.getSignLocation())) {
             shopLocations.add(shop.getSignLocation());
@@ -269,7 +276,7 @@ public class ShopHandler {
     public List<AbstractShop> getShopsByItem(ItemStack itemStack){
         List<AbstractShop> shops = new ArrayList<>();
         for(AbstractShop shop : allShops.values()){
-            if(shop.getItemStack().getType() == itemStack.getType())
+            if(shop.getItemStack() != null && shop.getItemStack().getType() == itemStack.getType())
                 shops.add(shop);
             else if(shop.getSecondaryItemStack() != null && shop.getSecondaryItemStack().getType() == itemStack.getType())
                 shops.add(shop);
@@ -303,6 +310,126 @@ public class ShopHandler {
             shopLocations = new ArrayList<>();
         return shopLocations;
     }
+
+    private List<Location> getShopLocations(Location locationInChunk){
+        String chunkKey = getChunkKey(locationInChunk);
+        return getShopLocations(chunkKey);
+    }
+
+    private List<Location> getShopLocations(String chunkKey){
+        List<Location> shopLocations;
+        if(chunkShops.containsKey(chunkKey)) {
+            shopLocations = chunkShops.get(chunkKey);
+        }
+        else {
+            shopLocations = new ArrayList<>();
+        }
+        return shopLocations;
+    }
+
+    public HashSet<Location> getShopLocationsNearLocation(Location location){
+        int chunkX = UtilMethods.floor(location.getBlockX()) >> 4;
+        int chunkZ = UtilMethods.floor(location.getBlockZ()) >> 4;
+
+        HashSet<Location> shopsNearLocation = new HashSet<>();
+        String chunkKey;
+        for(int x=-1; x<2; x++){
+            for(int z=-1; z<2; z++){
+                chunkKey = location.getWorld().getName()+"_"+(chunkX+x)+"_"+(chunkZ+z);
+                List<Location> shopLocations = getShopLocations(chunkKey);
+                shopsNearLocation.addAll(shopLocations);
+            }
+        }
+        return shopsNearLocation;
+    }
+
+//    public List<AbstractShop> getShopsNearLocation(Location location){
+//        int chunkX = UtilMethods.floor(location.getBlockX()) >> 4;
+//        int chunkZ = UtilMethods.floor(location.getBlockZ()) >> 4;
+//
+//        List<AbstractShop> shopsNearLocation = new ArrayList<>();
+//        String chunkKey;
+//        for(int x=-1; x<2; x++){
+//            for(int z=-1; z<2; z++){
+//                chunkKey = location.getWorld().getName()+"_"+(chunkX+x)+"_"+(chunkZ+z);
+//                List<Location> shopLocations = getShopLocations(chunkKey);
+//                for(Location loc : shopLocations){
+//                    shopsNearLocation.add(this.getShop(loc));
+//                }
+//            }
+//        }
+//        return shopsNearLocation;
+//    }
+
+    public void processShopDisplaysNearPlayer(Player player){
+        HashSet<Location> shopsNearPlayer = getShopLocationsNearLocation(player.getLocation());
+        if(playersWithActiveShopDisplays.containsKey(player.getUniqueId())){
+            HashSet<Location> oldShopsNearPlayer = playersWithActiveShopDisplays.get(player.getUniqueId());
+            Iterator<Location> iteratorOld = oldShopsNearPlayer.iterator();
+            while(iteratorOld.hasNext()) {
+                Location loc = iteratorOld.next();
+                if (!shopsNearPlayer.contains(loc)) {
+                    AbstractShop shop = this.getShop(loc);
+                    plugin.getServer().getScheduler().runTask(plugin, () -> {
+                        shop.getDisplay().remove(player);
+                    });
+                    iteratorOld.remove();
+                }
+            }
+
+            Iterator<Location> iteratorNew = shopsNearPlayer.iterator();
+            while(iteratorNew.hasNext()) {
+                Location loc = iteratorNew.next();
+                if (!oldShopsNearPlayer.contains(loc)) {
+                    AbstractShop shop = this.getShop(loc);
+                    plugin.getServer().getScheduler().runTask(plugin, () -> {
+                        shop.getDisplay().spawn(player);
+                    });
+                }
+            }
+        }
+        else{
+            Iterator<Location> iteratorNew = shopsNearPlayer.iterator();
+            while(iteratorNew.hasNext()) {
+                Location loc = iteratorNew.next();
+                AbstractShop shop = this.getShop(loc);
+                plugin.getServer().getScheduler().runTask(plugin, () -> {
+                    shop.getDisplay().spawn(player);
+                });
+            }
+        }
+        playersWithActiveShopDisplays.put(player.getUniqueId(), shopsNearPlayer);
+    }
+
+    public void clearShopDisplaysNearPlayer(Player player){
+        if(playersWithActiveShopDisplays.containsKey(player.getUniqueId()))
+            playersWithActiveShopDisplays.remove(player.getUniqueId());
+    }
+
+    public void addActiveShopDisplay(Player player, Location shopSignLocation){
+        HashSet<Location> shops;
+        if(playersWithActiveShopDisplays.containsKey(player.getUniqueId())){
+            shops = playersWithActiveShopDisplays.get(player.getUniqueId());
+        }
+        else{
+            shops = new HashSet<>();
+        }
+        shops.add(shopSignLocation);
+        playersWithActiveShopDisplays.put(player.getUniqueId(), shops);
+    }
+
+    public void removeActiveShopDisplay(Player player, Location shopSignLocation){
+        HashSet<Location> shops;
+        if(playersWithActiveShopDisplays.containsKey(player.getUniqueId())){
+            shops = playersWithActiveShopDisplays.get(player.getUniqueId());
+            shops.remove(shopSignLocation);
+        }
+        else{
+            shops = new HashSet<>();
+        }
+        playersWithActiveShopDisplays.put(player.getUniqueId(), shops);
+    }
+
 
     private List<Location> getUnloadedShopsByChunk(String chunkKey){
         List<Location> unloadedShopsInChunk;
@@ -340,12 +467,22 @@ public class ShopHandler {
         return list;
     }
 
-    public void refreshShopDisplays(Player player) {
-        for (AbstractShop shop : allShops.values()) {
-            //check that the shop is loaded first
-            if(shop.getChestLocation() != null)
-                shop.getDisplay().spawn(player);
-        }
+//    public void refreshShopDisplays(Player player) {
+//        for (AbstractShop shop : allShops.values()) {
+//            //check that the shop is loaded first
+//            if(shop.getChestLocation() != null)
+//                shop.getDisplay().spawn(player);
+//        }
+//    }
+
+    private String getChunkKey(Location location){
+        int chunkX = UtilMethods.floor(location.getBlockX()) >> 4;
+        int chunkZ = UtilMethods.floor(location.getBlockZ()) >> 4;
+        return location.getWorld().getName()+"_"+chunkX+"_"+chunkZ;
+    }
+
+    private String getChunkKey(Chunk chunk){
+        return chunk.getWorld().getName()+"_"+chunk.getX()+"_"+chunk.getZ();
     }
 
     public void removeAllDisplays(Player player) {
