@@ -12,7 +12,10 @@ import com.snowgears.shop.shop.ShopType;
 import com.snowgears.shop.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.block.*;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.DoubleChest;
+import org.bukkit.block.Sign;
 import org.bukkit.block.data.Directional;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -272,7 +275,7 @@ public class MiscListener implements Listener {
 
                 //removed all the direction checking code. just make sure its a container
                 //make sure that the sign is in front of the chest, unless it is a shulker box
-                if (chest.getState() instanceof Container || (plugin.useEnderChests() && chest.getType() == Material.ENDER_CHEST)) {
+                if (plugin.getShopHandler().isChest(chest)) {
                     //System.out.println("Chest of shop was a container.");
                     existingShop = plugin.getShopHandler().getShopByChest(chest);
                     if (existingShop != null) {

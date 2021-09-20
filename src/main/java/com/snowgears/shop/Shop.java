@@ -12,7 +12,6 @@ import com.snowgears.shop.util.*;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
@@ -81,8 +80,6 @@ public class Shop extends JavaPlugin {
     private boolean returnCreationCost;
     private double taxPercent;
     private List<String> worldBlackList;
-    private NamespacedKey signLocationNameSpacedKey;
-    private NamespacedKey playerUUIDNameSpacedKey;
 
     private YamlConfiguration config;
 
@@ -160,8 +157,8 @@ public class Shop extends JavaPlugin {
         }
 
         reloadConfig();
-        signLocationNameSpacedKey = new NamespacedKey(this, "signLocation");
-        playerUUIDNameSpacedKey = new NamespacedKey(this, "playerUUID");
+        //signLocationNameSpacedKey = new NamespacedKey(this, "signLocation");
+        //playerUUIDNameSpacedKey = new NamespacedKey(this, "playerUUID");
 
         config = YamlConfiguration.loadConfiguration(configFile);
 
@@ -637,13 +634,5 @@ public class Shop extends JavaPlugin {
 
     public NMSBullshitHandler getNmsBullshitHandler() {
         return nmsBullshitHandler;
-    }
-
-    public NamespacedKey getSignLocationNameSpacedKey(){
-        return signLocationNameSpacedKey;
-    }
-
-    public NamespacedKey getPlayerUUIDNameSpacedKey(){
-        return playerUUIDNameSpacedKey;
     }
 }

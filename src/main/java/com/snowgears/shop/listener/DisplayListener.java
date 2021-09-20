@@ -6,13 +6,11 @@ import com.snowgears.shop.display.DisplayType;
 import com.snowgears.shop.shop.AbstractShop;
 import com.snowgears.shop.util.InventoryUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.Container;
+import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
-import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -26,11 +24,10 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class DisplayListener implements Listener {
 
-    public Shop plugin = Shop.getPlugin();
+    public Shop plugin;
     private ArrayList<ItemStack> allServerRecipeResults = new ArrayList<>();
     private int repeatingViewTask;
     private int repeatingDisplayTask;
@@ -148,9 +145,9 @@ public class DisplayListener implements Listener {
     @EventHandler (priority = EventPriority.HIGHEST)
     public void onShopInventoryClose(InventoryCloseEvent event) {
         try {
-            if(event.getInventory().getHolder() instanceof Container){
-                Container container = ((Container)event.getInventory().getHolder());
-                AbstractShop shop = plugin.getShopHandler().getShopByChest(container.getBlock());
+            if(event.getInventory().getHolder() instanceof Chest){
+                Chest chest = ((Chest)event.getInventory().getHolder());
+                AbstractShop shop = plugin.getShopHandler().getShopByChest(chest.getBlock());
 
                 if(shop == null) {
                     return;

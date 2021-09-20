@@ -61,7 +61,8 @@ public class DisplayUtil {
                 break;
             case HAND:
                 stand = (ArmorStand) blockLocation.getWorld().spawnEntity(standLocation, EntityType.ARMOR_STAND);
-                stand.getEquipment().setItemInMainHand(itemStack);
+                //stand.getEquipment().setItemInMainHand(itemStack);
+                stand.getEquipment().setItemInHand(itemStack);
                 stand.setRightArmPose(getArmAngle(itemStack));
 
                 try{
@@ -142,7 +143,7 @@ public class DisplayUtil {
         else if(sType.contains("_HELMET") || type == Material.SKULL_ITEM || type.isBlock()){
             return EquipmentSlot.HEAD;
         }
-        else if(sType.contains("_CHESTPLATE") || type == Material.ELYTRA){
+        else if(sType.contains("_CHESTPLATE") || sType.contains("ELYTRA")){
             return EquipmentSlot.CHEST;
         }
         else if(sType.contains("_LEGGINGS")){
@@ -163,22 +164,24 @@ public class DisplayUtil {
                 break;
             case CHEST:
                 standLocation = blockLocation.clone().add(0.5, 0.4, 0.5);
-                if(material == Material.ELYTRA){
-                    switch (facing){
-                        case NORTH:
-                            standLocation = blockLocation.clone().add(0.5, -0.1, 0.2);
-                            break;
-                        case EAST:
-                            standLocation = blockLocation.clone().add(0.7, -0.1, 0.5);
-                            break;
-                        case SOUTH:
-                            standLocation = blockLocation.clone().add(0.5, -0.1, 0.7);
-                            break;
-                        case WEST:
-                            standLocation = blockLocation.clone().add(0.3, -0.1, 0.5);
-                            break;
+                try{
+                    if(material == Material.ELYTRA) {
+                        switch (facing) {
+                            case NORTH:
+                                standLocation = blockLocation.clone().add(0.5, -0.1, 0.2);
+                                break;
+                            case EAST:
+                                standLocation = blockLocation.clone().add(0.7, -0.1, 0.5);
+                                break;
+                            case SOUTH:
+                                standLocation = blockLocation.clone().add(0.5, -0.1, 0.7);
+                                break;
+                            case WEST:
+                                standLocation = blockLocation.clone().add(0.3, -0.1, 0.5);
+                                break;
+                        }
                     }
-                }
+                } catch (NoSuchFieldError e) {}
                 break;
             case LEGS:
                 standLocation = blockLocation.clone().add(0.5, 0.7 ,0.5);
