@@ -371,7 +371,8 @@ public class ShopHandler {
                 if (!shopsNearPlayer.contains(loc)) {
                     AbstractShop shop = this.getShop(loc);
                     plugin.getServer().getScheduler().runTask(plugin, () -> {
-                        shop.getDisplay().remove(player);
+                        if(shop != null && player != null && player.isOnline())
+                            shop.getDisplay().remove(player);
                     });
                     iteratorOld.remove();
                 }
@@ -383,7 +384,8 @@ public class ShopHandler {
                 if (!oldShopsNearPlayer.contains(loc)) {
                     AbstractShop shop = this.getShop(loc);
                     plugin.getServer().getScheduler().runTask(plugin, () -> {
-                        shop.getDisplay().spawn(player);
+                        if(shop != null && player != null && player.isOnline())
+                            shop.getDisplay().spawn(player);
                     });
                 }
             }
@@ -394,7 +396,8 @@ public class ShopHandler {
                 Location loc = iteratorNew.next();
                 AbstractShop shop = this.getShop(loc);
                 plugin.getServer().getScheduler().runTask(plugin, () -> {
-                    shop.getDisplay().spawn(player);
+                    if(shop != null && player != null && player.isOnline())
+                        shop.getDisplay().spawn(player);
                 });
             }
         }
