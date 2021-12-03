@@ -6,7 +6,7 @@
 
     <groupId>com.snowgears.shop</groupId>
     <artifactId>Shop</artifactId>
-    <version>0.8.3.1</version>
+    <version>0.8.3.2</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -36,6 +36,20 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot13R2</artifactId>
+            <version>1.13-R0.2-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/craftbukkit/spigot-1.13.2.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot13R1</artifactId>
+            <version>1.13-R0.1-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/craftbukkit/spigot-1.13.jar</systemPath>
+        </dependency>
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot12R1</artifactId>

@@ -474,6 +474,10 @@ public class DisplayUtil {
 
     public static AbstractDisplay getDisplayForNMSVersion(Location signLocation){
         switch(Shop.getPlugin().getNmsBullshitHandler().getNmsVersion()){
+            case "1_13_R2":
+                return new Display_1_13R2(signLocation);
+            case "1_13_R1":
+                return new Display_1_13R1(signLocation);
             case "1_12_R1":
                 return new Display_1_12R1(signLocation);
             case "1_11_R1":
