@@ -253,7 +253,7 @@ public class ReflectionUtil {
         // NMS Method to serialize a net.minecraft.server.ItemStack to a valid Json string
         Class<?> nmsItemStackClazz = getNSMItemStackClass();
         Class<?> nbtTagCompoundClazz = getNMSNBTTagCompoundClass();
-        Method saveNmsItemStackMethod = ReflectionUtil.getMethod(nmsItemStackClazz, "save", nbtTagCompoundClazz);
+        Method saveMojangNmsItemStackMethod = ReflectionUtil.getMethod(nmsItemStackClazz, "b", nbtTagCompoundClazz); //'b' instead of 'save'
 
         Object nmsNbtTagCompoundObj; // This will just be an empty NBTTagCompound instance to invoke the saveNms method
         Object nmsItemStackObj; // This is the net.minecraft.server.ItemStack object received from the asNMSCopy method
@@ -262,9 +262,17 @@ public class ReflectionUtil {
         try {
             nmsNbtTagCompoundObj = nbtTagCompoundClazz.newInstance();
             nmsItemStackObj = asNMSCopyMethod.invoke(null, itemStack);
-            itemAsJsonObject = saveNmsItemStackMethod.invoke(nmsItemStackObj, nmsNbtTagCompoundObj);
+            itemAsJsonObject = saveMojangNmsItemStackMethod.invoke(nmsItemStackObj, nmsNbtTagCompoundObj);
         } catch (Throwable t) {
-            return "";
+            try {
+                //try with spigot mappings instead of mojang mappings
+                Method saveSpigotNmsItemStackMethod = ReflectionUtil.getMethod(nmsItemStackClazz, "save", nbtTagCompoundClazz);
+                nmsNbtTagCompoundObj = nbtTagCompoundClazz.newInstance();
+                nmsItemStackObj = asNMSCopyMethod.invoke(null, itemStack);
+                itemAsJsonObject = saveSpigotNmsItemStackMethod.invoke(nmsItemStackObj, nmsNbtTagCompoundObj);
+            } catch(Throwable t2){
+                return "";
+            }
         }
 
         // Return a string representation of the serialized object

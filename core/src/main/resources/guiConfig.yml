@@ -173,6 +173,30 @@ icons:
          name: "Reload Plugin"
          lore:
             - "&7Reload the shop plugin."
+      itemlist_allow_add:
+         type: "WATER_BUCKET"
+         name: "Add to allow list"
+         lore:
+            - "&7Add your current inventory"
+            - "&7items to the item ALLOW LIST."
+      itemlist_allow_remove:
+         type: "BUCKET"
+         name: "Remove from allow list"
+         lore:
+            - "&7Remove your current inventory"
+            - "&7items from the item ALLOW LIST."
+      itemlist_deny_add:
+         type: "WATER_BUCKET"
+         name: "Add to deny list"
+         lore:
+            - "&7Add your current inventory"
+            - "&7items to the item DENY LIST."
+      itemlist_deny_remove:
+         type: "BUCKET"
+         name: "Remove from deny list"
+         lore:
+            - "&7Remove your current inventory"
+            - "&7items from the item DENY LIST."
    list:
       player_admin:
          type: "CHEST"

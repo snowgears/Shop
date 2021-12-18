@@ -3,10 +3,7 @@ package com.snowgears.shop;
 import com.snowgears.shop.display.DisplayTagOption;
 import com.snowgears.shop.display.DisplayType;
 import com.snowgears.shop.gui.ShopGUIListener;
-import com.snowgears.shop.handler.CommandHandler;
-import com.snowgears.shop.handler.EnderChestHandler;
-import com.snowgears.shop.handler.ShopGuiHandler;
-import com.snowgears.shop.handler.ShopHandler;
+import com.snowgears.shop.handler.*;
 import com.snowgears.shop.listener.*;
 import com.snowgears.shop.util.*;
 import net.milkbowl.vault.economy.Economy;
@@ -36,6 +33,7 @@ public class Shop extends JavaPlugin {
     private MiscListener miscListener;
     private CreativeSelectionListener creativeSelectionListener;
     private ShopGUIListener guiListener;
+    private LWCHookListener lwcHookListener;
 
     private ShopHandler shopHandler;
     private CommandHandler commandHandler;
@@ -79,7 +77,9 @@ public class Shop extends JavaPlugin {
     private double destructionCost;
     private boolean returnCreationCost;
     private double taxPercent;
+    private ItemListType itemListType;
     private List<String> worldBlackList;
+    private LogHandler logHandler;
 
     private YamlConfiguration config;
 
@@ -280,6 +280,8 @@ public class Shop extends JavaPlugin {
 //            }
 //        }
 
+
+
         //Loading the itemCurrency from a file makes it easier to allow servers to use detailed itemstacks as the server's economy item
         File itemCurrencyFile = new File(fileDirectory, "itemCurrency.yml");
         if(itemCurrencyFile.exists()){
@@ -318,6 +320,12 @@ public class Shop extends JavaPlugin {
         destructionCost = config.getDouble("destructionCost");
         returnCreationCost = config.getBoolean("returnCreationCost");
 
+        try {
+            itemListType = ItemListType.valueOf(config.getString("itemList"));
+        } catch(Exception e){
+            itemListType = ItemListType.NONE;
+        }
+
         worldBlackList = config.getStringList("worldBlacklist");
         for(String world : config.getStringList("worldBlacklist")){
             worldBlackList.add(world);
@@ -343,6 +351,7 @@ public class Shop extends JavaPlugin {
         shopHandler = new ShopHandler(plugin);
         guiHandler.loadIconsAndTitles();
         enderChestHandler = new EnderChestHandler(plugin);
+        logHandler = new LogHandler(plugin, config);
 
         //TODO just trying out the service manager for API access
         //this.getServer().getServicesManager().register(ShopHandlerInterface.class, shopHandler, plugin, ServicePriority.High);
@@ -353,6 +362,10 @@ public class Shop extends JavaPlugin {
         getServer().getPluginManager().registerEvents(miscListener, this);
         getServer().getPluginManager().registerEvents(creativeSelectionListener, this);
         getServer().getPluginManager().registerEvents(guiListener, this);
+        if(getServer().getPluginManager().getPlugin("LWC") != null){
+            lwcHookListener = new LWCHookListener(this);
+            getServer().getPluginManager().registerEvents(lwcHookListener, this);
+        }
 
         displayListener.startRepeatingDisplayViewTask();
 
@@ -373,6 +386,9 @@ public class Shop extends JavaPlugin {
         HandlerList.unregisterAll(miscListener);
         HandlerList.unregisterAll(creativeSelectionListener);
         HandlerList.unregisterAll(guiListener);
+        if(lwcHookListener != null){
+            HandlerList.unregisterAll(lwcHookListener);
+        }
 
         plugin.getShopHandler().removeAllDisplays(null);
 
@@ -626,6 +642,10 @@ public class Shop extends JavaPlugin {
 
     public ItemNameUtil getItemNameUtil(){
         return itemNameUtil;
+    }
+
+    public ItemListType getItemListType(){
+        return itemListType;
     }
 
     public List<String> getWorldBlacklist(){

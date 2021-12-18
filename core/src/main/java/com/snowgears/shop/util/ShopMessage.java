@@ -418,6 +418,8 @@ public class ShopMessage {
         messageMap.put("interactionIssue_adminOpen", chatConfig.getString("interaction_issue.adminOpen"));
         messageMap.put("interactionIssue_worldBlacklist", chatConfig.getString("interaction_issue.worldBlacklist"));
         messageMap.put("interactionIssue_regionRestriction", chatConfig.getString("interaction_issue.regionRestriction"));
+        messageMap.put("interactionIssue_itemListDeny", chatConfig.getString("interaction_issue.itemListDeny"));
+
 
         int count = 1;
         for(String s : chatConfig.getStringList("creativeSelection.enter")){
@@ -453,6 +455,9 @@ public class ShopMessage {
         messageMap.put("command_setgamble", chatConfig.getString("command.setgamble"));
         messageMap.put("command_itemrefresh", chatConfig.getString("command.itemrefresh"));
         messageMap.put("command_itemrefresh_output", chatConfig.getString("command.itemrefresh_output"));
+        messageMap.put("command_itemlist", chatConfig.getString("command.itemlist"));
+        messageMap.put("command_itemlist_add", chatConfig.getString("command.itemlist_add"));
+        messageMap.put("command_itemlist_remove", chatConfig.getString("command.itemlist_remove"));
         messageMap.put("command_reload", chatConfig.getString("command.reload"));
         messageMap.put("command_reload_output", chatConfig.getString("command.reload_output"));
         messageMap.put("command_error_novault", chatConfig.getString("command.error_novault"));

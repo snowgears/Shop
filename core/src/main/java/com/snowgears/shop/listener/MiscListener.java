@@ -441,6 +441,19 @@ public class MiscListener implements Listener {
 
                 ItemStack shopItem = player.getInventory().getItemInHand();
 
+                //if the item is on the DENY LIST or the item is not on the ALLOW LIST, don't let player initialize with it
+                if(!(player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator")))) {
+                    boolean passesItemList = plugin.getShopHandler().passesItemListCheck(shopItem);
+                    if(!passesItemList){
+                        String message = ShopMessage.getMessage("interactionIssue", "itemListDeny", shop, player);
+                        if(message != null && !message.isEmpty())
+                            player.sendMessage(message);
+                        plugin.getTransactionListener().sendEffects(false, player, shop);
+                        event.setCancelled(true);
+                        return;
+                    }
+                }
+
                 if (shop.getItemStack() == null) {
 
                     PlayerInitializeShopEvent e = new PlayerInitializeShopEvent(player, shop);

@@ -147,6 +147,7 @@ interaction_issue:
    adminOpen: "&7Admin shops are not able to be opened."
    worldBlacklist: "&cShops are not allowed to be created in this world."
    regionRestriction: "&cYou do not have permission to do that in this region."
+   itemListDeny: "&cShops on this server are denied from listing this item"
 
 description:
    SELL:
@@ -235,6 +236,9 @@ command:
    setgamble: "&c/[plugin] setgamble &7- set the gamble item display to item in hand"
    itemrefresh: "&c/[plugin] item refresh &7- refresh all display items on shops"
    itemrefresh_output: "&7The display items on all of the shops have been refreshed."
+   itemlist: "&b/[plugin] itemlist <add/remove> &7- add/remove all items in inventory to the item list"
+   itemlist_add: "&aAll valid items in inventory added to the item list"
+   itemlist_remove: "&aAll valid items in inventory removed from the item list"
    reload: "&c/[plugin] reload &7- reload Shop plugin"
    reload_output: "&aSuccessfully reloaded Shop."
    error_novault: "&cThe server is not using an item based currency so no item could be set."

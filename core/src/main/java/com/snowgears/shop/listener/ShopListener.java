@@ -29,6 +29,7 @@ import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 
 public class ShopListener implements Listener {
@@ -300,13 +301,16 @@ public class ShopListener implements Listener {
         //delete all shops from players that have not played in X amount of hours (if configured)
         if(plugin.getHoursOfflineToRemoveShops() != 0){
             for(OfflinePlayer offlinePlayer : plugin.getShopHandler().getShopOwners()){
-                long msSinceLastPlayed = System.currentTimeMillis() - offlinePlayer.getLastPlayed();
-                int hoursSinceLastPlayed   = (int) ((msSinceLastPlayed / (1000*60*60)) % 24);
-                if(hoursSinceLastPlayed >= plugin.getHoursOfflineToRemoveShops()){
-                    for(AbstractShop shop : plugin.getShopHandler().getShops(offlinePlayer.getUniqueId())){
-                        shop.delete();
+                if(offlinePlayer.getName() != null) {
+                    long msSinceLastPlayed = System.currentTimeMillis() - offlinePlayer.getLastPlayed();
+                    long hoursSinceLastPlayed = TimeUnit.MILLISECONDS.toHours(msSinceLastPlayed);
+
+                    if (hoursSinceLastPlayed >= plugin.getHoursOfflineToRemoveShops()) {
+                        for (AbstractShop shop : plugin.getShopHandler().getShops(offlinePlayer.getUniqueId())) {
+                            shop.delete();
+                        }
+                        plugin.getShopHandler().saveShops(offlinePlayer.getUniqueId());
                     }
-                    plugin.getShopHandler().saveShops(offlinePlayer.getUniqueId());
                 }
             }
         }

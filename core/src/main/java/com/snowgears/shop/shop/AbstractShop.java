@@ -53,7 +53,7 @@ public abstract class AbstractShop {
         this.item = null;
         this.facing = facing;
 
-        //display = DisplayUtil.getDisplayForNMSVersion(this.signLocation);
+        display = Shop.getPlugin().getShopHandler().createDisplay(this.signLocation);
 
         if(isAdmin)
             owner = Shop.getPlugin().getShopHandler().getAdminUUID();

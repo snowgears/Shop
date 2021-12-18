@@ -2,6 +2,7 @@ package com.snowgears.shop.gui;
 
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.handler.ShopGuiHandler;
+import com.snowgears.shop.util.ItemListType;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 
@@ -38,5 +39,19 @@ public class CommandsWindow extends ShopGuiWindow {
         ItemStack reloadIcon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.COMMANDS_RELOAD, null, null);
         page.setItem(14, reloadIcon);
 
+        if(Shop.getPlugin().getItemListType() == ItemListType.DENY_LIST){
+            ItemStack denyListAdd = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.COMMANDS_ITEMLIST_DENY_ADD, null, null);
+            page.setItem(15, denyListAdd);
+
+            ItemStack denyListRemove = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.COMMANDS_ITEMLIST_DENY_REMOVE, null, null);
+            page.setItem(16, denyListRemove);
+        }
+        else if(Shop.getPlugin().getItemListType() == ItemListType.ALLOW_LIST){
+            ItemStack allowListAdd = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.COMMANDS_ITEMLIST_ALLOW_ADD, null, null);
+            page.setItem(15, allowListAdd);
+
+            ItemStack allowListRemove = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.COMMANDS_ITEMLIST_ALLOW_REMOVE, null, null);
+            page.setItem(16, allowListRemove);
+        }
     }
 }

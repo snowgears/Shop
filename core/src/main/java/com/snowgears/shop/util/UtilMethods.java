@@ -1,6 +1,7 @@
 package com.snowgears.shop.util;
 
 
+
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -237,11 +238,11 @@ public class UtilMethods {
     public static Location pushLocationInDirection(Location location, BlockFace direction, double add){
         switch (direction){
             case NORTH:
-                location = location.add(0, 0, -add);
+                location = location.add(-add, 0, -add); //subtract x as a hack for display tags being shifted
             case EAST:
-                location = location.add(add, 0, 0);
+                location = location.add(add, 0, -add); //subtract z as a hack for display tags being shifted
             case SOUTH:
-                location = location.add(0, 0, add);
+                location = location.add(add, 0, add);  //add to x as a hack for display tags being shifted
             case WEST:
                 location = location.add(-add, 0, 0);
         }

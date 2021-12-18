@@ -4,6 +4,7 @@ package com.snowgears.shop.gui;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.handler.ShopGuiHandler;
 import com.snowgears.shop.shop.AbstractShop;
+import com.snowgears.shop.util.ItemListType;
 import com.snowgears.shop.util.PlayerSettings;
 import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.util.UtilMethods;
@@ -220,6 +221,18 @@ public class ShopGUIListener implements Listener {
                         ItemStack refreshIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.COMMANDS_REFRESH_DISPLAYS, null, null);
                         ItemStack reloadIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.COMMANDS_RELOAD, null, null);
 
+                        ItemStack itemListAddIcon = null;
+                        ItemStack itemListRemoveIcon = null;
+
+                        if(plugin.getItemListType() == ItemListType.DENY_LIST){
+                            itemListAddIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.COMMANDS_ITEMLIST_DENY_ADD, null, null);
+                            itemListRemoveIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.COMMANDS_ITEMLIST_DENY_REMOVE, null, null);
+                        }
+                        else if(plugin.getItemListType() == ItemListType.ALLOW_LIST){
+                            itemListAddIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.COMMANDS_ITEMLIST_ALLOW_ADD, null, null);
+                            itemListRemoveIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.COMMANDS_ITEMLIST_ALLOW_REMOVE, null, null);
+                        }
+
 
                         if(clicked.isSimilar(currencyIcon)){
                             command += "currency";
@@ -235,6 +248,14 @@ public class ShopGUIListener implements Listener {
                         }
                         else if(clicked.isSimilar(reloadIcon)){
                             command += "reload";
+                        }
+
+                        if(plugin.getItemListType() != ItemListType.NONE) {
+                            if (clicked.isSimilar(itemListAddIcon)) {
+                                command += "itemlist add";
+                            } else if (clicked.isSimilar(itemListRemoveIcon)) {
+                                command += "itemlist remove";
+                            }
                         }
 
                         plugin.getGuiHandler().closeWindow(player);

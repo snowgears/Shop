@@ -28,7 +28,8 @@ public class ShopGuiHandler {
         HOME_LIST_OWN_SHOPS, HOME_LIST_PLAYERS, HOME_SETTINGS, HOME_COMMANDS,
         LIST_SHOP, LIST_PLAYER, LIST_PLAYER_ADMIN,
         SETTINGS_NOTIFY_OWNER_ON, SETTINGS_NOTIFY_OWNER_OFF, SETTINGS_NOTIFY_USER_ON, SETTINGS_NOTIFY_USER_OFF, SETTINGS_NOTIFY_STOCK_ON, SETTINGS_NOTIFY_STOCK_OFF,
-        COMMANDS_CURRENCY, COMMANDS_SET_CURRENCY, COMMANDS_SET_GAMBLE, COMMANDS_REFRESH_DISPLAYS, COMMANDS_RELOAD, ALL_SHOP_ICON, ALL_PLAYER_ICON, ALL_ADMIN_ICON
+        COMMANDS_CURRENCY, COMMANDS_SET_CURRENCY, COMMANDS_SET_GAMBLE, COMMANDS_REFRESH_DISPLAYS, COMMANDS_RELOAD, COMMANDS_ITEMLIST_ALLOW_ADD, COMMANDS_ITEMLIST_ALLOW_REMOVE, COMMANDS_ITEMLIST_DENY_ADD, COMMANDS_ITEMLIST_DENY_REMOVE,
+        ALL_SHOP_ICON, ALL_PLAYER_ICON, ALL_ADMIN_ICON
     }
 
     public enum GuiTitle {
@@ -226,7 +227,7 @@ public class ShopGuiHandler {
 
         for(GuiTitle titleEnum : GuiTitle.values()) {
             String titleString = config.getString("titles."+titleEnum.toString().toLowerCase());
-            guiWindowTitles.put(titleEnum, titleString);
+            guiWindowTitles.put(titleEnum, ChatColor.translateAlternateColorCodes('&', titleString));
         }
 
         Set<String> icons = config.getConfigurationSection("icons").getKeys(false);

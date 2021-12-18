@@ -16,7 +16,7 @@ public class PlayerExperience {
 
     public PlayerExperience(Player player) {
         this.playerUUID = player.getUniqueId();
-        this.experience = player.getTotalExperience();
+        this.experience = EconomyUtils.getTotalExperience(player);
         saveToFile();
     }
 
@@ -77,7 +77,7 @@ public class PlayerExperience {
         Player player = Bukkit.getPlayer(this.playerUUID);
         if(player == null)
             return;
-        player.setTotalExperience(this.experience);
+        EconomyUtils.setTotalExperience(player, this.experience);
         //System.out.println("[Shop] set old gamemode to "+oldGameMode.toString());
         removeFile();
     }

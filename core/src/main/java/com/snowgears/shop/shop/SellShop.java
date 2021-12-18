@@ -1,5 +1,6 @@
 package com.snowgears.shop.shop;
 
+import com.snowgears.shop.Shop;
 import com.snowgears.shop.event.PlayerExchangeShopEvent;
 import com.snowgears.shop.util.EconomyUtils;
 import com.snowgears.shop.util.InventoryUtils;
@@ -50,6 +51,7 @@ public class SellShop extends AbstractShop {
                 if (!hasFunds)
                     issue = TransactionError.INSUFFICIENT_FUNDS_PLAYER;
             } else {
+//                System.out.println("executeTransaction on sell shop. Economy is "+Shop.getPlugin().getCurrencyType().toString());
                 //remove currency from player
                 EconomyUtils.removeFunds(player, player.getInventory(), this.getPrice());
             }

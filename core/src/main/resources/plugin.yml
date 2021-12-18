@@ -1,9 +1,10 @@
 name: Shop
 author: SnowGears
 description: Easily create shops to buy or sell items!
-version: 0.8.3.2
+version: ${project.version}
+api-version: 1.14
 main: com.snowgears.shop.Shop
-softdepend: [Vault, WorldGuard, Towny]
+softdepend: [Vault, WorldGuard, Towny, LWC]
 permissions:
     shop.use:
         description: Allows player to use all shops.

@@ -1,6 +1,5 @@
 package com.snowgears.shop.display;
 
-import com.snowgears.shop.display.AbstractDisplay;
 import com.snowgears.shop.util.ArmorStandData;
 import net.minecraft.server.v1_10_R1.*;
 import org.bukkit.ChatColor;

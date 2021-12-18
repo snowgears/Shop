@@ -3,6 +3,7 @@ package com.snowgears.shop.handler;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.gui.ShopGuiWindow;
 import com.snowgears.shop.util.CurrencyType;
+import com.snowgears.shop.util.ItemListType;
 import com.snowgears.shop.util.PlayerSettings;
 import com.snowgears.shop.util.ShopMessage;
 import org.bukkit.Bukkit;
@@ -66,6 +67,9 @@ public class CommandHandler extends BukkitCommand {
                         sendCommandMessage("setcurrency", player);
                         sendCommandMessage("setgamble", player);
                         sendCommandMessage("itemrefresh", player);
+                        if(plugin.getItemListType() != ItemListType.NONE){
+                            sendCommandMessage("itemlist", player);
+                        }
                         sendCommandMessage("reload", player);
                     }
                 }
@@ -182,20 +186,23 @@ public class CommandHandler extends BukkitCommand {
                     sender.sendMessage("[Shop] The display items on all of the shops have been refreshed.");
                 }
             }
-            else if (args[0].equalsIgnoreCase("item") && args[1].equalsIgnoreCase("refreshall")) {
+            else if (args[0].equalsIgnoreCase("itemlist")) {
                 if (sender instanceof Player) {
                     Player player = (Player) sender;
                     if ((plugin.usePerms() && !player.hasPermission("shop.operator")) || (!plugin.usePerms() && !player.isOp())) {
                         sendCommandMessage("not_authorized", player);
                         return true;
                     }
-                    //plugin.getShopHandler().refreshShopDisplays();
-                    plugin.getShopHandler().removeLegacyDisplays();
-                    sendCommandMessage("itemrefresh_output", player);
+                    if(args[1].equalsIgnoreCase("add")){
+                        plugin.getShopHandler().addInventoryToItemList(player.getInventory());
+                        sendCommandMessage("itemlist_add", player);
+                    }
+                    else if(args[1].equalsIgnoreCase("remove")){
+                        plugin.getShopHandler().removeInventoryFromItemList(player.getInventory());
+                        sendCommandMessage("itemlist_remove", player);
+                    }
                 } else {
-                    //plugin.getShopHandler().refreshShopDisplays(null);
-                    plugin.getShopHandler().removeLegacyDisplays();
-                    sender.sendMessage("[Shop] The display items on all of the shops have been refreshed.");
+                    sender.sendMessage("[Shop] This command can only be run as a player.");
                 }
             }
             else if (args[0].equalsIgnoreCase("notify")) {
