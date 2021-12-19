@@ -59,7 +59,7 @@
 
     <build>
         <directory>../target</directory>
-        <finalName>Shop-${project.version}</finalName>
+        <finalName>Shop-${project.version}-legacy</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
