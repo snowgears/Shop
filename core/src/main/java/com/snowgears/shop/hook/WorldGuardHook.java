@@ -1,4 +1,4 @@
-package com.snowgears.shop.util;
+package com.snowgears.shop.hook;
 
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
@@ -124,5 +124,23 @@ public class WorldGuardHook {
         } catch (NoClassDefFoundError ignore) {
         }
         return true;
+    }
+
+    public static boolean isRegionOwner(Player player, Location location) {
+        if (!Shop.getPlugin().hookWorldGuard()) {
+            return false;
+        }
+        try {
+            LocalPlayer localPlayer = WorldGuardPlugin.inst().wrapPlayer(player);
+            RegionManager regions = WorldGuard.getInstance().getPlatform().getRegionContainer().get(localPlayer.getWorld());
+            BlockVector3 vLoc = BlockVector3.at(location.getX(), location.getY(), location.getZ());
+            if(regions == null)
+                return false;
+            if(regions.getApplicableRegions(vLoc).isOwnerOfAll(localPlayer)){
+                return true;
+            }
+        } catch (NoClassDefFoundError ignore) {
+        }
+        return false;
     }
 }

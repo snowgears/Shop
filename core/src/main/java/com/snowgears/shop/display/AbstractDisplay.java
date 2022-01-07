@@ -86,7 +86,6 @@ public abstract class AbstractDisplay {
 
         //two display entities on the chest
         if (shop.getSecondaryItemStack() != null) {
-
             //define the barter display item
             ItemStack barterItem = shop.getSecondaryItemStack().clone();
             barterItem.setAmount(1);

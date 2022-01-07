@@ -323,6 +323,9 @@ public class UtilMethods {
     }
 
     public static String getEnchantmentName(Enchantment enchantment){
+//        System.out.println(enchantment.getName());
+//        System.out.println(enchantment.getKey().getKey());
+//        System.out.println(enchantment.getKey().getNamespace());
         switch (enchantment.getName()) {
             case "ARROW_DAMAGE":
                 return "Power";

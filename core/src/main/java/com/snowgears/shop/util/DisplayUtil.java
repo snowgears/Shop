@@ -230,7 +230,7 @@ public class DisplayUtil {
                             break;
                     }
                 }
-                else if(material.toString().contains("BANNER")){
+                else if(material.toString().contains("BANNER") && !material.toString().contains("PATTERN")){
                     switch (facing){
                         case NORTH:
                             standLocation = blockLocation.clone().add(0.99, -1.4, 0.86);

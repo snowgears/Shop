@@ -40,6 +40,7 @@
 # [owner] : The name of the shop owner #
 # [server name] : The name of the server #
 # [shop type] : The type of the shop (sell, buy, barter) #
+# [shop types] : A list of available shop types a player can create #
 # [location] : The x,y,z coordinates of the shop sign #
 # [world] : The name of the world the shop is in #
 

@@ -18,15 +18,17 @@
 # This is the order in which prices are displayed. For example, if you are using ITEM with Emeralds as the currency,
 # '[price] [name]' would show '5 Emerald(s)'. If you are using VAULT, this would show '5 $', so setting this as
 # '[name][price]' would show '$5'.
-
 currency:
    type: ITEM
    name: "Emerald(s)"
    format: "[price] [name]"
 
-# These allow you to charge money to players for creating/destroying their shops #
+# The amount of money a player is charged to create a shop #
 creationCost: 0
+# The amount of money a player is charged to destroy a shop #
 destructionCost: 0
+# The amount of money a player is charged to teleport to a shop (via the GUI) #
+teleportCost: 0
 
 # This returns the creation cost to the shop creator when the shop is destroyed #
 # Adds virtual funds if using vault currency and drops the item on the chest location if using physical currency #
@@ -82,16 +84,15 @@ checkUpdates: true
 # This enables a graphical user interface to use all shop features without typing commands #
 enableGUI: true
 
-# Setting this to true will force all Shops to be created in WorldGuard regions with a shop flag #
-# WorldGuard plugin must be installed for this feature to work #
-hookWorldGuard: false
-
-# Setting this to true will force all Shops to be created in Towny regions where the players are residents #
-# Towny plugin must be installed for this feature to work #
-hookTowny: false
-
 # This is the command alias that will be used as the base for all shop commands #
 commandAlias: shop
+
+# These are the methods players are able to use to create shops #
+# placeSign - players can place signs on chests and fill out the info on the sign itself #
+# hitChest - players can hit a chest and they will be prompted to fill out the info in chat. A sign will be created. #
+creationMethod:
+   placeSign: true
+   hitChest: true
 
 # This will make it so shops will only complete transactions if the item durabilities are the same #
 checkItemDurability: true
@@ -129,6 +130,24 @@ itemList: NONE
 worldBlacklist:
    - "example_world"
    - "example2_world"
+
+# =================================================================== #
+#                    INTEGRATION HOOK SETTINGS                        #
+# =================================================================== #
+
+# Setting this to true will force all Shops to be created in WorldGuard regions with a shop flag #
+# WorldGuard plugin must be installed for this feature to work #
+hookWorldGuard: false
+
+# Setting this to true will force all Shops to be created in Towny regions where the players are residents #
+# Towny plugin must be installed for this feature to work #
+hookTowny: false
+
+# If you use DynMap, this controls how shops show up as markers #
+dynmap-marker:
+   name: Shop
+   preview: "[item](x[item amount]) - [type] - [price]"
+   description: "Item: [item](x[item amount])<br />Owner: [owner]<br />Type: [shop type]<br />Price: [price]<br />Stock: [stock]<br />---------------<br />[location]<br />"
 
 # =================================================================== #
 #                         LOGGING SETTINGS                            #

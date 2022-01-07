@@ -34,6 +34,10 @@
             <id>ender-zone-repo</id>
             <url>https://ci.ender.zone/plugin/repository/everything/</url>
         </repository>
+        <repository>
+            <id>dynmap-repo</id>
+            <url>https://repo.mikeprimm.com/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -65,6 +69,12 @@
             <groupId>com.griefcraft.lwc</groupId>
             <artifactId>LWCX</artifactId>
             <version>2.2.7</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>us.dynmap</groupId>
+            <artifactId>dynmap-api</artifactId>
+            <version>3.2-beta-1</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

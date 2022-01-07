@@ -4,6 +4,9 @@ import com.snowgears.shop.display.DisplayTagOption;
 import com.snowgears.shop.display.DisplayType;
 import com.snowgears.shop.gui.ShopGUIListener;
 import com.snowgears.shop.handler.*;
+import com.snowgears.shop.hook.DynmapHookListener;
+import com.snowgears.shop.hook.LWCHookListener;
+import com.snowgears.shop.hook.WorldGuardHook;
 import com.snowgears.shop.listener.*;
 import com.snowgears.shop.util.*;
 import net.milkbowl.vault.economy.Economy;
@@ -34,6 +37,7 @@ public class Shop extends JavaPlugin {
     private CreativeSelectionListener creativeSelectionListener;
     private ShopGUIListener guiListener;
     private LWCHookListener lwcHookListener;
+    private DynmapHookListener dynmapHookListener;
 
     private ShopHandler shopHandler;
     private CommandHandler commandHandler;
@@ -42,6 +46,7 @@ public class Shop extends JavaPlugin {
     private ShopMessage shopMessage;
     private ItemNameUtil itemNameUtil;
     private PriceUtil priceUtil;
+    private ShopCreationUtil shopCreationUtil;
 
     private NMSBullshitHandler nmsBullshitHandler;
 
@@ -65,6 +70,9 @@ public class Shop extends JavaPlugin {
     private boolean playSounds;
     private boolean playEffects;
     private boolean setGlowingSignText;
+    private boolean allowCreateMethodSign;
+    private boolean allowCreateMethodChest;
+    private boolean allowCreateMethodCommand;
     private ItemStack gambleDisplayItem;
     private ItemStack itemCurrency = null;
     private CurrencyType currencyType;
@@ -75,6 +83,7 @@ public class Shop extends JavaPlugin {
     private boolean inverseComboShops;
     private double creationCost;
     private double destructionCost;
+    private double teleportCost;
     private boolean returnCreationCost;
     private double taxPercent;
     private ItemListType itemListType;
@@ -164,6 +173,8 @@ public class Shop extends JavaPlugin {
 
         nmsBullshitHandler = new NMSBullshitHandler(this);
 
+        shopCreationUtil = new ShopCreationUtil(this);
+
         //removed item names file after item ids are no longer used. may revisit later with new materials
 //        File itemNameFile = new File(getDataFolder(), "items.tsv");
 //        if (!itemNameFile.exists()) {
@@ -231,6 +242,10 @@ public class Shop extends JavaPlugin {
                 getServer().getConsoleSender().sendMessage("[Shop]" + ChatColor.RED + " Data folder could not be created.");
             }
         }
+
+        allowCreateMethodSign = config.getBoolean("creationMethod.placeSign");
+        allowCreateMethodChest = config.getBoolean("creationMethod.hitChest");
+        allowCreateMethodCommand = config.getBoolean("creationMethod.runCommand");
 
         usePerms = config.getBoolean("usePermissions");
         checkUpdates = config.getBoolean("checkUpdates");
@@ -318,6 +333,7 @@ public class Shop extends JavaPlugin {
 
         creationCost = config.getDouble("creationCost");
         destructionCost = config.getDouble("destructionCost");
+        teleportCost = config.getDouble("teleportCost");
         returnCreationCost = config.getBoolean("returnCreationCost");
 
         try {
@@ -347,6 +363,10 @@ public class Shop extends JavaPlugin {
         }
 
         commandHandler = new CommandHandler(this, "shop.use", commandAlias, "Base command for the Shop plugin", "/shop", Arrays.asList(commandAlias));
+        //this.getCommand(commandAlias).setExecutor(new CommandHandler(this));
+        //this.getCommand(commandAlias).setTabCompleter(new CommandTabCompleter());
+        //this.getCommand(commandAlias).setAliases(new ArrayList<>())
+
         guiHandler = new ShopGuiHandler(plugin);
         shopHandler = new ShopHandler(plugin);
         guiHandler.loadIconsAndTitles();
@@ -365,6 +385,11 @@ public class Shop extends JavaPlugin {
         if(getServer().getPluginManager().getPlugin("LWC") != null){
             lwcHookListener = new LWCHookListener(this);
             getServer().getPluginManager().registerEvents(lwcHookListener, this);
+        }
+
+        if(getServer().getPluginManager().getPlugin("dynmap") != null){
+            dynmapHookListener = new DynmapHookListener(this);
+            getServer().getPluginManager().registerEvents(dynmapHookListener, this);
         }
 
         displayListener.startRepeatingDisplayViewTask();
@@ -388,6 +413,10 @@ public class Shop extends JavaPlugin {
         HandlerList.unregisterAll(guiListener);
         if(lwcHookListener != null){
             HandlerList.unregisterAll(lwcHookListener);
+        }
+        if(dynmapHookListener != null){
+            dynmapHookListener.deleteMarkers();
+            HandlerList.unregisterAll(dynmapHookListener);
         }
 
         plugin.getShopHandler().removeAllDisplays(null);
@@ -416,6 +445,10 @@ public class Shop extends JavaPlugin {
         return displayListener;
     }
 
+    public MiscListener getMiscListener(){
+        return miscListener;
+    }
+
     public CreativeSelectionListener getCreativeSelectionListener() {
         return creativeSelectionListener;
     }
@@ -438,6 +471,18 @@ public class Shop extends JavaPlugin {
 
     public boolean usePerms() {
         return usePerms;
+    }
+
+    public boolean getAllowCreationMethodSign(){
+        return allowCreateMethodSign;
+    }
+
+    public boolean getAllowCreationMethodChest(){
+        return allowCreateMethodChest;
+    }
+
+    public boolean getAllowCreationMethodCommand(){
+        return allowCreateMethodCommand;
     }
 
     public CurrencyType getCurrencyType() {
@@ -636,12 +681,20 @@ public class Shop extends JavaPlugin {
         return destructionCost;
     }
 
+    public double getTeleportCost(){
+        return teleportCost;
+    }
+
     public boolean returnCreationCost(){
         return returnCreationCost;
     }
 
     public ItemNameUtil getItemNameUtil(){
         return itemNameUtil;
+    }
+
+    public ShopCreationUtil getShopCreationUtil(){
+        return shopCreationUtil;
     }
 
     public ItemListType getItemListType(){

@@ -208,6 +208,32 @@ public class ReflectionUtil {
     }
 
     /**
+     * Get a method from a class that has the specific paramaters
+     *
+     * @param clazz      The class we are searching
+     * @param methodName The name of the method
+     * @param params     Any parameters that the method has
+     * @return The method with appropriate paramaters
+     */
+    public static Method getMethodThrows(Class<?> clazz, String methodName, Class<?>... params) throws NoSuchMethodException {
+        if (!loadedMethods.containsKey(clazz)) {
+            loadedMethods.put(clazz, new HashMap<String, Method>());
+        }
+
+        Map<String, Method> methods = loadedMethods.get(clazz);
+
+        if (methods.containsKey(methodName)) {
+            return methods.get(methodName);
+        }
+
+        Method method = clazz.getMethod(methodName, params);
+        methods.put(methodName, method);
+        loadedMethods.put(clazz, methods);
+        return method;
+
+    }
+
+    /**
      * Get a field with a particular name from a class
      *
      * @param clazz     The class
@@ -253,8 +279,12 @@ public class ReflectionUtil {
         // NMS Method to serialize a net.minecraft.server.ItemStack to a valid Json string
         Class<?> nmsItemStackClazz = getNSMItemStackClass();
         Class<?> nbtTagCompoundClazz = getNMSNBTTagCompoundClass();
-        Method saveMojangNmsItemStackMethod = ReflectionUtil.getMethod(nmsItemStackClazz, "b", nbtTagCompoundClazz); //'b' instead of 'save'
-
+        Method saveNmsItemStackMethod;
+        try {
+            saveNmsItemStackMethod = ReflectionUtil.getMethodThrows(nmsItemStackClazz, "b", nbtTagCompoundClazz); //'b' instead of 'save'
+        } catch (NoSuchMethodException e){
+            saveNmsItemStackMethod = ReflectionUtil.getMethod(nmsItemStackClazz, "save", nbtTagCompoundClazz);
+        }
         Object nmsNbtTagCompoundObj; // This will just be an empty NBTTagCompound instance to invoke the saveNms method
         Object nmsItemStackObj; // This is the net.minecraft.server.ItemStack object received from the asNMSCopy method
         Object itemAsJsonObject; // This is the net.minecraft.server.ItemStack after being put through saveNmsItem method
@@ -262,17 +292,9 @@ public class ReflectionUtil {
         try {
             nmsNbtTagCompoundObj = nbtTagCompoundClazz.newInstance();
             nmsItemStackObj = asNMSCopyMethod.invoke(null, itemStack);
-            itemAsJsonObject = saveMojangNmsItemStackMethod.invoke(nmsItemStackObj, nmsNbtTagCompoundObj);
+            itemAsJsonObject = saveNmsItemStackMethod.invoke(nmsItemStackObj, nmsNbtTagCompoundObj);
         } catch (Throwable t) {
-            try {
-                //try with spigot mappings instead of mojang mappings
-                Method saveSpigotNmsItemStackMethod = ReflectionUtil.getMethod(nmsItemStackClazz, "save", nbtTagCompoundClazz);
-                nmsNbtTagCompoundObj = nbtTagCompoundClazz.newInstance();
-                nmsItemStackObj = asNMSCopyMethod.invoke(null, itemStack);
-                itemAsJsonObject = saveSpigotNmsItemStackMethod.invoke(nmsItemStackObj, nmsNbtTagCompoundObj);
-            } catch(Throwable t2){
-                return "";
-            }
+            return "";
         }
 
         // Return a string representation of the serialized object

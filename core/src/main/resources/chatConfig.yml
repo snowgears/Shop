@@ -46,6 +46,7 @@
 # [owner] : The name of the shop owner #
 # [server name] : The name of the server #
 # [shop type] : The type of the shop (sell, buy, barter) #
+# [shop types] : A list of available shop types a player can create #
 # [location] : The x,y,z coordinates of the shop sign #
 # [world] : The name of the world the shop is in #
 # [plugin] : The main command of the plugin (default is 'shop') #
@@ -99,36 +100,50 @@ transaction_issue:
 
 interaction:
    SELL:
-      initialize: "&6[Shop] Now just hit the sign with the item you want to sell to other players!"
+      initialize: "&6Now just hit the sign with the item you want to sell to other players!"
       create: "&eYou have created a shop that sells &6[item](s)&e."
       destroy: "&7You have destroyed your selling shop."
       opDestroy: "&7You have destroyed a selling shop owned by [owner]."
       opOpen: "&7You are opening a selling shop owned by [owner]."
+      createHitChestAmount: '&eEnter in chat the amount of &a[item](s) &eyou want to sell per transaction.'
+      createHitChestPrice: '&eEnter in chat the price you will sell &a[item](x[item amount]) &efor.'
    BUY:
-      initialize: "&6[Shop] Now just hit the sign with the item you want to buy from other players!"
-      initializeAlt: "&7[Shop] You can also hit the shop with your hand to pick the item from the creative menu."
+      initialize: "&6Now just hit the sign with the item you want to buy from other players!"
+      initializeAlt: "&7You can also hit the shop with your hand to pick the item from the creative menu."
       create: "&eYou have created a shop that buys &6[item](s)&e."
       destroy: "&7You have destroyed your buying shop."
       opDestroy: "&7You have destroyed a buying shop owned by [owner]."
       opOpen: "&7You are opening a buying shop owned by [owner]."
+      createHitChestAmount: '&eEnter in chat the amount of &a[item](s) &eyou want to buy per transaction.'
+      createHitChestPrice: '&eEnter in chat the price you will buy &a[item](x[item amount]) &efor.'
    BARTER:
-      initialize: "&6[Shop] Now hit the sign with the item you want to barter to other players!"
-      initializeInfo: "&7[Shop] You have set this shop's barter item to [item](s)"
-      initializeBarter: "&6[Shop] Now hit the sign again with the item you want barter for!"
+      initialize: "&6Now hit the sign with the item you want to barter to other players!"
+      initializeInfo: "&7You have set this shop's barter item to [[item]](s)"
+      initializeBarter: "&6Now hit the sign again with the item you want barter for!"
+      initializeBarterAlt: "&7You can also hit the shop with your hand to pick the item from the creative menu."
       create: "&eYou have created a shop that barters &6[item](s) &efor &6[barter item](s)&e."
       destroy: "&7You have destroyed your bartering shop."
       opDestroy: "&7You have destroyed a bartering shop owned by [owner]."
       opOpen: "&7You are opening a bartering shop owned by [owner]."
+      createHitChest: "&eNow &ahit the chest again &ewith the item you want to barter for."
+      createHitChestAmount: '&eEnter in chat the amount of &a[item](s) &eyou want to barter per transaction.'
+      createHitChestBarterAmount: '&eEnter in chat the amount of &a[barter item](s) &eyou want to barter for &a[item](x[item amount]).'
    COMBO:
-      initialize: "&6[Shop] Now just hit the sign with the item you want to buy or sell from other players!"
-      initializeAlt: "&7[Shop] You can also hit the shop with your hand to pick the item from the creative menu."
+      initialize: "&6Now just hit the sign with the item you want to buy or sell from other players!"
+      initializeAlt: "&7You can also hit the shop with your hand to pick the item from the creative menu."
       create: "&eYou have created a shop that buys and sells &6[item](s)&e."
       destroy: "&7You have destroyed your combo shop (buying and selling)."
       opDestroy: "&7You have destroyed a combo shop owned by [owner]."
       opOpen: "&7You are opening a combo shop owned by [owner]."
+      createHitChestAmount: '&eEnter in chat the amount of &a[item](s) &eyou want to buy/sell per transaction.'
+      createHitChestPrice: '&eEnter in chat the price players will &dBUY &a[item](x[item amount]) &efor.'
+      createHitChestPriceCombo: '&eEnter in chat the price players you will &dSELL &a[item](x[item amount]) &efor.'
    GAMBLE:
       create: "&eYou have created a gambling shop."
       opDestroy: "&7You have destroyed a gambling shop owned by [server name]."
+      createHitChestPrice: '&eEnter in chat the price to gamble with this shop.'
+   createHitChest: '&eEnter in chat what to do with &a[item](s) &e. &7([shop types])'
+   adminCreateHitChest: '&7(Adding &eadmin &7will make the shop unlimited stock.)'
 
 interaction_issue:
    createLine2: "&cThe amount (line 2) needs to be a positive number."
@@ -137,9 +152,11 @@ interaction_issue:
    createDirection: "&cThe sign must be in front of the chest in order to create a shop."
    createSameItem: "&cYou cannot create a barter shop where both items are the same."
    createDisplayRoom: "&cThis shop could not created because there is no room for a display item."
+   createSignRoom: "&cThis shop could not created because there is no room for a wall sign."
    createOtherShop: "&cYou may not create a shop on the same chest as another player."
    createInsufficientFunds: "&cYou do not have the funds required to create this shop."
    destroyInsufficientFunds: "&cYou do not have the funds required to destroy this shop."
+   teleportInsufficientFunds: "&cYou do not have the funds required to teleport to this shop."
    initializeOtherShop: "&cYou may not initialize another players shop with an item."
    useShopAlreadyInUse: "&cThis shop is in the middle of a transaction."
    destroyChest: "&cYou must remove the sign from this shop to break it."
@@ -148,6 +165,7 @@ interaction_issue:
    worldBlacklist: "&cShops are not allowed to be created in this world."
    regionRestriction: "&cYou do not have permission to do that in this region."
    itemListDeny: "&cShops on this server are denied from listing this item"
+   createHitChestTimeout: "&7The shop you started to create at [location] has timed out."
 
 description:
    SELL:

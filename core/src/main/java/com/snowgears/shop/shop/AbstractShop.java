@@ -43,6 +43,7 @@ public abstract class AbstractShop {
     protected boolean signLinesRequireRefresh;
     protected boolean isPerformingTransaction;
     protected ItemStack guiIcon;
+    protected boolean fakeSign;
 
     public AbstractShop(Location signLoc, UUID player, double pri, int amt, Boolean admin, BlockFace facing) {
         this.signLocation = signLoc;
@@ -54,6 +55,7 @@ public abstract class AbstractShop {
         this.facing = facing;
 
         display = Shop.getPlugin().getShopHandler().createDisplay(this.signLocation);
+        fakeSign = false;
 
         if(isAdmin)
             owner = Shop.getPlugin().getShopHandler().getAdminUUID();
@@ -423,6 +425,14 @@ public abstract class AbstractShop {
             if (message != null && !message.isEmpty())
                 formatAndSendFancyMessage(message, player);
         }
+    }
+
+    public boolean isFakeSign(){
+        return fakeSign;
+    }
+
+    public void setFakeSign(boolean fakeSign){
+        this.fakeSign = fakeSign;
     }
 
     protected void formatAndSendFancyMessage(String message, Player player){

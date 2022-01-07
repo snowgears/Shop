@@ -9,6 +9,7 @@ import com.snowgears.shop.handler.ShopGuiHandler;
 import com.snowgears.shop.shop.AbstractShop;
 import com.snowgears.shop.shop.ShopType;
 import com.snowgears.shop.util.PlayerData;
+import com.snowgears.shop.util.ShopCreationProcess;
 import com.snowgears.shop.util.ShopMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -85,8 +86,8 @@ public class CreativeSelectionListener implements Listener {
                             player.sendMessage(message);
                     } else {
                         if ((shop.getType() == ShopType.BARTER && shop.getItemStack() != null && shop.getSecondaryItemStack() == null)
-                                || shop.getType() == ShopType.BUY) {
-                            this.addPlayerData(player, clicked.getLocation(), false);
+                                || shop.getType() == ShopType.BUY || shop.getType() == ShopType.COMBO) {
+                            this.putPlayerInCreativeSelection(player, clicked.getLocation(), false);
                         }
                     }
                 }
@@ -141,7 +142,7 @@ public class CreativeSelectionListener implements Listener {
             public void run() {
                 Player player = plugin.getServer().getPlayer(event.getPlayer().getUniqueId());
                 if(player != null) {
-                    boolean removed = removePlayerData(player);
+                    boolean removed = removePlayerFromCreativeSelection(player);
                     if (removed)
                         player.updateInventory();
                 }
@@ -151,7 +152,7 @@ public class CreativeSelectionListener implements Listener {
 
     @EventHandler
     public void onShopIntialize(PlayerInitializeShopEvent event){
-        removePlayerData(event.getPlayer());
+        removePlayerFromCreativeSelection(event.getPlayer());
     }
 
     @EventHandler (priority = EventPriority.HIGHEST)
@@ -169,7 +170,7 @@ public class CreativeSelectionListener implements Listener {
                 if (!playerData.isGuiSearch()) {
                     AbstractShop shop = playerData.getShop();
                     if (shop != null) {
-                        if (shop.getType() == ShopType.BUY) {
+                        if (shop.getType() == ShopType.BUY || shop.getType() == ShopType.COMBO) {
 
                             PlayerInitializeShopEvent e = new PlayerInitializeShopEvent(player, shop);
                             Bukkit.getServer().getPluginManager().callEvent(e);
@@ -182,13 +183,7 @@ public class CreativeSelectionListener implements Listener {
                             }
 
                             shop.setItemStack(event.getCursor());
-                            shop.getDisplay().spawn(player);
-                            shop.updateSign();
-                            String message = ShopMessage.getMessage(shop.getType().toString(), "create", shop, player);
-                            if (message != null && !message.isEmpty())
-                                player.sendMessage(message);
-                            plugin.getTransactionListener().sendEffects(true, player, shop);
-                            plugin.getShopHandler().saveShops(shop.getOwnerUUID());
+                            plugin.getShopCreationUtil().sendCreationSuccess(player, shop);
 
                         } else if (shop.getType() == ShopType.BARTER) {
 
@@ -203,21 +198,42 @@ public class CreativeSelectionListener implements Listener {
                             }
 
                             shop.setSecondaryItemStack(event.getCursor());
-                            shop.getDisplay().spawn(player);
-                            shop.updateSign();
-                            String message = ShopMessage.getMessage(shop.getType().toString(), "create", shop, player);
+                            plugin.getShopCreationUtil().sendCreationSuccess(player, shop);
+                        }
+                        removePlayerFromCreativeSelection(player);
+                    }
+                    //there is a chest creation process
+                    else if(plugin.getMiscListener().getShopCreationProcess(player) != null) {
+
+                        //they just hit a chest with an open hand (so they are making a BUY shop) and now need to choose an item from creative selection
+                        ShopCreationProcess currentProcess = plugin.getMiscListener().getShopCreationProcess(player);
+                        if(currentProcess.getStep() == ShopCreationProcess.ChatCreationStep.ITEM){
+                            currentProcess.setItemStack(event.getCursor());
+                            currentProcess.setShopType(ShopType.BUY);
+
+                            String message = ShopMessage.getUnformattedMessage(currentProcess.getShopType().toString(), "createHitChestAmount");
+                            message = ShopMessage.formatMessage(message, currentProcess, player);
                             if (message != null && !message.isEmpty())
                                 player.sendMessage(message);
-                            plugin.getTransactionListener().sendEffects(true, player, shop);
-                            plugin.getShopHandler().saveShops(shop.getOwnerUUID());
+
+                            removePlayerFromCreativeSelection(player);
                         }
-                        removePlayerData(player);
+                        //they just hit a chest with an open hand when creating a barter shop and need choose a barter item from creative selection
+                        else if(currentProcess.getStep() == ShopCreationProcess.ChatCreationStep.BARTER_ITEM){
+                            currentProcess.setBarterItemStack(event.getCursor());
+
+                            String message = ShopMessage.getUnformattedMessage(currentProcess.getShopType().toString(), "createHitChestBarterAmount");
+                            message = ShopMessage.formatMessage(message, currentProcess, player);
+                            if (message != null && !message.isEmpty())
+                                player.sendMessage(message);
+
+                            removePlayerFromCreativeSelection(player);
+                        }
                     }
                 }
                 //player data is a GUI Search
                 else{
-                    plugin.getGuiHandler().closeWindow(player);
-                    removePlayerData(player);
+                    removePlayerFromCreativeSelection(player);
 
                     ListSearchResultsWindow searchResultsWindow = new ListSearchResultsWindow(player.getUniqueId(), event.getCursor());
                     searchResultsWindow.setPrevWindow(new HomeWindow(player.getUniqueId()));
@@ -232,7 +248,7 @@ public class CreativeSelectionListener implements Listener {
         }
     }
 
-    public void addPlayerData(Player player, Location shopSignLocation, boolean guiSearch) {
+    public void putPlayerInCreativeSelection(Player player, Location shopSignLocation, boolean guiSearch) {
         //System.out.println("Add Player Data called.");
         if(playerDataMap.containsKey(player.getUniqueId()))
             return;
@@ -244,11 +260,12 @@ public class CreativeSelectionListener implements Listener {
         player.setGameMode(GameMode.CREATIVE);
     }
 
-    public boolean removePlayerData(Player player){
+    public boolean removePlayerFromCreativeSelection(Player player){
         PlayerData data = playerDataMap.get(player.getUniqueId());
         if(data != null) {
             playerDataMap.remove(player.getUniqueId());
             data.apply();
+            player.closeInventory();
             return true;
         }
         return false;

@@ -88,13 +88,57 @@ public class ShopMessage {
         return message;
     }
 
-    //      # [item] : The name of the item in the transaction #
-    //      # [item amount] : The amount of the item #
-    //      # [barter item] : The name of the barter item in the transaction #
-    //      # [barter item amount] : The amount of the barter item #
-    //      # [user] : The name of the player who used the shop #
-    //      # [owner] : The name of the shop owner #
-    //      # [server name] : The name of the server #
+    public static String formatMessage(String unformattedMessage, ShopCreationProcess process, Player player) {
+        if (unformattedMessage == null) {
+            loadMessagesFromConfig();
+            return "";
+        }
+
+        if (process != null) {
+            unformattedMessage = unformattedMessage.replace("[item amount]", "" + process.getItemAmount());
+            unformattedMessage = unformattedMessage.replace("[item]", "" + Shop.getPlugin().getItemNameUtil().getName(process.getItemStack()));
+            unformattedMessage = unformattedMessage.replace("[barter item]", "" + Shop.getPlugin().getItemNameUtil().getName(process.getBarterItemStack()));
+            unformattedMessage = unformattedMessage.replace("[barter item amount]", "" + process.getBarterItemAmount());
+            if(process.getShopType() != null) {
+                unformattedMessage = unformattedMessage.replace("[shop type]", "" + process.getShopType().toString());
+            }
+            if(process.getClickedChest() != null) {
+                unformattedMessage = unformattedMessage.replace("[location]", UtilMethods.getCleanLocation(process.getClickedChest().getLocation(), false));
+                unformattedMessage = unformattedMessage.replace("[world]", process.getClickedChest().getWorld().getName());
+            }
+        }
+
+        if(player != null){
+            unformattedMessage = unformattedMessage.replace("[owner]", "" + Bukkit.getOfflinePlayer(process.getPlayerUUID().toString()));
+
+            if(unformattedMessage.contains("[shop types]")) {
+                List<ShopType> typeList = Arrays.asList(ShopType.values());
+                if((!Shop.getPlugin().usePerms() && !player.isOp()) || (Shop.getPlugin().usePerms() && !player.hasPermission("shop.operator"))){
+                    typeList.remove(ShopType.GAMBLE);
+                }
+                if(Shop.getPlugin().usePerms()){
+                    Iterator<ShopType> typeIterator = typeList.iterator();
+                    while(typeIterator.hasNext()){
+                        ShopType type = typeIterator.next();
+                        if(!player.hasPermission("shop.operator") && !player.hasPermission("shop.create."+type.toString())){
+                            typeIterator.remove();
+                        }
+                    }
+                }
+                String types = "";
+                for(int i=0; i<typeList.size(); i++){
+                    if(i < typeList.size() - 1)
+                        types += typeList.get(i).toCreationWord() + ", ";
+                    else
+                        types += typeList.get(i).toCreationWord();
+                }
+                unformattedMessage = unformattedMessage.replace("[shop types]", types);
+            }
+        }
+        unformattedMessage = ChatColor.translateAlternateColorCodes('&', unformattedMessage);
+        return unformattedMessage;
+    }
+
     public static String formatMessage(String unformattedMessage, AbstractShop shop, Player player, boolean forSign){
         if(unformattedMessage == null) {
             loadMessagesFromConfig();
@@ -102,7 +146,7 @@ public class ShopMessage {
         }
         if(shop != null && shop.getItemStack() != null) {
             unformattedMessage = unformattedMessage.replace("[item amount]", "" + shop.getItemStack().getAmount());
-            unformattedMessage = unformattedMessage.replace("[location]", shop.getSignLocation().getWorld().getName()+","+shop.getSignLocation().getBlockX()+","+shop.getSignLocation().getBlockY()+","+shop.getSignLocation().getBlockZ());
+            unformattedMessage = unformattedMessage.replace("[location]", UtilMethods.getCleanLocation(shop.getSignLocation(), false));
             unformattedMessage = unformattedMessage.replace("[item enchants]", UtilMethods.getEnchantmentsString(shop.getItemStack()));
             unformattedMessage = unformattedMessage.replace("[item lore]", UtilMethods.getLoreString(shop.getItemStack()));
             //dont replace [item] tag on first run through if its for a sign
@@ -183,6 +227,29 @@ public class ShopMessage {
             unformattedMessage = unformattedMessage.replace("[user]", "" + player.getName());
             unformattedMessage = unformattedMessage.replace("[user amount]", "" + Shop.getPlugin().getShopHandler().getNumberOfShops(player));
             unformattedMessage = unformattedMessage.replace("[build limit]", "" + Shop.getPlugin().getShopListener().getBuildLimit(player));
+            if(unformattedMessage.contains("[shop types]")) {
+                List<ShopType> typeList = Arrays.asList(ShopType.values());
+                if((!Shop.getPlugin().usePerms() && !player.isOp()) || (Shop.getPlugin().usePerms() && !player.hasPermission("shop.operator"))){
+                    typeList.remove(ShopType.GAMBLE);
+                }
+                if(Shop.getPlugin().usePerms()){
+                    Iterator<ShopType> typeIterator = typeList.iterator();
+                    while(typeIterator.hasNext()){
+                        ShopType type = typeIterator.next();
+                        if(!player.hasPermission("shop.operator") && !player.hasPermission("shop.create."+type.toString())){
+                            typeIterator.remove();
+                        }
+                    }
+                }
+                String types = "";
+                for(int i=0; i<typeList.size(); i++){
+                    if(i < typeList.size() - 1)
+                        types += typeList.get(i).toCreationWord() + ", ";
+                    else
+                        types += typeList.get(i).toCreationWord();
+                }
+                unformattedMessage = unformattedMessage.replace("[shop types]", types);
+            }
 
             if(unformattedMessage.contains("[notify")) {
 
@@ -372,11 +439,14 @@ public class ShopMessage {
             messageMap.put(type.toString() + "_owner", chatConfig.getString("transaction." + type.toString().toUpperCase() + ".owner"));
 
             messageMap.put(type.toString() + "_initialize", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".initialize"));
-            if(type == ShopType.BUY)
+            if(type == ShopType.BUY || type == ShopType.COMBO)
                 messageMap.put(type.toString() + "_initializeAlt", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".initializeAlt"));
             else if(type == ShopType.BARTER) {
                 messageMap.put(type.toString() + "_initializeInfo", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".initializeInfo"));
                 messageMap.put(type.toString() + "_initializeBarter", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".initializeBarter"));
+                messageMap.put(type.toString() + "_createHitChest", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".createHitChest"));
+                messageMap.put(type.toString() + "_createHitChestBarterAmount", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".createHitChestBarterAmount"));
+                messageMap.put(type.toString() + "_initializeBarterAlt", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".initializeBarterAlt"));
             }
             messageMap.put(type.toString() + "_create", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".create"));
             messageMap.put(type.toString() + "_destroy", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".destroy"));
@@ -390,12 +460,24 @@ public class ShopMessage {
             messageMap.put(type.toString() + "_playerNoStock", chatConfig.getString("transaction_issue." + type.toString().toUpperCase() + ".playerNoStock"));
             messageMap.put(type.toString() + "_playerNoSpace", chatConfig.getString("transaction_issue." + type.toString().toUpperCase() + ".playerNoSpace"));
 
+            if(type != ShopType.GAMBLE){
+                messageMap.put(type.toString() + "_createHitChestAmount", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".createHitChestAmount"));
+            }
+            if(type != ShopType.BARTER){
+                messageMap.put(type.toString() + "_createHitChestPrice", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".createHitChestPrice"));
+            }
+            if(type == ShopType.COMBO){
+                messageMap.put(type.toString() + "_createHitChestPriceCombo", chatConfig.getString("interaction." + type.toString().toUpperCase() + ".createHitChestPriceCombo"));
+            }
+
             int count = 1;
             for(String s : chatConfig.getStringList("description."+type.toString().toUpperCase())){
                 messageMap.put(type.toString() + "_description"+count, s);
                 count++;
             }
         }
+        messageMap.put("createHitChest", chatConfig.getString("interaction.createHitChest"));
+        messageMap.put("adminCreateHitChest", chatConfig.getString("interaction.adminCreateHitChest"));
 
         messageMap.put("permission_use", chatConfig.getString("permission.use"));
         messageMap.put("permission_create", chatConfig.getString("permission.create"));
@@ -408,9 +490,11 @@ public class ShopMessage {
         messageMap.put("interactionIssue_direction", chatConfig.getString("interaction_issue.createDirection"));
         messageMap.put("interactionIssue_sameItem", chatConfig.getString("interaction_issue.createSameItem"));
         messageMap.put("interactionIssue_displayRoom", chatConfig.getString("interaction_issue.createDisplayRoom"));
+        messageMap.put("interactionIssue_signRoom", chatConfig.getString("interaction_issue.createSignRoom"));
         messageMap.put("interactionIssue_createOtherPlayer", chatConfig.getString("interaction_issue.createOtherShop"));
         messageMap.put("interactionIssue_createInsufficientFunds", chatConfig.getString("interaction_issue.createInsufficientFunds"));
         messageMap.put("interactionIssue_destroyInsufficientFunds", chatConfig.getString("interaction_issue.destroyInsufficientFunds"));
+        messageMap.put("interactionIssue_teleportInsufficientFunds", chatConfig.getString("interaction_issue.teleportInsufficientFunds"));
         messageMap.put("interactionIssue_initialize", chatConfig.getString("interaction_issue.initializeOtherShop"));
         messageMap.put("interactionIssue_destroyChest", chatConfig.getString("interaction_issue.destroyChest"));
         messageMap.put("interactionIssue_useOwnShop", chatConfig.getString("interaction_issue.useOwnShop"));
@@ -419,6 +503,7 @@ public class ShopMessage {
         messageMap.put("interactionIssue_worldBlacklist", chatConfig.getString("interaction_issue.worldBlacklist"));
         messageMap.put("interactionIssue_regionRestriction", chatConfig.getString("interaction_issue.regionRestriction"));
         messageMap.put("interactionIssue_itemListDeny", chatConfig.getString("interaction_issue.itemListDeny"));
+        messageMap.put("interactionIssue_createHitChestTimeout", chatConfig.getString("interaction_issue.createHitChestTimeout"));
 
 
         int count = 1;

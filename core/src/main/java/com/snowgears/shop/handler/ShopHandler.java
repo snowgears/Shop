@@ -682,6 +682,10 @@ public class ShopHandler {
                     else{ //not sure why I have to do this but if I don't it will be set to LARGE_ITEM for some reason (I cannot find right now)
                         config.set("shops." + owner + "." + shopNumber + ".displayType", null);
                     }
+                    //only write the variable if true
+                    if(shop.isFakeSign()){
+                        config.set("shops." + owner + "." + shopNumber + ".fakeSign", shop.isFakeSign());
+                    }
 
                     ItemStack itemStack = shop.getItemStack();
                     itemStack.setAmount(1);
@@ -857,6 +861,11 @@ public class ShopHandler {
                         String displayType = config.getString("shops." + shopOwner + "." + shopNumber + ".displayType");
                         if(displayType != null)
                             shop.getDisplay().setType(DisplayType.valueOf(displayType), false);
+
+                        boolean isFakeSign = config.getBoolean("shops." + shopOwner + "." + shopNumber + ".fakeSign");
+                        if(isFakeSign){
+                            shop.setFakeSign(true);
+                        }
 
                         //if chunk its in is already loaded, calculate it here
                         if(shop.getDisplay().isChunkLoaded()) {

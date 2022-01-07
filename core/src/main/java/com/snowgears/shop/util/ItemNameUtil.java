@@ -76,6 +76,8 @@ public class ItemNameUtil {
         try {
             is.getItemMeta().getLocalizedName();
         } catch (NoSuchMethodError e) { } //1.8 doesn't have getLocalizedName() method
+        if(is.getItemMeta() != null)
+            name = is.getItemMeta().getLocalizedName();
         if(name == null || name.isEmpty()){
             return UtilMethods.capitalize(is.getType().name().replace("_", " ").toLowerCase());
         }

@@ -1,4 +1,4 @@
-package com.snowgears.shop.util;
+package com.snowgears.shop.hook;
 
 import com.palmergames.bukkit.towny.utils.ShopPlotUtil;
 import com.snowgears.shop.Shop;

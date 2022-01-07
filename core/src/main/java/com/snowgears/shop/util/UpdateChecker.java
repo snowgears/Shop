@@ -62,11 +62,6 @@ public class UpdateChecker {
                     //Check if the requested version is the same as the one in your plugin.yml.
                     if (localPluginVersion.equals(spigotPluginVersion)) return;
 
-                    //now doing 2 shop versions. (0.8.2.10 = 1.8.2.10)
-                    //0 version is for 1.8-1.12
-                    //1 version is for 1.13+
-                    if(localPluginVersion.substring(2).equals(spigotPluginVersion.substring(2))) return;
-
                     Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', UPDATE_MSG));
 
                     //Register the PlayerJoinEvent

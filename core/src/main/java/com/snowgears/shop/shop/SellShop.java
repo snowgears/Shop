@@ -1,6 +1,5 @@
 package com.snowgears.shop.shop;
 
-import com.snowgears.shop.Shop;
 import com.snowgears.shop.event.PlayerExchangeShopEvent;
 import com.snowgears.shop.util.EconomyUtils;
 import com.snowgears.shop.util.InventoryUtils;

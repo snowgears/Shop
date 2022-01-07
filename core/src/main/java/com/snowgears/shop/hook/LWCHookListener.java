@@ -1,4 +1,4 @@
-package com.snowgears.shop.listener;
+package com.snowgears.shop.hook;
 
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.lwc.LWCPlugin;
