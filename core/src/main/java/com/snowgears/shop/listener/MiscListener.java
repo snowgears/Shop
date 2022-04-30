@@ -78,10 +78,13 @@ public class MiscListener implements Listener {
         Block chest = null;
         final org.bukkit.material.Sign sign = (org.bukkit.material.Sign) b.getState().getData(); //TODO for some reason this has thrown cast errors
 
-        if (sign.isWallSign())
+        if (sign.isWallSign()) {
             chest = b.getRelative(sign.getAttachedFace());
-        else
+        }
+        else {
             chest = b.getRelative(sign.getFacing().getOppositeFace());
+        }
+        signDirection = sign.getFacing();
 
         int amount = 0 ;
         ShopType type = null;
@@ -120,6 +123,9 @@ public class MiscListener implements Listener {
 
                 type = plugin.getShopCreationUtil().getShopType(event.getLine(3));
                 isAdmin = plugin.getShopCreationUtil().getShopIsAdmin(event.getLine(3));
+
+                if(type == null)
+                    type = ShopType.SELL;
 
                 PricePair pricePair = plugin.getShopCreationUtil().getShopPricePair(player, event.getLine(2), type);
                 if (pricePair == null) {
@@ -209,6 +215,7 @@ public class MiscListener implements Listener {
 
                     if(initializedShop){
                         plugin.getShopCreationUtil().sendCreationSuccess(player, shop);
+                        plugin.getLogHandler().logAction(player, shop, ShopActionType.INIT);
                     }
                 }
                 event.setCancelled(true); //cancel event regardless
@@ -219,8 +226,6 @@ public class MiscListener implements Listener {
                     return;
 
                 //TODO also protect the chest if its in the middle of a chat creation process
-
-                //TODO check that there is room for the sign on the clicked face
 
                 if(event.getItem() == null || event.getItem().getType() == Material.AIR){
                     if(plugin.allowCreativeSelection()) {
@@ -272,8 +277,16 @@ public class MiscListener implements Listener {
                 if(!player.isSneaking())
                     return;
 
+                //dont let players create shops via chest on shops that already exist
+                //TODO come back to this and allow players to create double chest shops via chest creation method
+                AbstractShop existingShop = plugin.getShopHandler().getShopByChest(clicked);
+                if (existingShop != null) {
+                    return;
+                }
+
                 if(!plugin.getShopCreationUtil().shopCanBeCreated(player, clicked))
                     return;
+
 
                 event.setCancelled(true);
 
@@ -328,6 +341,10 @@ public class MiscListener implements Listener {
             switch (process.getStep()){
                 case SHOP_TYPE:
                     ShopType type = plugin.getShopCreationUtil().getShopType(event.getMessage());
+                    if(type == null){
+                        playerChatCreationSteps.remove(player.getUniqueId());
+                        return;
+                    }
                     boolean isAdmin = plugin.getShopCreationUtil().getShopIsAdmin(event.getMessage());
                     process.setShopType(type);
                     process.setAdmin(isAdmin);
@@ -359,7 +376,9 @@ public class MiscListener implements Listener {
                         }
                     } catch (NumberFormatException e) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "line2", null, player));
-                        event.setCancelled(true);
+                        //event.setCancelled(true);
+                        //instead of cancelling the chat event, just let them know what they typed wasnt a number and break them out of the creation process so they aren't chat locked
+                        playerChatCreationSteps.remove(player.getUniqueId());
                         return;
                     }
                     process.setItemAmount(amount);
@@ -387,7 +406,9 @@ public class MiscListener implements Listener {
                 case ITEM_PRICE:
                     double price = plugin.getShopCreationUtil().getShopPrice(player, event.getMessage(), process.getShopType());
                     if(price == -1){
-                        event.setCancelled(true);
+                        //event.setCancelled(true);
+                        //instead of cancelling the chat event, just let them know what they typed wasnt a number and break them out of the creation process so they aren't chat locked
+                        playerChatCreationSteps.remove(player.getUniqueId());
                         return;
                     }
                     process.setPrice(price);
@@ -407,7 +428,9 @@ public class MiscListener implements Listener {
                 case ITEM_PRICE_COMBO:
                     double priceCombo = plugin.getShopCreationUtil().getShopPriceCombo(player, event.getMessage(), process.getShopType());
                     if(priceCombo == -1){
-                        event.setCancelled(true);
+                        //event.setCancelled(true);
+                        //instead of cancelling the chat event, just let them know what they typed wasnt a number and break them out of the creation process so they aren't chat locked
+                        playerChatCreationSteps.remove(player.getUniqueId());
                         return;
                     }
                     process.setPriceCombo(priceCombo);
@@ -430,7 +453,9 @@ public class MiscListener implements Listener {
                         }
                     } catch (NumberFormatException e) {
                         player.sendMessage(ShopMessage.getMessage("interactionIssue", "line2", null, player));
-                        event.setCancelled(true);
+                        //event.setCancelled(true);
+                        //instead of cancelling the chat event, just let them know what they typed wasnt a number and break them out of the creation process so they aren't chat locked
+                        playerChatCreationSteps.remove(player.getUniqueId());
                         return;
                     }
                     process.setPrice(barterAmount);
@@ -505,6 +530,8 @@ public class MiscListener implements Listener {
                     return;
                 }
 
+                plugin.getLogHandler().logAction(player, shop, ShopActionType.DESTROY);
+
                 if(shop.isFakeSign()){
                     event.setDropItems(false);
                 }
@@ -543,6 +570,9 @@ public class MiscListener implements Listener {
                         event.setCancelled(true);
                         return;
                     }
+
+                    plugin.getLogHandler().logAction(player, shop, ShopActionType.DESTROY);
+
                     if(shop.isFakeSign()){
                         event.setDropItems(false);
                     }
@@ -573,7 +603,7 @@ public class MiscListener implements Listener {
                         if(message != null && !message.isEmpty())
                             player.sendMessage(message);
                         event.setCancelled(true);
-                        plugin.getTransactionListener().sendEffects(false, player, shop);
+                        plugin.getTransactionHelper().sendEffects(false, player, shop);
                     }
                     else {
                         PlayerResizeShopEvent e = new PlayerResizeShopEvent(player, shop, b.getLocation(), false);
@@ -594,7 +624,7 @@ public class MiscListener implements Listener {
                     String message = ShopMessage.getMessage("interactionIssue", "destroyChest", null, player);
                     if(message != null && !message.isEmpty())
                         player.sendMessage(message);
-                    plugin.getTransactionListener().sendEffects(false, player, shop);
+                    plugin.getTransactionHelper().sendEffects(false, player, shop);
                 }
                 event.setCancelled(true);
             }

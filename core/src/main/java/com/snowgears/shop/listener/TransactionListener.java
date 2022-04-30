@@ -127,7 +127,7 @@ public class TransactionListener implements Listener {
 
     private void executeTransaction(Player player, AbstractShop shop, ShopType actionType){
 
-        TransactionError issue = shop.executeTransaction(1, player, true, actionType);
+        TransactionError issue = shop.executeTransaction(player, true, actionType);
 
         //there was an issue when checking transaction, send reason to player
         if(issue != TransactionError.NONE){

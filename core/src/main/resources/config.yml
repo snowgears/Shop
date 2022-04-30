@@ -131,6 +131,23 @@ worldBlacklist:
    - "example_world"
    - "example2_world"
 
+# Here you can map player actions on shops to specific controls
+#   - LEFT_CLICK_SIGN
+#   - SHIFT_LEFT_CLICK_SIGN
+#   - RIGHT_CLICK_SIGN
+#   - SHIFT_RIGHT_CLICK_SIGN
+#
+#   - LEFT_CLICK_CHEST
+#   - SHIFT_LEFT_CLICK_CHEST
+#   - RIGHT_CLICK_CHEST
+#   - SHIFT_RIGHT_CLICK_CHEST
+actionMappings:
+   transactWithShop: RIGHT_CLICK_SIGN
+   transactWithShopFullStack: SHIFT_RIGHT_CLICK_SIGN
+   viewShopDetails: LEFT_CLICK_CHEST
+   cycleShopDisplay: SHIFT_RIGHT_CLICK_CHEST
+
+
 # =================================================================== #
 #                    INTEGRATION HOOK SETTINGS                        #
 # =================================================================== #
@@ -145,63 +162,21 @@ hookTowny: false
 
 # If you use DynMap, this controls how shops show up as markers #
 dynmap-marker:
+   enabled: false
    name: Shop
-   preview: "[item](x[item amount]) - [type] - [price]"
+   preview: "[item](x[item amount]) - [shop type] - [price]"
    description: "Item: [item](x[item amount])<br />Owner: [owner]<br />Type: [shop type]<br />Price: [price]<br />Stock: [stock]<br />---------------<br />[location]<br />"
 
 # =================================================================== #
 #                         LOGGING SETTINGS                            #
 # =================================================================== #
 
-# All logging functionality requires a MySQL database to be defined and enabled #
-# Logging is optional, but if you do want to use logging, a MySQL database is required #
-
-# READ-ME: ALL LOGGING IS CURRENTLY DISABLED AND WILL THROW ERRORS IF TURNED ON. #
-# THIS IS A FEATURE THAT IS IN ACTIVE DEVELOPMENT AND WILL BE ADDED SOON #
-
-# MySQL database settings
-database:
-   enabled: false
-   name: 'mysql'
-   host: 'localhost'
-   port: 3306
-   username: 'dbadmin'
-   password: '123456'
-   ssl: false
-
-
-transaction_history:
-   notify_user_on_join: true
-   max_rows: 60
-
+# All logging functionality requires a compatible database to be defined and enabled #
+# options for type are: 'OFF', 'MYSQL', 'MARIADB'
 logging:
-   SELL:
-      transaction_success: true
-      transaction_fail: false
-      create: true
-      initialize: true
-      destroy: true
-   BUY:
-      transaction_success: true
-      transaction_fail: false
-      create: true
-      initialize: true
-      destroy: true
-   BARTER:
-      transaction_success: true
-      transaction_fail: false
-      create: true
-      initialize: true
-      destroy: true
-   GAMBLE:
-      transaction_success: true
-      transaction_fail: false
-      create: true
-      initialize: true
-      destroy: true
-   COMBO:
-      transaction_success: true
-      transaction_fail: false
-      create: true
-      initialize: true
-      destroy: true
+   type: 'OFF'
+   serverName: "localhost"
+   databaseName: "test"
+   port: 3306
+   user: "test"
+   password: "test"

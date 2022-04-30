@@ -83,4 +83,13 @@ public class ItemNameUtil {
         }
         return name;
     }
+
+//    private TranslatableComponent getTranslatableName(ItemStack item){
+//        String key = item.getType().getKey().toString();
+//        key.replaceAll("^minecraft:", "");
+//        String itemKey = (item.getType().isItem() ? "item" : "block") + ".minecraft." + key;
+//        System.out.println(itemKey); //like 'item.swordDiamond.name' or 'block.minecraft.stone'
+//        TranslatableComponent component = new TranslatableComponent(itemKey);
+//        return component;
+//    }
 }

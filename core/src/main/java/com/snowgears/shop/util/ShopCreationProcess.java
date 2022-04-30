@@ -7,11 +7,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.Directional;
-import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.MaterialData;
 
 import java.util.UUID;
 
@@ -121,10 +118,9 @@ public class ShopCreationProcess {
                 signBlock.setType(Material.WALL_SIGN);
 
                 if(signBlock.getType() == Material.WALL_SIGN) {
-                    Directional wallSignData = (Directional) signBlock.getState().getData();
-                    wallSignData.setFacing(clickedFace);
-
-                    signBlock.getState().setData((MaterialData)wallSignData);
+                    org.bukkit.material.Sign sign = (org.bukkit.material.Sign) signBlock.getState().getData();
+                    sign.setFacingDirection(clickedFace);
+                    signBlock.setData(sign.getData(), true);
                     signBlock.getState().update();
                 }
 
@@ -137,6 +133,7 @@ public class ShopCreationProcess {
 
                 if(initializedShop) {
                     Shop.getPlugin().getShopCreationUtil().sendCreationSuccess(player, shop);
+                    Shop.getPlugin().getLogHandler().logAction(player, shop, ShopActionType.INIT);
                 }
             }
         });

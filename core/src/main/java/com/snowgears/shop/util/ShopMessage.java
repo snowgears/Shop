@@ -47,19 +47,19 @@ public class ShopMessage {
         serverDisplayName = signConfig.getString("sign_text.serverDisplayName");
     }
 
-    public static String getCreationWord(String type){
+    public static String getCreationWord(String type) {
         return creationWords.get(type);
     }
 
-    public static String getFreePriceWord(){
+    public static String getFreePriceWord() {
         return freePriceWord;
     }
 
-    public static String getAdminStockWord(){
+    public static String getAdminStockWord() {
         return adminStockWord;
     }
 
-    public static String getServerDisplayName(){
+    public static String getServerDisplayName() {
         return serverDisplayName;
     }
 
@@ -70,7 +70,7 @@ public class ShopMessage {
             mainKey = key + "_" + subKey;
         }
 
-        if(messageMap.containsKey(mainKey))
+        if (messageMap.containsKey(mainKey))
             message = messageMap.get(mainKey);
         else
             return message;
@@ -99,35 +99,37 @@ public class ShopMessage {
             unformattedMessage = unformattedMessage.replace("[item]", "" + Shop.getPlugin().getItemNameUtil().getName(process.getItemStack()));
             unformattedMessage = unformattedMessage.replace("[barter item]", "" + Shop.getPlugin().getItemNameUtil().getName(process.getBarterItemStack()));
             unformattedMessage = unformattedMessage.replace("[barter item amount]", "" + process.getBarterItemAmount());
-            if(process.getShopType() != null) {
+            if (process.getShopType() != null) {
                 unformattedMessage = unformattedMessage.replace("[shop type]", "" + process.getShopType().toString());
             }
-            if(process.getClickedChest() != null) {
+            if (process.getClickedChest() != null) {
                 unformattedMessage = unformattedMessage.replace("[location]", UtilMethods.getCleanLocation(process.getClickedChest().getLocation(), false));
                 unformattedMessage = unformattedMessage.replace("[world]", process.getClickedChest().getWorld().getName());
             }
         }
 
-        if(player != null){
+        if (player != null) {
             unformattedMessage = unformattedMessage.replace("[owner]", "" + Bukkit.getOfflinePlayer(process.getPlayerUUID().toString()));
 
-            if(unformattedMessage.contains("[shop types]")) {
-                List<ShopType> typeList = Arrays.asList(ShopType.values());
-                if((!Shop.getPlugin().usePerms() && !player.isOp()) || (Shop.getPlugin().usePerms() && !player.hasPermission("shop.operator"))){
+            if (unformattedMessage.contains("[shop types]")) {
+                List<ShopType> typeList = new ArrayList(Arrays.asList(ShopType.values()));
+                if ((!Shop.getPlugin().usePerms() && !player.isOp()) || (Shop.getPlugin().usePerms() && !player.hasPermission("shop.operator"))) {
                     typeList.remove(ShopType.GAMBLE);
                 }
-                if(Shop.getPlugin().usePerms()){
-                    Iterator<ShopType> typeIterator = typeList.iterator();
-                    while(typeIterator.hasNext()){
-                        ShopType type = typeIterator.next();
-                        if(!player.hasPermission("shop.operator") && !player.hasPermission("shop.create."+type.toString())){
-                            typeIterator.remove();
+                if (Shop.getPlugin().usePerms()) {
+                    if (!player.hasPermission("shop.create")) {
+                        Iterator<ShopType> typeIterator = typeList.iterator();
+                        while (typeIterator.hasNext()) {
+                            ShopType type = typeIterator.next();
+                            if (!player.hasPermission("shop.operator") && !player.hasPermission("shop.create." + type.toString().toLowerCase())) {
+                                typeIterator.remove();
+                            }
                         }
                     }
                 }
                 String types = "";
-                for(int i=0; i<typeList.size(); i++){
-                    if(i < typeList.size() - 1)
+                for (int i = 0; i < typeList.size(); i++) {
+                    if (i < typeList.size() - 1)
                         types += typeList.get(i).toCreationWord() + ", ";
                     else
                         types += typeList.get(i).toCreationWord();
@@ -136,6 +138,14 @@ public class ShopMessage {
             }
         }
         unformattedMessage = ChatColor.translateAlternateColorCodes('&', unformattedMessage);
+        return unformattedMessage;
+    }
+
+    public static String formatMessage(String unformattedMessage, Player player, OfflineTransactions offlineTransactions) {
+        if(offlineTransactions != null && player != null) {
+            unformattedMessage = unformattedMessage.replace("[offline transactions]", "" + offlineTransactions.getNumTransactions());
+            //unformattedMessage = unformattedMessage.replace("[offline profit]", "" + offlineTransactions.); //TODO
+        }
         return unformattedMessage;
     }
 
@@ -223,12 +233,17 @@ public class ShopMessage {
                 shop.setSignLinesRequireRefresh(true);
             }
         }
+        else{
+            //hacky workaround (for now). If shop is null, set shop type to nothing
+            //this is so permissions message reads "you are not able to make shops" instead of "you are not able to make [shop type] shops"
+            unformattedMessage = unformattedMessage.replace("[shop type] ", "");
+        }
         if(player != null) {
             unformattedMessage = unformattedMessage.replace("[user]", "" + player.getName());
             unformattedMessage = unformattedMessage.replace("[user amount]", "" + Shop.getPlugin().getShopHandler().getNumberOfShops(player));
             unformattedMessage = unformattedMessage.replace("[build limit]", "" + Shop.getPlugin().getShopListener().getBuildLimit(player));
             if(unformattedMessage.contains("[shop types]")) {
-                List<ShopType> typeList = Arrays.asList(ShopType.values());
+                List<ShopType> typeList = new ArrayList(Arrays.asList(ShopType.values()));
                 if((!Shop.getPlugin().usePerms() && !player.isOp()) || (Shop.getPlugin().usePerms() && !player.hasPermission("shop.operator"))){
                     typeList.remove(ShopType.GAMBLE);
                 }
@@ -525,6 +540,12 @@ public class ShopMessage {
         count = 1;
         for(String s : chatConfig.getStringList("guiSearchSelection.prompt")){
             messageMap.put("guiSearchSelection_prompt"+count, s);
+            count++;
+        }
+
+        count = 1;
+        for(String s : chatConfig.getStringList("transaction.OFFLINE_NOTIFICATION")){
+            messageMap.put("offline_transactions"+count, s);
             count++;
         }
 

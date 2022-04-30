@@ -1,6 +1,5 @@
 package com.snowgears.shop.display;
 
-import com.snowgears.shop.display.AbstractDisplay;
 import com.snowgears.shop.util.ArmorStandData;
 import net.minecraft.server.v1_13_R2.*;
 import org.bukkit.Location;

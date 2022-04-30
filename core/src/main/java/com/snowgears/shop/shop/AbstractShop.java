@@ -17,6 +17,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -134,7 +135,7 @@ public abstract class AbstractShop {
 
     //abstract methods that must be implemented in each shop subclass
 
-    public abstract TransactionError executeTransaction(int orders, Player player, boolean isCheck, ShopType transactionType);
+    public abstract TransactionError executeTransaction(Player player, boolean isCheck, ShopType transactionType);
 
     public int getStock() {
         if(this.isAdmin)
@@ -476,5 +477,42 @@ public abstract class AbstractShop {
             }
         }
         player.spigot().sendMessage(fancyMessage);
+    }
+
+    public boolean executeClickAction(PlayerInteractEvent event, ShopClickType clickType){
+        ShopAction action = Shop.getPlugin().getShopAction(clickType);
+        if(action == null)
+            return false; //there is no action mapped to this click type
+        Player player = event.getPlayer();
+
+        switch(action) {
+            case TRANSACT:
+                Shop.getPlugin().getTransactionHelper().executeTransactionFromEvent(event, this, false);
+                break;
+            case TRANSACT_FULLSTACK:
+                Shop.getPlugin().getTransactionHelper().executeTransactionFromEvent(event, this, true);
+                break;
+            case VIEW_DETAILS:
+                this.printSalesInfo(player);
+                break;
+            case CYCLE_DISPLAY:
+                //player clicked another player's shop sign
+                if (!this.getOwnerName().equals(player.getName())) {
+                    //player has permission to change another player's shop display
+                    if((!Shop.getPlugin().usePerms() && player.isOp()) || (Shop.getPlugin().usePerms() && player.hasPermission("shop.operator"))) {
+                        this.getDisplay().cycleType(player);
+                    }
+                //player clicked own shop sign
+                } else {
+                    if(Shop.getPlugin().usePerms() && !player.hasPermission("shop.setdisplay"))
+                        return false;
+
+                    this.getDisplay().cycleType(player);
+                }
+                break;
+            default:
+                break;
+        }
+        return true;
     }
 }

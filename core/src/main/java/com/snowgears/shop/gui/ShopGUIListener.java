@@ -12,6 +12,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -34,6 +35,11 @@ public class ShopGUIListener implements Listener {
             ShopGuiWindow window = plugin.getGuiHandler().getWindow(player);
 
             if(event.getView().getTitle().equals(window.getTitle())){
+
+                if(event.getClick() == ClickType.NUMBER_KEY) {
+                    event.setCancelled(true);
+                    return;
+                }
 
                 ItemStack clicked = event.getCurrentItem();
                 if(clicked != null && clicked.getType() != Material.AIR){

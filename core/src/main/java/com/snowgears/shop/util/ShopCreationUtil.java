@@ -7,15 +7,15 @@ import com.snowgears.shop.event.PlayerInitializeShopEvent;
 import com.snowgears.shop.hook.TownyHook;
 import com.snowgears.shop.hook.WorldGuardHook;
 import com.snowgears.shop.shop.AbstractShop;
-import com.snowgears.shop.shop.SellShop;
 import com.snowgears.shop.shop.ShopType;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.block.*;
-import org.bukkit.block.data.Directional;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.Container;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.MaterialData;
 
 public class ShopCreationUtil {
 
@@ -49,18 +49,35 @@ public class ShopCreationUtil {
 
         if ((!plugin.usePerms() && !player.isOp()) || (plugin.usePerms() && !player.hasPermission("shop.operator"))) {
             if (numberOfShops >= buildPermissionNumber) {
-                AbstractShop tempShop = new SellShop(null, player.getUniqueId(), 0, 0, false, BlockFace.NORTH);
-                player.sendMessage(ShopMessage.getMessage("permission", "buildLimit", tempShop, player));
+                player.sendMessage(ShopMessage.getMessage("permission", "buildLimit", null, player));
                 return false;
             }
         }
 
         if (plugin.getWorldBlacklist().contains(chest.getWorld().getName())) {
-            if (!(player.isOp() || (plugin.usePerms() && player.hasPermission("shop.operator")))) {
+            if ((!plugin.usePerms() && !player.isOp()) || (plugin.usePerms() && !player.hasPermission("shop.operator"))) {
                 player.sendMessage(ShopMessage.getMessage("interactionIssue", "worldBlacklist", null, player));
                 return false;
             }
         }
+
+        if (plugin.usePerms() && !player.hasPermission("shop.operator")) {
+            boolean canCreate = false;
+            if(!player.hasPermission("shop.create")){
+                for(ShopType shopType : ShopType.values()){
+                    if(player.hasPermission("shop.create."+shopType.toString().toLowerCase()))
+                        canCreate = true;
+                }
+            }
+            else {
+                canCreate = true;
+            }
+            if(!canCreate){
+                player.sendMessage(ShopMessage.getMessage("permission", "create", null, player));
+                return false;
+            }
+        }
+
 
         //do a check for the WorldGuard region (optional hook)
         boolean canCreateShopInRegion = true;
@@ -93,6 +110,8 @@ public class ShopCreationUtil {
 
     public AbstractShop createShop(Player player, Block chestBlock, Block signBlock, PricePair pricePair, int amount, boolean isAdmin, ShopType type, BlockFace signDirection, boolean isFakeSign){
         String playerMessage = null;
+        if(type == null)
+            type = ShopType.SELL;
         final AbstractShop shop = AbstractShop.create(signBlock.getLocation(), player.getUniqueId(), pricePair.getPrice(), pricePair.getPriceCombo(), amount, isAdmin, type, signDirection);
         shop.setFakeSign(isFakeSign);
 
@@ -138,7 +157,6 @@ public class ShopCreationUtil {
         //removed all the direction checking code. just make sure its a container
         //make sure that the sign is in front of the chest, unless it is a shulker box
         if (chestBlock.getState() instanceof Container || (plugin.useEnderChests() && chestBlock.getType() == Material.ENDER_CHEST)) {
-            //System.out.println("Chest of shop was a container.");
             existingShop = plugin.getShopHandler().getShopByChest(chestBlock);
             if (existingShop != null) {
                 //if the block they are adding a sign to is already a shop, do not let them
@@ -152,15 +170,14 @@ public class ShopCreationUtil {
 
 
             if (!(signBlock.getType() == Material.WALL_SIGN)) {
-                if (!signBlock.getType().toString().contains("_SIGN")) {
+                if (!signBlock.getType().toString().contains("SIGN")) {
                     return null;
                 }
-                String wallSignString = signBlock.getType().toString().replaceAll("_SIGN", "_WALL_SIGN");
-                signBlock.setType(Material.valueOf(wallSignString));
+                signBlock.setType(Material.WALL_SIGN);
 
-                Directional wallSignData = (Directional) signBlock.getState().getData();
-                wallSignData.setFacing(signDirection);
-                signBlock.getState().setData((MaterialData)wallSignData);
+                org.bukkit.material.Sign sign = (org.bukkit.material.Sign) signBlock.getState().getData();
+                sign.setFacingDirection(signDirection);
+                signBlock.setData(sign.getData(), true);
                 signBlock.getState().update();
             }
             Sign signBlockState = (Sign) signBlock.getState();
@@ -172,6 +189,8 @@ public class ShopCreationUtil {
             PlayerCreateShopEvent e = new PlayerCreateShopEvent(player, shop);
             plugin.getServer().getPluginManager().callEvent(e);
 
+            plugin.getLogHandler().logAction(player, shop, ShopActionType.CREATE);
+
             if (e.isCancelled())
                 return null;
 
@@ -182,6 +201,7 @@ public class ShopCreationUtil {
                 shop.getDisplay().setType(DisplayType.LARGE_ITEM, false);
 
                 plugin.getShopCreationUtil().sendCreationSuccess(player, shop);
+                plugin.getLogHandler().logAction(player, shop, ShopActionType.INIT);
                 return null;
             }
 
@@ -197,7 +217,7 @@ public class ShopCreationUtil {
         String message = ShopMessage.getMessage(shop.getType().toString(), "create", shop, player);
         if(message != null && !message.isEmpty())
             player.sendMessage(message);
-        Shop.getPlugin().getTransactionListener().sendEffects(true, player, shop);
+        Shop.getPlugin().getTransactionHelper().sendEffects(true, player, shop);
         Shop.getPlugin().getShopHandler().saveShops(shop.getOwnerUUID());
     }
 
@@ -233,7 +253,7 @@ public class ShopCreationUtil {
                 String message = ShopMessage.getMessage("interactionIssue", "initialize", null, player);
                 if(message != null && !message.isEmpty())
                     player.sendMessage(message);
-                plugin.getTransactionListener().sendEffects(false, player, shop);
+                plugin.getTransactionHelper().sendEffects(false, player, shop);
                 return false;
             }
         }
@@ -255,7 +275,7 @@ public class ShopCreationUtil {
                     String message = ShopMessage.getMessage("interactionIssue", "displayRoom", null, player);
                     if(message != null && !message.isEmpty())
                         player.sendMessage(message);
-                    plugin.getTransactionListener().sendEffects(false, player, shop);
+                    plugin.getTransactionHelper().sendEffects(false, player, shop);
                     return false;
                 }
             }
@@ -269,13 +289,13 @@ public class ShopCreationUtil {
                 String message = ShopMessage.getMessage("interactionIssue", "createInsufficientFunds", shop, player);
                 if(message != null && !message.isEmpty())
                     player.sendMessage(message);
-                plugin.getTransactionListener().sendEffects(false, player, shop);
+                plugin.getTransactionHelper().sendEffects(false, player, shop);
                 return false;
             }
         }
 
         if(!itemsCanBeInitialized(player, item, barterItem)){
-            plugin.getTransactionListener().sendEffects(false, player, shop);
+            plugin.getTransactionHelper().sendEffects(false, player, shop);
             return false;
         }
 
@@ -330,7 +350,7 @@ public class ShopCreationUtil {
             type = ShopType.GAMBLE;
         else if (input.toLowerCase().contains(ShopMessage.getCreationWord("COMBO")))
             type = ShopType.COMBO;
-        else
+        else if (input.toLowerCase().contains(ShopMessage.getCreationWord("SELL")))
             type = ShopType.SELL;
         return type;
     }

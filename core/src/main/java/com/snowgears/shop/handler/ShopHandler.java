@@ -38,6 +38,7 @@ public class ShopHandler {
     private ConcurrentHashMap<UUID, List<Location>> playerShops = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, List<Location>> chunkShops = new ConcurrentHashMap<>(); //String key = world_x_z
     private ConcurrentHashMap<UUID, HashSet<Location>> playersWithActiveShopDisplays = new ConcurrentHashMap<>();
+    private HashSet<UUID> playersProcessingShopDisplays = new HashSet<>();
 
     //all loading of shops happens async at onEnable()
     //shops that still need to calculate their facing direction based on sign are considered "unloaded"
@@ -79,6 +80,7 @@ public class ShopHandler {
 
         try {
             final Class<?> clazz = Class.forName("com.snowgears.shop.display.Display_" + nmsVersion);
+            //System.out.println("[Shop] Using display class - com.snowgears.shop.display.Display_" + nmsVersion);
             if (AbstractDisplay.class.isAssignableFrom(clazz)) {
                 this.displayClass = clazz;
                 return true;
@@ -404,6 +406,11 @@ public class ShopHandler {
 //    }
 
     public void processShopDisplaysNearPlayer(Player player){
+        //add the player to a logic gate for processing their displays
+        if(playersProcessingShopDisplays.contains(player.getUniqueId()))
+            return;
+        playersProcessingShopDisplays.add(player.getUniqueId());
+
         HashSet<Location> shopsNearPlayer = getShopLocationsNearLocation(player.getLocation());
         if(playersWithActiveShopDisplays.containsKey(player.getUniqueId())){
             HashSet<Location> oldShopsNearPlayer = playersWithActiveShopDisplays.get(player.getUniqueId());
@@ -444,6 +451,7 @@ public class ShopHandler {
             }
         }
         playersWithActiveShopDisplays.put(player.getUniqueId(), shopsNearPlayer);
+        playersProcessingShopDisplays.remove(player.getUniqueId());
     }
 
     public void clearShopDisplaysNearPlayer(Player player){

@@ -30,21 +30,21 @@ public class ComboShop extends AbstractShop {
 
     //TODO incorporate # of orders at a time into this transaction
     @Override
-    public TransactionError executeTransaction(int orders, Player player, boolean isCheck, ShopType transactionType) {
+    public TransactionError executeTransaction(Player player, boolean isCheck, ShopType transactionType) {
         this.isPerformingTransaction = true;
         TransactionError issue;
         if(transactionType == ShopType.SELL){
-            issue = executeSellTransaction(orders, player, isCheck);
+            issue = executeSellTransaction(player, isCheck);
         }
         else{
-            issue = executeBuyTransaction(orders, player, isCheck);
+            issue = executeBuyTransaction(player, isCheck);
         }
         this.isPerformingTransaction = false;
         setGuiIcon();
         return issue;
     }
 
-    private TransactionError executeSellTransaction(int orders, Player player, boolean isCheck){
+    private TransactionError executeSellTransaction(Player player, boolean isCheck){
         TransactionError issue = null;
 
         ItemStack is = this.getItemStack();
@@ -116,12 +116,12 @@ public class ComboShop extends AbstractShop {
                 return TransactionError.CANCELLED;
 
             //run the transaction again without the check clause
-            return executeSellTransaction(orders, player, false);
+            return executeSellTransaction(player, false);
         }
         return TransactionError.NONE;
     }
 
-    private TransactionError executeBuyTransaction(int orders, Player player, boolean isCheck){
+    private TransactionError executeBuyTransaction(Player player, boolean isCheck){
         TransactionError issue = null;
 
         ItemStack is = this.getItemStack();
@@ -195,7 +195,7 @@ public class ComboShop extends AbstractShop {
                 return TransactionError.CANCELLED;
 
             //run the transaction again without the check clause
-            return executeBuyTransaction(orders, player, false);
+            return executeBuyTransaction(player, false);
         }
         return TransactionError.NONE;
     }

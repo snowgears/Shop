@@ -118,7 +118,7 @@ public abstract class AbstractDisplay {
                     //put the extra large glass casing down
                     Location caseLoc = shop.getChestLocation().clone().add(0,1,0);
                     ArmorStandData caseStandData = DisplayUtil.getArmorStandData(new ItemStack(Material.GLASS), caseLoc, shop.getFacing(), true);
-                    spawnArmorStandPacket(null, caseStandData, null);
+                    spawnArmorStandPacket(player, caseStandData, null);
 
                     //Drop initial display item
                     spawnItemPacket(player, item, this.getItemDropLocation(false));
@@ -550,5 +550,4 @@ public abstract class AbstractDisplay {
     protected boolean isSameWorld(Player player){
         return player.getWorld().getUID().equals(this.shopSignLocation.getWorld().getUID());
     }
-
 }

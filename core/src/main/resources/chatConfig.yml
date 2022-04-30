@@ -58,6 +58,8 @@
 # [notify user] : The on/off value of how the player has their user notifications set #
 # [notify owner] : The on/off value of how the player has their owner notifications set #
 # [notify stock] : The on/off value of how the player has their stock notifications set #
+# [offline transactions]: The number of transactions that took place at a players shop while a player was offline
+# [offline profit]: The amount of currency that was either gained or lost while a player was offline
 
 transaction:
    SELL:
@@ -71,6 +73,11 @@ transaction:
       owner: "&7[user] bartered &f[barter item amount] &7of their &f[barter item](s) &7for &f[item amount] &7of your &f[item](s)&7."
    GAMBLE:
       user: "&7You gambled &a[price] &7and received &f[item]&7(x[item amount])."
+   OFFLINE_NOTIFICATION:
+      - '&d+---------------------------------------------------+'
+      - '&d| &aShop Sales &7(while offline):'
+      - '&d| &7Transactions: &b[offline transactions]'
+      - '&d+---------------------------------------------------+'
 
 transaction_issue:
    SELL:

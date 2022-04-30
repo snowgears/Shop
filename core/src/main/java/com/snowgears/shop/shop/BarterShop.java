@@ -40,7 +40,7 @@ public class BarterShop extends AbstractShop {
 
     //TODO incorporate # of orders at a time into this transaction
     @Override
-    public TransactionError executeTransaction(int orders, Player player, boolean isCheck, ShopType transactionType) {
+    public TransactionError executeTransaction(Player player, boolean isCheck, ShopType transactionType) {
 
         this.isPerformingTransaction = true;
         TransactionError issue = null;
@@ -130,7 +130,7 @@ public class BarterShop extends AbstractShop {
             }
 
             //run the transaction again without the check clause
-            return executeTransaction(orders, player, false, transactionType);
+            return executeTransaction(player, false, transactionType);
         }
         this.isPerformingTransaction = false;
         setGuiIcon();

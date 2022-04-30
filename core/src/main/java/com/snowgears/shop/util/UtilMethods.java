@@ -40,7 +40,12 @@ public class UtilMethods {
         //Long.MIN_VALUE == -Long.MIN_VALUE so we need an adjustment here
         if (value == Double.MIN_VALUE) return formatLongToKString(Double.MIN_VALUE + 1, formatZeros);
         if (value < 0) return "-" + formatLongToKString(-value, formatZeros);
-        if (value < 1000) return Double.toString(value); //deal with easy case
+        if (value < 10000){
+            if(isDecimal(value))
+                return new DecimalFormat("0.00").format(value);
+            else
+                return new DecimalFormat("#.##").format(value);
+        }
 
         Map.Entry<Double, String> e = suffixes.floorEntry(value);
         Double divideBy = e.getKey();
@@ -58,11 +63,17 @@ public class UtilMethods {
             fPrice = (truncated / 10);
         }
 
-        if(formatZeros)
-            builtString = new DecimalFormat("0.00").format(fPrice);
-        else
-            builtString = new DecimalFormat("#.##").format(fPrice);
-        return builtString += suffix;
+//        if(formatZeros)
+//            builtString = new DecimalFormat("0.00").format(fPrice);
+//        else
+//            builtString = new DecimalFormat("#.##").format(fPrice);
+        builtString = new DecimalFormat("#.##").format(fPrice);
+        builtString += suffix;
+        return builtString;
+    }
+
+    public static boolean isDecimal(double d){
+        return (d % 1 != 0);
     }
 
     public static boolean isNumber(String s) {
