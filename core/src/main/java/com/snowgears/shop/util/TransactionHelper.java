@@ -112,7 +112,7 @@ public class TransactionHelper {
         //full stack order max will be a stack of 64
         if(fullStackOrder){
             if(shop.getType() == ShopType.BARTER){
-                orderSizeMax = 64 / shop.getSecondaryItemStack().getAmount();
+                orderSizeMax = 64 / shop.getItemStack().getAmount();
                 if(orderSizeMax < 1)
                     orderSizeMax = 1;
             }

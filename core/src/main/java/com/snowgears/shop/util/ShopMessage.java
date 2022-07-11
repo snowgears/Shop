@@ -508,6 +508,7 @@ public class ShopMessage {
         messageMap.put("interactionIssue_signRoom", chatConfig.getString("interaction_issue.createSignRoom"));
         messageMap.put("interactionIssue_createOtherPlayer", chatConfig.getString("interaction_issue.createOtherShop"));
         messageMap.put("interactionIssue_createInsufficientFunds", chatConfig.getString("interaction_issue.createInsufficientFunds"));
+        messageMap.put("interactionIssue_createCooldown", chatConfig.getString("interaction_issue.createCooldown"));
         messageMap.put("interactionIssue_destroyInsufficientFunds", chatConfig.getString("interaction_issue.destroyInsufficientFunds"));
         messageMap.put("interactionIssue_teleportInsufficientFunds", chatConfig.getString("interaction_issue.teleportInsufficientFunds"));
         messageMap.put("interactionIssue_initialize", chatConfig.getString("interaction_issue.initializeOtherShop"));

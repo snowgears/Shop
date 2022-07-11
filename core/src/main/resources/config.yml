@@ -132,6 +132,7 @@ worldBlacklist:
    - "example2_world"
 
 # Here you can map player actions on shops to specific controls
+#   - NONE
 #   - LEFT_CLICK_SIGN
 #   - SHIFT_LEFT_CLICK_SIGN
 #   - RIGHT_CLICK_SIGN
@@ -180,3 +181,6 @@ logging:
    port: 3306
    user: "test"
    password: "test"
+   # properties are only used on a 'MYSQL' type for now
+   properties:
+      - "useSSL=false"

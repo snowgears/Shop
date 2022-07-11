@@ -55,15 +55,17 @@ public class ShopListener implements Listener {
                         if(permInfo.getPermission().contains("shop.buildlimit.")){
                             try {
                                 int tempNum = Integer.parseInt(permInfo.getPermission().substring(permInfo.getPermission().lastIndexOf(".") + 1));
-                                if(tempNum > buildPermissionNumber)
+                                if(tempNum > buildPermissionNumber) {
                                     buildPermissionNumber = tempNum;
+                                }
                             } catch (Exception e) {}
                         }
                     }
                     if(buildPermissionNumber == -1)
                         shopBuildLimits.put(player.getName(), 10000);
-                    else
+                    else {
                         shopBuildLimits.put(player.getName(), buildPermissionNumber);
+                    }
                 }
             }
         }, 5L);

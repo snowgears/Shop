@@ -47,6 +47,9 @@ public class ShopCreationUtil {
         int numberOfShops = plugin.getShopHandler().getNumberOfShops(player);
         int buildPermissionNumber = plugin.getShopListener().getBuildLimit(player);
 
+        //System.out.println("[Shop] "+player.getName()+" currently has "+numberOfShops+" shops.");
+        //System.out.println("[Shop] "+player.getName()+" build limit is "+buildPermissionNumber+" shops.");
+
         if ((!plugin.usePerms() && !player.isOp()) || (plugin.usePerms() && !player.hasPermission("shop.operator"))) {
             if (numberOfShops >= buildPermissionNumber) {
                 player.sendMessage(ShopMessage.getMessage("permission", "buildLimit", null, player));

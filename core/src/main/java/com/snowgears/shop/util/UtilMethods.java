@@ -408,6 +408,8 @@ public class UtilMethods {
                 return "Soul Speed";
             case "SWEEPING_EDGE":
                 return "Sweeping Edge";
+            case "SWIFT_SNEAK":
+                return "Swift Sneak";
             case "THORNS":
                 return "Thorns";
             case "VANISHING_CURSE":

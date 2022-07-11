@@ -32,8 +32,6 @@ public class ShopCreationProcess {
         this.clickedChest = clickedChest;
         this.clickedFace = clickedFace;
         this.step = ChatCreationStep.ITEM;
-        //TODO calculate clicked face from player if blockface is UP or DOWN
-        //TODO also that there is room for the sign on the clicked face
     }
 
     public Block getClickedChest() {

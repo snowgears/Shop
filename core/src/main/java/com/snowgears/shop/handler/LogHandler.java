@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.*;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class LogHandler {
@@ -61,6 +62,8 @@ public class LogHandler {
         String username = shopConfig.getString("logging.user");
         String password = shopConfig.getString("logging.password");
 
+       List<String> connectionProperties = shopConfig.getStringList("logging.properties");
+
         this.enabled = enabled;
 
         if(type.equalsIgnoreCase("OFF")) {
@@ -69,7 +72,13 @@ public class LogHandler {
         }
         if(type.equalsIgnoreCase("MYSQL")){
             dataSource = new HikariDataSource();
-            dataSource.setJdbcUrl("jdbc:mysql://"+serverName+":"+port+"/"+databaseName+"?useSSL=false");
+
+            String jdbcURL = "jdbc:mysql://"+serverName+":"+port+"/"+databaseName;
+            for(String property : connectionProperties){
+                jdbcURL += "?"+property;
+            }
+
+            dataSource.setJdbcUrl(jdbcURL);
             dataSource.setUsername(username);
             dataSource.setPassword(password);
             dataSource.setLeakDetectionThreshold(10000);
@@ -243,6 +252,7 @@ public class LogHandler {
         try (Connection conn = dataSource.getConnection()) {
             if (!conn.isValid(1000)) {
                 enabled = false;
+                conn.close();
                 throw new SQLException("Could not establish database connection.");
             }
             else{
@@ -268,16 +278,19 @@ public class LogHandler {
         }
         // Mariadb can only handle a single query per statement. We need to split at ;.
         String[] queries = setup.split(";");
+
+        Connection conn = dataSource.getConnection();
         // execute each query to the database.
         for (String query : queries) {
             // If you use the legacy way you have to check for empty queries here.
             //if (query.isBlank())) continue;
             if (query.isEmpty()) continue;
 
-            Connection conn = dataSource.getConnection();
             PreparedStatement stmt = conn.prepareStatement(query);
-            execute(stmt);
+            stmt.execute();
+            stmt.close();
         }
+        conn.close();
         System.out.println("[Shop] Successfully initialized database.");
     }
 

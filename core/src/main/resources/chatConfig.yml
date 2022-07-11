@@ -162,6 +162,7 @@ interaction_issue:
    createSignRoom: "&cThis shop could not created because there is no room for a wall sign."
    createOtherShop: "&cYou may not create a shop on the same chest as another player."
    createInsufficientFunds: "&cYou do not have the funds required to create this shop."
+   createCooldown: "&cYou can only create a shop every few seconds."
    destroyInsufficientFunds: "&cYou do not have the funds required to destroy this shop."
    teleportInsufficientFunds: "&cYou do not have the funds required to teleport to this shop."
    initializeOtherShop: "&cYou may not initialize another players shop with an item."
