@@ -12,7 +12,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.Container;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -159,7 +158,7 @@ public class ShopCreationUtil {
 
         //removed all the direction checking code. just make sure its a container
         //make sure that the sign is in front of the chest, unless it is a shulker box
-        if (chestBlock.getState() instanceof Container || (plugin.useEnderChests() && chestBlock.getType() == Material.ENDER_CHEST)) {
+        if (plugin.getShopHandler().isChest(chestBlock)) {
             existingShop = plugin.getShopHandler().getShopByChest(chestBlock);
             if (existingShop != null) {
                 //if the block they are adding a sign to is already a shop, do not let them
