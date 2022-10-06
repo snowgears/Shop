@@ -154,6 +154,7 @@ public class ShopMessage {
             loadMessagesFromConfig();
             return "";
         }
+        unformattedMessage = unformattedMessage.replace("\\n", System.lineSeparator());
         if(shop != null && shop.getItemStack() != null) {
             unformattedMessage = unformattedMessage.replace("[item amount]", "" + shop.getItemStack().getAmount());
             unformattedMessage = unformattedMessage.replace("[location]", UtilMethods.getCleanLocation(shop.getSignLocation(), false));

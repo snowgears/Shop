@@ -1,7 +1,6 @@
 package com.snowgears.shop.listener;
 
 import com.snowgears.shop.Shop;
-import com.snowgears.shop.display.DisplayType;
 import com.snowgears.shop.event.PlayerDestroyShopEvent;
 import com.snowgears.shop.event.PlayerResizeShopEvent;
 import com.snowgears.shop.hook.WorldGuardHook;
@@ -500,20 +499,6 @@ public class MiscListener implements Listener {
     //player destroys shop, call PlayerDestroyShopEvent or PlayerResizeShopEvent
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void shopDestroy(BlockBreakEvent event) {
-        //removing this since itemstacks now have no gravity and are client side
-        //refresh the shop display even if the event was cancelled as sometimes items can bug out and fall through chest
-//        if (event.isCancelled()) {
-//            Block b = event.getBlock();
-//            if (b.getBlockData() instanceof WallSign) {
-//                AbstractShop shop = plugin.getShopHandler().getShop(b.getLocation());
-//                if (shop != null) {
-//                    if (shop.getDisplay().getType() == DisplayType.ITEM) {
-//                        shop.getDisplay().spawn(event.getPlayer());
-//                        shop.updateSign();
-//                    }
-//                }
-//            }
-//        }
 
         Block b = event.getBlock();
         Player player = event.getPlayer();
@@ -525,6 +510,13 @@ public class MiscListener implements Listener {
             else if (!shop.isInitialized()) {
                 event.setCancelled(true);
                 return;
+            }
+            if(plugin.getDestroyShopRequiresSneak()){
+                if(!player.isSneaking()){
+                    event.setCancelled(true);
+                    shop.updateSign();
+                    return;
+                }
             }
             //player trying to break their own shop
             if (shop.getOwnerName().equals(player.getName())) {

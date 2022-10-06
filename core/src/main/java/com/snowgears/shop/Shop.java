@@ -4,6 +4,7 @@ import com.snowgears.shop.display.DisplayTagOption;
 import com.snowgears.shop.display.DisplayType;
 import com.snowgears.shop.gui.ShopGUIListener;
 import com.snowgears.shop.handler.*;
+import com.snowgears.shop.hook.BluemapHookListener;
 import com.snowgears.shop.hook.DynmapHookListener;
 import com.snowgears.shop.hook.LWCHookListener;
 import com.snowgears.shop.hook.WorldGuardHook;
@@ -16,7 +17,6 @@ import net.milkbowl.vault.economy.Economy;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -43,6 +43,7 @@ public class Shop extends JavaPlugin {
     private ShopGUIListener guiListener;
     private LWCHookListener lwcHookListener;
     private DynmapHookListener dynmapHookListener;
+    private BluemapHookListener bluemapHookListener;
 
     private ShopHandler shopHandler;
     private CommandHandler commandHandler;
@@ -71,10 +72,11 @@ public class Shop extends JavaPlugin {
     private boolean forceDisplayToNoneIfBlocked;
     private int displayLightLevel;
     private boolean setGlowingItemFrame;
+    private boolean setGlowingSignText;
+    private boolean destroyShopRequiresSneak;
     private int hoursOfflineToRemoveShops;
     private boolean playSounds;
     private boolean playEffects;
-    private boolean setGlowingSignText;
     private boolean allowCreateMethodSign;
     private boolean allowCreateMethodChest;
     private boolean allowCreateMethodCommand;
@@ -268,6 +270,7 @@ public class Shop extends JavaPlugin {
         playSounds = config.getBoolean("playSounds");
         playEffects = config.getBoolean("playEffects");
         setGlowingSignText = config.getBoolean("setGlowingSignText");
+        destroyShopRequiresSneak = config.getBoolean("destroyShopRequiresSneak");
 
         try {
             currencyType = CurrencyType.valueOf(config.getString("currency.type"));
@@ -409,6 +412,11 @@ public class Shop extends JavaPlugin {
             getServer().getPluginManager().registerEvents(dynmapHookListener, this);
         }
 
+        if(getServer().getPluginManager().getPlugin("BlueMap") != null){
+            bluemapHookListener = new BluemapHookListener(this);
+            getServer().getPluginManager().registerEvents(bluemapHookListener, this);
+        }
+
         displayListener.startRepeatingDisplayViewTask();
 
         if(checkUpdates){
@@ -433,6 +441,10 @@ public class Shop extends JavaPlugin {
         if(dynmapHookListener != null){
             dynmapHookListener.deleteMarkers();
             HandlerList.unregisterAll(dynmapHookListener);
+        }
+        if(bluemapHookListener != null){
+            //bluemapHookListener.deleteMarkers();
+            HandlerList.unregisterAll(bluemapHookListener);
         }
 
         plugin.getShopHandler().removeAllDisplays(null);
@@ -467,6 +479,10 @@ public class Shop extends JavaPlugin {
 
     public CreativeSelectionListener getCreativeSelectionListener() {
         return creativeSelectionListener;
+    }
+
+    public BluemapHookListener getBluemapHookListener() {
+        return bluemapHookListener;
     }
 
     public TransactionHelper getTransactionHelper() {
@@ -695,6 +711,10 @@ public class Shop extends JavaPlugin {
 
     public double getDestructionCost(){
         return destructionCost;
+    }
+
+    public boolean getDestroyShopRequiresSneak(){
+        return destroyShopRequiresSneak;
     }
 
     public double getTeleportCost(){

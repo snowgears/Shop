@@ -34,6 +34,7 @@ teleportCost: 0
 # Adds virtual funds if using vault currency and drops the item on the chest location if using physical currency #
 returnCreationCost: false
 
+
 # =================================================================== #
 #                         DISPLAY SETTINGS                            #
 # =================================================================== #
@@ -70,6 +71,11 @@ displayLightLevel: 0
 # This controls whether the item frames of shop displays are glowing #
 # THIS CAN ONLY BE USED IN MINECRAFT 1.17 OR ABOVE #
 setGlowingItemFrame: false
+
+# This controls whether shop sign text should be glowing by default #
+# THIS CAN ONLY BE USED IN MINECRAFT 1.17 OR ABOVE #
+setGlowingSignText: false
+
 
 # =================================================================== #
 #                         GENERAL SETTINGS                            #
@@ -109,10 +115,6 @@ deletePlayerShopsAfterXHoursOffline: 0
 playSounds: true
 playEffects: true
 
-# This controls whether shop sign text should be glowing by default #
-# THIS CAN ONLY BE USED IN MINECRAFT 1.17 OR ABOVE #
-setGlowingSignText: false
-
 # This controls whether or not ender chests are able to be used as shops on the server #
 enableEnderChests: false
 
@@ -148,6 +150,9 @@ actionMappings:
    viewShopDetails: LEFT_CLICK_CHEST
    cycleShopDisplay: SHIFT_RIGHT_CLICK_CHEST
 
+# If this is set to true, shops will require you to be sneaking (holding 'shift') to destroy them
+destroyShopRequiresSneak: false
+
 
 # =================================================================== #
 #                    INTEGRATION HOOK SETTINGS                        #
@@ -167,6 +172,15 @@ dynmap-marker:
    name: Shop
    preview: "[item](x[item amount]) - [shop type] - [price]"
    description: "Item: [item](x[item amount])<br />Owner: [owner]<br />Type: [shop type]<br />Price: [price]<br />Stock: [stock]<br />---------------<br />[location]<br />"
+
+# If you use BlueMap, this controls how shops show up as markers #
+bluemap-marker:
+   enabled: false
+   icon: "https://i.imgur.com/oCI3XJC.png"
+   label: "Item: [item](x[item amount])\n\nOwner: [owner]\n\nType: [shop type]\n\nPrice: [price]\n\nStock: [stock]"
+   minDistance: 0
+   maxDistance: 500
+
 
 # =================================================================== #
 #                         LOGGING SETTINGS                            #

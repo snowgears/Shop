@@ -4,6 +4,8 @@ import com.snowgears.shop.Shop;
 import com.snowgears.shop.display.DisplayTagOption;
 import com.snowgears.shop.display.DisplayType;
 import com.snowgears.shop.shop.AbstractShop;
+import com.snowgears.shop.shop.GambleShop;
+import com.snowgears.shop.shop.ShopType;
 import com.snowgears.shop.util.InventoryUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -178,6 +180,10 @@ public class DisplayListener implements Listener {
 
                 //set the GUI icon again (in case stock var needs to be updated in the GUI)
                 shop.setGuiIcon();
+                //make sure to set gamble item again if player set it to new custom items
+                if(shop.getType() == ShopType.GAMBLE){
+                    ((GambleShop)shop).setGambleItem();
+                }
             }
             //for some reason, DoubleChest does not extend Container like Chest does
             else if(event.getInventory().getHolder() instanceof DoubleChest){
@@ -194,6 +200,10 @@ public class DisplayListener implements Listener {
 
                 //set the GUI icon again (in case stock var needs to be updated in the GUI)
                 shop.setGuiIcon();
+                //make sure to set gamble item again if player set it to new custom items
+                if(shop.getType() == ShopType.GAMBLE){
+                    ((GambleShop)shop).setGambleItem();
+                }
             }
         } catch (NoClassDefFoundError e) {}
     }

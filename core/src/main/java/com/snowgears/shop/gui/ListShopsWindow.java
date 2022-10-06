@@ -3,7 +3,7 @@ package com.snowgears.shop.gui;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.handler.ShopGuiHandler;
 import com.snowgears.shop.shop.AbstractShop;
-import com.snowgears.shop.util.ShopTypeComparator;
+import com.snowgears.shop.util.ShopItemComparator;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 
@@ -39,7 +39,8 @@ public class ListShopsWindow extends ShopGuiWindow {
         makeMenuBarLower();
 
         List<AbstractShop> shops = Shop.getPlugin().getShopHandler().getShops(playerToList);
-        Collections.sort(shops, new ShopTypeComparator());
+        Collections.sort(shops, new ShopItemComparator());
+        //Collections.sort(shops, new ShopTypeComparator());
 
         //System.out.println(player.toString()+" number of shops "+shops.size());
 

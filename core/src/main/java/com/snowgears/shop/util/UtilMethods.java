@@ -479,13 +479,14 @@ public class UtilMethods {
 
     public static String cleanNumberText(String text){
         String cleaned = "";
-        for(int i=0; i<text.length(); i++) {
-            if(Character.isDigit(text.charAt(i)))
-                cleaned += text.charAt(i);
-            else if(text.charAt(i) == '.')
-                cleaned += text.charAt(i);
-            else if(text.charAt(i) == ' ')
-                cleaned += text.charAt(i);
+        String toClean = ChatColor.stripColor(text);
+        for(int i=0; i<toClean.length(); i++) {
+            if(Character.isDigit(toClean.charAt(i)))
+                cleaned += toClean.charAt(i);
+            else if(toClean.charAt(i) == '.')
+                cleaned += toClean.charAt(i);
+            else if(toClean.charAt(i) == ' ')
+                cleaned += toClean.charAt(i);
         }
         return cleaned;
     }

@@ -25,6 +25,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryCreativeEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -149,6 +151,18 @@ public class CreativeSelectionListener implements Listener {
                 }
             }
         }, 10L); //0.5 second
+    }
+
+    @EventHandler
+    public void inventoryOpen(InventoryOpenEvent event) {
+        if (!(event.getPlayer() instanceof Player))
+            return;
+
+        Player player = (Player)event.getPlayer();
+
+        if (event.getInventory().getType() != InventoryType.CREATIVE){
+            removePlayerFromCreativeSelection(player);
+        }
     }
 
     @EventHandler

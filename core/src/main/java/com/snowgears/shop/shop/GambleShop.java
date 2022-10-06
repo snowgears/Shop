@@ -26,7 +26,7 @@ public class GambleShop extends AbstractShop {
         this.isAdmin = true;
         this.type = ShopType.GAMBLE;
         this.signLines = ShopMessage.getSignLines(this, this.type);
-        this.gambleItem = Shop.getPlugin().getDisplayListener().getRandomItem(this);
+        setGambleItem();
         this.setAmount(this.gambleItem.getAmount());
     }
 
@@ -36,6 +36,11 @@ public class GambleShop extends AbstractShop {
 
         this.isPerformingTransaction = true;
         TransactionError issue = null;
+
+        //set gamble item to random in the first check
+        if (isCheck) {
+            setGambleItem();
+        }
 
         //commented out because shop type is always admin
         //check if shop has enough items
@@ -129,7 +134,7 @@ public class GambleShop extends AbstractShop {
         this.setAmount(gambleItem.getAmount());
         final DisplayType initialDisplayType = this.getDisplay().getType();
         this.getDisplay().setType(DisplayType.ITEM, false);
-        this.gambleItem = Shop.getPlugin().getDisplayListener().getRandomItem(this);
+        setGambleItem();
         this.getDisplay().spawn(player); //TODO maybe only show what item player got to the player themselves???
 
         new BukkitRunnable() {
@@ -147,6 +152,10 @@ public class GambleShop extends AbstractShop {
                 isPerformingTransaction = false;
             }
         }.runTaskLater(Shop.getPlugin(), 20);
+    }
+
+    public void setGambleItem(){
+        this.gambleItem = Shop.getPlugin().getDisplayListener().getRandomItem(this);
     }
 
     public ItemStack getGambleItem(){
