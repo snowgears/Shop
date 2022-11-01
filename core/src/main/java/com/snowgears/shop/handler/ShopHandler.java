@@ -555,6 +555,7 @@ public class ShopHandler {
         for (UUID ownerUUID : plugin.getShopHandler().getShopOwnerUUIDs()) {
             for (AbstractShop shop : plugin.getShopHandler().getShops(ownerUUID)) {
                 if(shop.getDisplay().isChunkLoaded()) {
+                    shop.updateSign();
                     for (Entity entity : shop.getSignLocation().getWorld().getNearbyEntities(shop.getSignLocation(), 2, 2, 2)) {
                         if(DisplayUtil.isDisplay(entity)) {
                             System.out.println("[Shop] removed legacy display at "+UtilMethods.getCleanLocation(entity.getLocation(), true));
