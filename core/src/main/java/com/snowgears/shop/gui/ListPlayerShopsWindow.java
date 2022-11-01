@@ -3,7 +3,7 @@ package com.snowgears.shop.gui;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.handler.ShopGuiHandler;
 import com.snowgears.shop.shop.AbstractShop;
-import com.snowgears.shop.util.ComparatorShopType;
+import com.snowgears.shop.util.ComparatorShopItemNameLow;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 
@@ -11,18 +11,22 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-public class ListSearchResultsWindow extends ShopGuiWindow {
+public class ListPlayerShopsWindow extends ShopGuiWindow {
 
-    private ItemStack searchItem;
+    private UUID playerToList;
 
-    public ListSearchResultsWindow(UUID player, ItemStack searchItem){
+    public ListPlayerShopsWindow(UUID player, UUID playerToList){
         super(player);
 
-        //this.title = "Shops with item: "+Shop.getPlugin().getItemNameUtil().getName(searchItem);
-        this.title = Shop.getPlugin().getGuiHandler().getTitle(ShopGuiHandler.GuiTitle.LIST_SEARCH_RESULTS);
+        if(Shop.getPlugin().getShopHandler().getAdminUUID().equals(playerToList)) {
+            ItemStack is = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.LIST_PLAYER_ADMIN, Shop.getPlugin().getShopHandler().getAdminUUID(), null);
+            this.title = is.getItemMeta().getDisplayName();
+        }
+        else
+            this.title = Bukkit.getOfflinePlayer(playerToList).getName();
 
         this.page = Bukkit.createInventory(null, INV_SIZE, this.title);
-        this.searchItem = searchItem;
+        this.playerToList = playerToList;
         initInvContents();
     }
 
@@ -34,8 +38,9 @@ public class ListSearchResultsWindow extends ShopGuiWindow {
         makeMenuBarUpper();
         makeMenuBarLower();
 
-        List<AbstractShop> shops = Shop.getPlugin().getShopHandler().getShopsByItem(this.searchItem);
-        Collections.sort(shops, new ComparatorShopType());
+        List<AbstractShop> shops = Shop.getPlugin().getShopHandler().getShops(playerToList);
+        Collections.sort(shops, new ComparatorShopItemNameLow());
+        //Collections.sort(shops, new ShopTypeComparator());
 
         //System.out.println(player.toString()+" number of shops "+shops.size());
 

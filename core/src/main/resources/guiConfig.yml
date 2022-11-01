@@ -25,7 +25,8 @@
 
 titles:
    home: "Shop Menu"
-   list_players: "All Player Shops"
+   list_players: "Shops By Player"
+   list_shops: "Shops"
    settings: "Your Settings"
    list_search_results: "Search Results"
    commands: "Commands"
@@ -71,13 +72,82 @@ icons:
          name: "Next Page"
          lore:
             - "&7Go forward."
+      sort_price_low:
+         type: "EMERALD"
+         name: "&l&6Sort"
+         lore:
+            - "&7Ordered by price - low to high."
+      sort_price_high:
+         type: "DIAMOND"
+         name: "&l&6Sort"
+         lore:
+            - "&7Ordered by price - high to low."
+      sort_name_low:
+         type: "BOOK"
+         name: "&l&6Sort"
+         lore:
+            - "&7Ordered by item name - A-Z."
+      sort_name_high:
+         type: "BOOK_AND_QUILL"
+         name: "&l&6Sort"
+         lore:
+            - "&7Ordered by item name - Z-A."
+      filter_type_all:
+         type: "INK_SACK"
+         data: 15
+         name: "&l&6Filter shop type"
+         lore:
+            - "&7All shop types"
+      filter_type_sell:
+         type: "INK_SACK"
+         data: 2
+         name: "&l&6Filter shop type"
+         lore:
+            - "&7Sell shops"
+      filter_type_buy:
+         type: "INK_SACK"
+         data: 1
+         name: "&l&6Filter shop type"
+         lore:
+            - "&7Buy shops"
+      filter_type_barter:
+         type: "INK_SACK"
+         data: 4
+         name: "&l&6Filter shop type"
+         lore:
+            - "&7Barter shops"
+      filter_type_gamble:
+         type: "INK_SACK"
+         data: 14
+         name: "&l&6Filter shop type"
+         lore:
+            - "&7Gamble shops"
+      filter_stock_all:
+         type: "STAINED_GLASS"
+         data: 0
+         name: "&l&6Filter by stock"
+         lore:
+            - "&7All shops"
+      filter_stock_in:
+         type: "STAINED_GLASS"
+         data: 5
+         name: "&l&6Filter by stock"
+         lore:
+            - "&7Shops in stock"
+      filter_stock_out:
+         type: "STAINED_GLASS"
+         data: 14
+         name: "&l&6Filter by stock"
+         lore:
+            - "&7Shops out of stock"
+
    home:
-      list_own_shops:
+      list_all_shops:
          type: "CHEST"
-         name: "Your Shops"
+         name: "All Shops"
          lore:
             - "&7List all shops"
-            - "&7you own on the server."
+            - "&7on the server."
       list_players:
          type: "SKULL_ITEM"
          name: "Player Shops"

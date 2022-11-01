@@ -20,12 +20,16 @@ import org.bukkit.inventory.meta.SkullMeta;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ShopGuiHandler {
 
     public enum GuiIcon {
         MENUBAR_BACK, HOME_SEARCH, MENUBAR_LAST_PAGE, MENUBAR_NEXT_PAGE,
-        HOME_LIST_OWN_SHOPS, HOME_LIST_PLAYERS, HOME_SETTINGS, HOME_COMMANDS,
+        MENUBAR_SORT_PRICE_LOW, MENUBAR_SORT_PRICE_HIGH, MENUBAR_SORT_NAME_LOW, MENUBAR_SORT_NAME_HIGH,
+        MENUBAR_FILTER_TYPE_ALL, MENUBAR_FILTER_TYPE_SELL, MENUBAR_FILTER_TYPE_BUY, MENUBAR_FILTER_TYPE_BARTER, MENUBAR_FILTER_TYPE_GAMBLE,
+        MENUBAR_FILTER_STOCK_ALL, MENUBAR_FILTER_STOCK_IN, MENUBAR_FILTER_STOCK_OUT,
+        HOME_LIST_ALL_SHOPS, HOME_LIST_PLAYERS, HOME_SETTINGS, HOME_COMMANDS,
         LIST_SHOP, LIST_PLAYER, LIST_PLAYER_ADMIN,
         SETTINGS_NOTIFY_OWNER_ON, SETTINGS_NOTIFY_OWNER_OFF, SETTINGS_NOTIFY_USER_ON, SETTINGS_NOTIFY_USER_OFF, SETTINGS_NOTIFY_STOCK_ON, SETTINGS_NOTIFY_STOCK_OFF,
         COMMANDS_CURRENCY, COMMANDS_SET_CURRENCY, COMMANDS_SET_GAMBLE, COMMANDS_REFRESH_DISPLAYS, COMMANDS_RELOAD, COMMANDS_ITEMLIST_ALLOW_ADD, COMMANDS_ITEMLIST_ALLOW_REMOVE, COMMANDS_ITEMLIST_DENY_ADD, COMMANDS_ITEMLIST_DENY_REMOVE,
@@ -33,7 +37,7 @@ public class ShopGuiHandler {
     }
 
     public enum GuiTitle {
-        HOME, LIST_PLAYERS, SETTINGS, COMMANDS, LIST_SEARCH_RESULTS
+        HOME, LIST_PLAYERS, LIST_SHOPS, SETTINGS, COMMANDS, LIST_SEARCH_RESULTS
 
     }
 
@@ -141,24 +145,34 @@ public class ShopGuiHandler {
         return new ItemStack(Material.AIR);
     }
 
+    public ArrayList<ItemStack> getShopOwnerHeads(){
+        return playerHeads.values().stream().collect(
+                Collectors.toCollection(ArrayList::new)
+        );
+    }
+
     //TODO have a change window to type method here that can be called from the button listener to clean things up?
 
 
-    public boolean getSettingsOption(Player player, PlayerSettings.Option option){
-        if(playerSettings.get(player.getUniqueId()) != null){
-            PlayerSettings settings = playerSettings.get(player.getUniqueId());
-            return settings.getOption(option);
-        }
-
-        PlayerSettings settings = PlayerSettings.loadFromFile(player);
-        if(settings == null)
-            settings = new PlayerSettings(player);
-
-        playerSettings.put(player.getUniqueId(), settings);
-        return settings.getOption(option);
+    public GuiIcon getIconFromOption(Player player, PlayerSettings.Option option){
+        return getIconFromOption(player.getUniqueId(), option);
     }
 
-    public void toggleSettingsOption(Player player, PlayerSettings.Option option){
+    public GuiIcon getIconFromOption(UUID playerUUID, PlayerSettings.Option option){
+        if(playerSettings.get(playerUUID) != null){
+            PlayerSettings settings = playerSettings.get(playerUUID);
+            return settings.getGuiIcon(option);
+        }
+
+        PlayerSettings settings = PlayerSettings.loadFromFile(playerUUID);
+        if(settings == null)
+            settings = new PlayerSettings(playerUUID);
+
+        playerSettings.put(playerUUID, settings);
+        return settings.getGuiIcon(option);
+    }
+
+    public void setIconForOption(Player player, PlayerSettings.Option option, GuiIcon guiIcon){
         PlayerSettings settings;
 
         if(playerSettings.get(player.getUniqueId()) != null){
@@ -170,7 +184,23 @@ public class ShopGuiHandler {
                 settings = new PlayerSettings(player);
         }
 
-        settings.setOption(option, !getSettingsOption(player, option)); //this also handles saving to file internally
+        settings.setOption(option, guiIcon);
+        playerSettings.put(player.getUniqueId(), settings);
+    }
+
+    public void toggleNotificationSetting(Player player, PlayerSettings.Option option){
+        PlayerSettings settings;
+
+        if(playerSettings.get(player.getUniqueId()) != null){
+            settings = playerSettings.get(player.getUniqueId());
+        }
+        else {
+            settings = PlayerSettings.loadFromFile(player);
+            if (settings == null)
+                settings = new PlayerSettings(player);
+        }
+
+        settings.toggleNotification(option);
         playerSettings.put(player.getUniqueId(), settings);
     }
 

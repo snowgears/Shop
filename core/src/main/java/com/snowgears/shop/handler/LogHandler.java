@@ -18,6 +18,7 @@ import java.io.InputStreamReader;
 import java.sql.*;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class LogHandler {
@@ -40,7 +41,7 @@ public class LogHandler {
         } catch (SQLException e){
             e.printStackTrace();
             enabled = false;
-            System.out.println("[Shop] Error establishing connection to defined database. Logging will not be used.");
+            plugin.getLogger().log(Level.WARNING, "Error establishing connection to defined database. Logging will not be used.");
             return;
         }
 
@@ -49,7 +50,7 @@ public class LogHandler {
         } catch (SQLException e){
             e.printStackTrace();
             enabled = false;
-            System.out.println("[Shop] Error initializing tables in database. Logging will not be used.");
+            plugin.getLogger().log(Level.WARNING, "Error initializing tables in database. Logging will not be used.");
             return;
         }
     }
@@ -123,13 +124,13 @@ public class LogHandler {
                 execute(stmt);
                 return true;
             } catch (SQLException e){
-                System.out.println("[Shop] SQL error occurred while trying to log player action.");
+                plugin.getLogger().log(Level.WARNING, "SQL error occurred while trying to log player action.");
                 e.printStackTrace();
                 conn.close();
                 return false;
             }
         } catch (SQLException e) {
-            System.out.println("[Shop] SQL error occurred while trying to log player action.");
+            plugin.getLogger().log(Level.WARNING,"SQL error occurred while trying to log player action.");
             e.printStackTrace();
             return false;
         }
@@ -180,13 +181,13 @@ public class LogHandler {
                         conn.close();
                         return;
                     } catch (SQLException e) {
-                        System.out.println("[Shop] SQL error occurred while trying to log transaction.");
+                        plugin.getLogger().log(Level.WARNING,"SQL error occurred while trying to log transaction.");
                         e.printStackTrace();
                         conn.close();
                         return;
                     }
                 } catch(SQLException e){
-                    System.out.println("[Shop] SQL error occurred while trying to log transaction.");
+                    plugin.getLogger().log(Level.WARNING,"SQL error occurred while trying to log transaction.");
                     e.printStackTrace();
                     return;
                 }
@@ -232,14 +233,14 @@ public class LogHandler {
                         offlineTransactions.setIsCalculating(false);
                         return;
                     } catch (SQLException e){
-                        System.out.println("[Shop] SQL error occurred while trying to get offline transactions.");
+                        plugin.getLogger().log(Level.WARNING,"SQL error occurred while trying to get offline transactions.");
                         e.printStackTrace();
                         conn.close();
                         offlineTransactions.setIsCalculating(false);
                         return;
                     }
                 } catch (SQLException e) {
-                    System.out.println("[Shop] SQL error occurred while trying to get offline transactions.");
+                    plugin.getLogger().log(Level.WARNING,"SQL error occurred while trying to get offline transactions.");
                     e.printStackTrace();
                     offlineTransactions.setIsCalculating(false);
                     return;
@@ -253,11 +254,12 @@ public class LogHandler {
             if (!conn.isValid(1000)) {
                 enabled = false;
                 conn.close();
+                plugin.getLogger().log(Level.WARNING, "Could not establish database connection.");
                 throw new SQLException("Could not establish database connection.");
             }
             else{
                 enabled = true;
-                System.out.println("[Shop] Established connection to database. Logging is enabled.");
+                plugin.getLogger().log(Level.INFO,"Established connection to database. Logging is enabled.");
                 conn.close();
             }
         }
@@ -273,7 +275,7 @@ public class LogHandler {
             setup = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining("\n")); // Legacy way
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("[Shop] Could not read db setup file.");
+            plugin.getLogger().log(Level.WARNING,"Could not read db setup file.");
             return;
         }
         // Mariadb can only handle a single query per statement. We need to split at ;.
@@ -291,7 +293,7 @@ public class LogHandler {
             stmt.close();
         }
         conn.close();
-        System.out.println("[Shop] Successfully initialized database.");
+        plugin.getLogger().log(Level.INFO,"Successfully initialized database.");
     }
 
     public void execute(final PreparedStatement preparedStatement) {

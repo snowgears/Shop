@@ -212,13 +212,13 @@ public class CommandHandler extends BukkitCommand {
                 if (sender instanceof Player) {
                     Player player = (Player) sender;
                     if(args[1].equalsIgnoreCase("user")) {
-                        toggleOptionAndNotifyPlayer(player, PlayerSettings.Option.SALE_USER_NOTIFICATIONS);
+                        toggleOptionAndNotifyPlayer(player, PlayerSettings.Option.NOTIFICATION_SALE_USER);
                     }
                     else if(args[1].equalsIgnoreCase("owner")) {
-                        toggleOptionAndNotifyPlayer(player, PlayerSettings.Option.SALE_OWNER_NOTIFICATIONS);
+                        toggleOptionAndNotifyPlayer(player, PlayerSettings.Option.NOTIFICATION_SALE_OWNER);
                     }
                     else if(args[1].equalsIgnoreCase("stock")) {
-                        toggleOptionAndNotifyPlayer(player, PlayerSettings.Option.STOCK_NOTIFICATIONS);
+                        toggleOptionAndNotifyPlayer(player, PlayerSettings.Option.NOTIFICATION_STOCK);
                     }
                 } else {
                     sender.sendMessage("[Shop] This command can only be run as a player.");
@@ -298,16 +298,16 @@ public class CommandHandler extends BukkitCommand {
     }
 
     private void toggleOptionAndNotifyPlayer(Player player, PlayerSettings.Option option) {
-        Shop.getPlugin().getGuiHandler().toggleSettingsOption(player, option);
+        Shop.getPlugin().getGuiHandler().toggleNotificationSetting(player, option);
 
         switch (option) {
-            case SALE_USER_NOTIFICATIONS:
+            case NOTIFICATION_SALE_USER:
                 sendCommandMessage("notify_user", player);
                 break;
-            case SALE_OWNER_NOTIFICATIONS:
+            case NOTIFICATION_SALE_OWNER:
                 sendCommandMessage("notify_owner", player);
                 break;
-            case STOCK_NOTIFICATIONS:
+            case NOTIFICATION_STOCK:
                 sendCommandMessage("notify_stock", player);
                 break;
         }

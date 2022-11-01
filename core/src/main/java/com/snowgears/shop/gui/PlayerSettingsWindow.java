@@ -25,33 +25,16 @@ public class PlayerSettingsWindow extends ShopGuiWindow {
         Player p = this.getPlayer();
         if(p != null) {
 
-            ItemStack ownerNotifyIcon;
-            if (Shop.getPlugin().getGuiHandler().getSettingsOption(p, PlayerSettings.Option.SALE_OWNER_NOTIFICATIONS)) {
-                ownerNotifyIcon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_OWNER_ON, p.getUniqueId(), null);
-            }
-            else{
-                ownerNotifyIcon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_OWNER_OFF, p.getUniqueId(), null);
-            }
+            ShopGuiHandler.GuiIcon guiIcon = Shop.getPlugin().getGuiHandler().getIconFromOption(p, PlayerSettings.Option.NOTIFICATION_SALE_OWNER);
+            ItemStack ownerNotifyIcon = Shop.getPlugin().getGuiHandler().getIcon(guiIcon, p.getUniqueId(), null);
             page.setItem(10, ownerNotifyIcon);
 
-
-            ItemStack userNotifyIcon;
-            if (Shop.getPlugin().getGuiHandler().getSettingsOption(p, PlayerSettings.Option.SALE_USER_NOTIFICATIONS)) {
-                userNotifyIcon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_USER_ON, p.getUniqueId(), null);
-            }
-            else{
-                userNotifyIcon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_USER_OFF, p.getUniqueId(), null);
-            }
+            guiIcon = Shop.getPlugin().getGuiHandler().getIconFromOption(p, PlayerSettings.Option.NOTIFICATION_SALE_USER);
+            ItemStack userNotifyIcon = Shop.getPlugin().getGuiHandler().getIcon(guiIcon, p.getUniqueId(), null);
             page.setItem(11, userNotifyIcon);
 
-
-            ItemStack stockNotifyIcon;
-            if (Shop.getPlugin().getGuiHandler().getSettingsOption(p, PlayerSettings.Option.STOCK_NOTIFICATIONS)) {
-                stockNotifyIcon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_STOCK_ON, p.getUniqueId(), null);
-            }
-            else{
-                stockNotifyIcon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_STOCK_OFF, p.getUniqueId(), null);
-            }
+            guiIcon = Shop.getPlugin().getGuiHandler().getIconFromOption(p, PlayerSettings.Option.NOTIFICATION_STOCK);
+            ItemStack stockNotifyIcon = Shop.getPlugin().getGuiHandler().getIcon(guiIcon, p.getUniqueId(), null);
             page.setItem(12, stockNotifyIcon);
         }
     }

@@ -46,6 +46,8 @@ public abstract class AbstractShop {
     protected ItemStack guiIcon;
     protected boolean fakeSign;
 
+    protected int stock;
+
     public AbstractShop(Location signLoc, UUID player, double pri, int amt, Boolean admin, BlockFace facing) {
         this.signLocation = signLoc;
         this.owner = player;
@@ -137,13 +139,32 @@ public abstract class AbstractShop {
 
     public abstract TransactionError executeTransaction(Player player, boolean isCheck, ShopType transactionType);
 
-    public int getStock() {
-        if(this.isAdmin)
-            return Integer.MAX_VALUE;
-        if(this.getInventory() == null || this.getItemStack() == null) {
-            return 0;
+    protected int calculateStock() {
+        if(this.isAdmin) {
+            stock = Integer.MAX_VALUE;
+            return stock;
         }
-        return InventoryUtils.getAmount(this.getInventory(), this.getItemStack()) / this.getAmount();
+        if(this.getInventory() == null || this.getItemStack() == null) {
+            //if stock is already calculated but now inventory is null, use old stock value
+            if(stock != -1)
+                return stock;
+            else
+                stock = -1;
+            return stock;
+        }
+        stock = InventoryUtils.getAmount(this.getInventory(), this.getItemStack()) / this.getAmount();
+        return stock;
+    }
+
+    public int getStock(){
+        if(isAdmin){
+            return Integer.MAX_VALUE;
+        }
+        return stock;
+    }
+
+    public void setStockOnLoad(int stock){
+        this.stock = stock;
     }
 
     public boolean isInitialized(){
@@ -296,12 +317,12 @@ public abstract class AbstractShop {
         this.amount = amount;
     }
 
-    //TODO make all of this text configurable from the GUI config file
-    //TODO use this to build GUIs more efficiently
-    //TODO may have to call runTask when setting this from main loader
     public void setGuiIcon(){
+
+        this.calculateStock();
+
+        //also set marker in here if using a marker integration
         if(Shop.getPlugin().getBluemapHookListener() != null) {
-            //also set marker in here if using a marker integration
             Shop.getPlugin().getBluemapHookListener().updateMarker(this);
         }
 

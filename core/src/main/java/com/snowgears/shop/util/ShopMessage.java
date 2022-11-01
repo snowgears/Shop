@@ -2,6 +2,7 @@ package com.snowgears.shop.util;
 
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.display.DisplayType;
+import com.snowgears.shop.handler.ShopGuiHandler;
 import com.snowgears.shop.shop.AbstractShop;
 import com.snowgears.shop.shop.ComboShop;
 import com.snowgears.shop.shop.ShopType;
@@ -226,7 +227,7 @@ public class ShopMessage {
                 }
             }
             if(unformattedMessage.contains("[stock color]")) {
-                if(shop.getStock() > 0 || shop.isAdmin())
+                if(shop.getStock() > 0)
                     unformattedMessage = unformattedMessage.replace("[stock color]", "" + ChatColor.GREEN);
                 else
                     unformattedMessage = unformattedMessage.replace("[stock color]", "" + ChatColor.DARK_RED);
@@ -272,20 +273,20 @@ public class ShopMessage {
                 String text_on = getUnformattedMessage("command", "notify_on");
                 String text_off = getUnformattedMessage("command", "notify_off");
 
-                boolean active = Shop.getPlugin().getGuiHandler().getSettingsOption(player, PlayerSettings.Option.SALE_USER_NOTIFICATIONS);
-                if(active)
+                ShopGuiHandler.GuiIcon guiIcon = Shop.getPlugin().getGuiHandler().getIconFromOption(player, PlayerSettings.Option.NOTIFICATION_SALE_USER);
+                if(guiIcon == ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_USER_ON)
                     unformattedMessage = unformattedMessage.replace("[notify user]", "" + text_on);
                 else
                     unformattedMessage = unformattedMessage.replace("[notify user]", "" + text_off);
 
-                active = Shop.getPlugin().getGuiHandler().getSettingsOption(player, PlayerSettings.Option.SALE_OWNER_NOTIFICATIONS);
-                if(active)
+                guiIcon = Shop.getPlugin().getGuiHandler().getIconFromOption(player, PlayerSettings.Option.NOTIFICATION_SALE_OWNER);
+                if(guiIcon == ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_OWNER_ON)
                     unformattedMessage = unformattedMessage.replace("[notify owner]", "" + text_on);
                 else
                     unformattedMessage = unformattedMessage.replace("[notify owner]", "" + text_off);
 
-                active = Shop.getPlugin().getGuiHandler().getSettingsOption(player, PlayerSettings.Option.STOCK_NOTIFICATIONS);
-                if(active)
+                guiIcon = Shop.getPlugin().getGuiHandler().getIconFromOption(player, PlayerSettings.Option.NOTIFICATION_STOCK);
+                if(guiIcon == ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_STOCK_ON)
                     unformattedMessage = unformattedMessage.replace("[notify stock]", "" + text_on);
                 else
                     unformattedMessage = unformattedMessage.replace("[notify stock]", "" + text_off);

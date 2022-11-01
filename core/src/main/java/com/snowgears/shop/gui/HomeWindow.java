@@ -20,24 +20,28 @@ public class HomeWindow extends ShopGuiWindow {
     @Override
     protected void initInvContents(){
 
-        int listShopIconSlot = 20;
+        int listAllShopIconSlot = 19;
+        int listOwnShopIconSlot = 20;
         int listPlayersIconSlot = 21;
         int searchIconSlot = 22;
         int settingsIconSlot = 24;
 
-        ItemStack listShopsIcon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.HOME_LIST_OWN_SHOPS, null, null);
+        ItemStack listShopsIcon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.HOME_LIST_ALL_SHOPS, null, null);
+        ItemStack listOwnShopsIcon = Shop.getPlugin().getGuiHandler().getPlayerHeadIcon(player);
         ItemStack listPlayersIcon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.HOME_LIST_PLAYERS, null, null);
         ItemStack searchIcon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.HOME_SEARCH, null, null);
         ItemStack settingsIcon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.HOME_SETTINGS, null, null);
 
         //if search icon is not allowed, rearrange other icons so they look nice
         if(!Shop.getPlugin().allowCreativeSelection()){
-            listShopIconSlot = 21;
+            listAllShopIconSlot = 20;
+            listOwnShopIconSlot = 21;
             listPlayersIconSlot = 22;
             settingsIconSlot = 23;
         }
 
-        page.setItem(listShopIconSlot, listShopsIcon);
+        page.setItem(listAllShopIconSlot, listShopsIcon);
+        page.setItem(listOwnShopIconSlot, listOwnShopsIcon);
         page.setItem(listPlayersIconSlot, listPlayersIcon);
         //only put search icon on page if creative selection is allowed
         if(Shop.getPlugin().allowCreativeSelection()){

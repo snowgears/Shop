@@ -29,7 +29,7 @@ public class UtilMethods {
     static {
         suffixes.put(1_000D, "k");
         suffixes.put(1_000_000D, "M");
-        suffixes.put(1_000_000_000D, "G");
+        suffixes.put(1_000_000_000D, "B"); //should be G normally. Making 'B' to appease people
         suffixes.put(1_000_000_000_000D, "T");
         suffixes.put(1_000_000_000_000_000D, "P");
         suffixes.put(1_000_000_000_000_000_000D, "E");

@@ -2,6 +2,8 @@ package com.snowgears.shop.util;
 
 import com.snowgears.shop.Shop;
 
+import java.util.logging.Level;
+
 public class NMSBullshitHandler {
 
     private Shop plugin;
@@ -37,7 +39,7 @@ public class NMSBullshitHandler {
             }
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
-            System.out.println("[Shop] [ERROR] Unable to retrieve a NMS class used for NBT data.");
+            Shop.getPlugin().getLogger().log(Level.SEVERE,"Unable to retrieve a NMS class used for NBT data.");
         }
     }
 

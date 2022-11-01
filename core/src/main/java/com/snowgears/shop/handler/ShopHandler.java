@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 
 public class ShopHandler {
@@ -305,6 +306,12 @@ public class ShopHandler {
             shopLocations.add(shop.getSignLocation());
             unloadedShopsByChunk.put(chunkKey, shopLocations);
         }
+    }
+
+    public List<AbstractShop> getAllShops(){
+        return allShops.values().stream().collect(
+                Collectors.toCollection(ArrayList::new)
+        );
     }
 
     public List<AbstractShop> getShops(UUID player){
@@ -695,6 +702,8 @@ public class ShopHandler {
                         config.set("shops." + owner + "." + shopNumber + ".fakeSign", shop.isFakeSign());
                     }
 
+                    config.set("shops." + owner + "." + shopNumber + ".stock", shop.getStock());
+
                     ItemStack itemStack = shop.getItemStack();
                     itemStack.setAmount(1);
                     if(shop.getType() == ShopType.GAMBLE)
@@ -874,6 +883,9 @@ public class ShopHandler {
                         if(isFakeSign){
                             shop.setFakeSign(true);
                         }
+
+                        int stock = config.getInt("shops." + shopOwner + "." + shopNumber + ".stock");
+                        shop.setStockOnLoad(stock);
 
                         //if chunk its in is already loaded, calculate it here
                         if(shop.getDisplay().isChunkLoaded()) {

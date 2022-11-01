@@ -137,7 +137,7 @@ public class CreativeSelectionListener implements Listener {
         if (!(event.getPlayer() instanceof Player))
             return;
         //don't remove player data if they just clicked the search icon
-        if(event.getView().getTitle().equals(Shop.getPlugin().getGuiHandler().getTitle(ShopGuiHandler.GuiTitle.HOME))){
+        if(event.getView().getTitle().equals(Shop.getPlugin().getGuiHandler().getTitle(ShopGuiHandler.GuiTitle.HOME)) || event.getView().getTitle().equals(Shop.getPlugin().getGuiHandler().getTitle(ShopGuiHandler.GuiTitle.LIST_SHOPS))){
             return;
         }
         //for some reason this event is also called now on PlayerQuitEvent. Check that player didnt quit
@@ -265,9 +265,9 @@ public class CreativeSelectionListener implements Listener {
     }
 
     public void putPlayerInCreativeSelection(Player player, Location shopSignLocation, boolean guiSearch) {
-        //System.out.println("Add Player Data called.");
-        if(playerDataMap.containsKey(player.getUniqueId()))
+        if(playerDataMap.containsKey(player.getUniqueId())) {
             return;
+        }
         //System.out.println("Creating new player data.");
         PlayerData data = new PlayerData(player, shopSignLocation, guiSearch);
         playerDataMap.put(player.getUniqueId(), data);

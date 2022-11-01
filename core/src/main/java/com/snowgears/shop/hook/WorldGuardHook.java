@@ -18,6 +18,8 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
+import java.util.logging.Level;
+
 public class WorldGuardHook {
 
     public static final String PLUGIN_NAME = "WorldGuard";
@@ -44,14 +46,14 @@ public class WorldGuardHook {
     private static class Internal {
 
         public static void registerAllowShopFlag() {
-            System.out.println("[Shop] Registering WorldGuard flag '" + FLAG_ALLOW_SHOP + "'.");
+            Shop.getPlugin().getLogger().log(Level.INFO,"Registering WorldGuard flag '" + FLAG_ALLOW_SHOP + "'.");
             try {
                 StateFlag allowShopFlag = new StateFlag(FLAG_ALLOW_SHOP, false);
                 WorldGuard.getInstance().getFlagRegistry().register(allowShopFlag);
             } catch (FlagConflictException | IllegalStateException e) {
                 // Another plugin has probably already registered this flag,
                 // or this plugin got hard reloaded by some plugin manager plugin.
-                System.out.println("[Shop] [SEVERE] Couldn't register WorldGuard flag '" + FLAG_ALLOW_SHOP + "': " + e.getMessage());
+                Shop.getPlugin().getLogger().log(Level.SEVERE,"Couldn't register WorldGuard flag '" + FLAG_ALLOW_SHOP + "': " + e.getMessage());
             }
         }
 

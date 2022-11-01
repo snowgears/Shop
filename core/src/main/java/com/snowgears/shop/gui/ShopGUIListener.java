@@ -76,14 +76,21 @@ public class ShopGUIListener implements Listener {
                     }
 
                     if(window instanceof HomeWindow){
-                        ItemStack listShopsIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.HOME_LIST_OWN_SHOPS, null, null);
+                        ItemStack listOwnShopsIcon = plugin.getGuiHandler().getPlayerHeadIcon(player.getUniqueId());
+                        ItemStack listAllShopsIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.HOME_LIST_ALL_SHOPS, null, null);
                         ItemStack listPlayersIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.HOME_LIST_PLAYERS, null, null);
                         ItemStack searchIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.HOME_SEARCH, null, null);
                         ItemStack settingsIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.HOME_SETTINGS, null, null);
                         ItemStack commandsIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.HOME_COMMANDS, null, null);
 
-                        if(clicked.getType() == listShopsIcon.getType()){
-                            ListShopsWindow shopsWindow = new ListShopsWindow(player.getUniqueId(), player.getUniqueId());
+                        if(clicked.getType() == listOwnShopsIcon.getType() && clicked.getItemMeta().getDisplayName().equals(listOwnShopsIcon.getItemMeta().getDisplayName())){
+                            ListPlayerShopsWindow ownShopsWindow = new ListPlayerShopsWindow(player.getUniqueId(), player.getUniqueId());
+                            ownShopsWindow.setPrevWindow(window);
+                            plugin.getGuiHandler().setWindow(player, ownShopsWindow);
+                            return;
+                        }
+                        else if(clicked.getType() == listAllShopsIcon.getType()){
+                            ListShopsWindow shopsWindow = new ListShopsWindow(player.getUniqueId());
                             shopsWindow.setPrevWindow(window);
                             plugin.getGuiHandler().setWindow(player, shopsWindow);
                             return;
@@ -131,47 +138,147 @@ public class ShopGUIListener implements Listener {
                                 return;
                             }
 
-                            ListShopsWindow shopsWindow = new ListShopsWindow(player.getUniqueId(), uuid);
+                            ListPlayerShopsWindow shopsWindow = new ListPlayerShopsWindow(player.getUniqueId(), uuid);
                             shopsWindow.setPrevWindow(window);
                             plugin.getGuiHandler().setWindow(player, shopsWindow);
                             return;
                         }
                     }
-                    else if(window instanceof ListShopsWindow || window instanceof ListSearchResultsWindow){
+                    else if(window instanceof ListPlayerShopsWindow || window instanceof ListSearchResultsWindow || window instanceof ListShopsWindow){
 
                         List<String> shopIconLore = clicked.getItemMeta().getLore();
                         if(shopIconLore != null && !shopIconLore.isEmpty()) {
                             String signLocation = ChatColor.stripColor(shopIconLore.get(shopIconLore.size() - 1));
                             if (signLocation != null) {
                                 Location loc = UtilMethods.getLocation(signLocation);
-                                AbstractShop shop = plugin.getShopHandler().getShop(loc);
+                                if(loc != null){
+                                    AbstractShop shop = plugin.getShopHandler().getShop(loc);
 
-                                if (shop != null) {
-                                    if (Shop.getPlugin().usePerms()) {
-                                        if (player.hasPermission("shop.operator") || player.hasPermission("shop.gui.teleport")) {
+                                    if (shop != null) {
+                                        if (Shop.getPlugin().usePerms()) {
                                             if (player.hasPermission("shop.operator") || player.hasPermission("shop.gui.teleport")) {
-                                                if (!player.isOp() && plugin.getTeleportCost() > 0) {
-                                                    if (EconomyUtils.hasSufficientFunds(player, player.getInventory(), plugin.getTeleportCost())) {
-                                                        EconomyUtils.removeFunds(player, player.getInventory(), plugin.getTeleportCost());
-                                                    } else {
-                                                        String message = ShopMessage.getMessage("interactionIssue", "teleportInsufficientFunds", shop, player);
-                                                        if (message != null && !message.isEmpty())
-                                                            player.sendMessage(message);
-                                                        plugin.getGuiHandler().closeWindow(player);
-                                                        return;
+                                                if (player.hasPermission("shop.operator") || player.hasPermission("shop.gui.teleport")) {
+                                                    if (!player.isOp() && plugin.getTeleportCost() > 0) {
+                                                        if (EconomyUtils.hasSufficientFunds(player, player.getInventory(), plugin.getTeleportCost())) {
+                                                            EconomyUtils.removeFunds(player, player.getInventory(), plugin.getTeleportCost());
+                                                        } else {
+                                                            String message = ShopMessage.getMessage("interactionIssue", "teleportInsufficientFunds", shop, player);
+                                                            if (message != null && !message.isEmpty())
+                                                                player.sendMessage(message);
+                                                            plugin.getGuiHandler().closeWindow(player);
+                                                            return;
+                                                        }
                                                     }
+                                                    shop.teleportPlayer(player);
+                                                    plugin.getGuiHandler().closeWindow(player);
                                                 }
-                                                shop.teleportPlayer(player);
-                                                plugin.getGuiHandler().closeWindow(player);
+                                                return;
                                             }
-                                            return;
+                                        } else if (player.isOp()) {
+                                            shop.teleportPlayer(player);
+                                            plugin.getGuiHandler().closeWindow(player);
                                         }
-                                    } else if (player.isOp()) {
-                                        shop.teleportPlayer(player);
-                                        plugin.getGuiHandler().closeWindow(player);
                                     }
                                 }
                             }
+                        }
+
+                        if(window instanceof ListShopsWindow){
+
+                            //SORTING
+
+                            ItemStack sortNameLow = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.MENUBAR_SORT_NAME_LOW, null, null);
+                            ItemStack sortNameHigh = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.MENUBAR_SORT_NAME_HIGH, null, null);
+                            ItemStack sortPriceLow = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.MENUBAR_SORT_PRICE_LOW, null, null);
+                            ItemStack sortPriceHigh = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.MENUBAR_SORT_PRICE_HIGH, null, null);
+
+                            boolean reloadPage = false;
+                            if(clicked.isSimilar(sortNameLow)){
+                                plugin.getGuiHandler().setIconForOption(player, PlayerSettings.Option.GUI_SORT, ShopGuiHandler.GuiIcon.MENUBAR_SORT_NAME_HIGH);
+                                reloadPage = true;
+                            }
+                            else if(clicked.isSimilar(sortNameHigh)){
+                                plugin.getGuiHandler().setIconForOption(player, PlayerSettings.Option.GUI_SORT, ShopGuiHandler.GuiIcon.MENUBAR_SORT_PRICE_LOW);
+                                reloadPage = true;
+                            }
+                            else if(clicked.isSimilar(sortPriceLow)){
+                                plugin.getGuiHandler().setIconForOption(player, PlayerSettings.Option.GUI_SORT, ShopGuiHandler.GuiIcon.MENUBAR_SORT_PRICE_HIGH);
+                                reloadPage = true;
+                            }
+                            else if(clicked.isSimilar(sortPriceHigh)){
+                                plugin.getGuiHandler().setIconForOption(player, PlayerSettings.Option.GUI_SORT, ShopGuiHandler.GuiIcon.MENUBAR_SORT_NAME_LOW);
+                                reloadPage = true;
+                            }
+
+                            //FILTERING SHOP TYPES
+
+                            ItemStack filterTypeAll = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.MENUBAR_FILTER_TYPE_ALL, null, null);
+                            ItemStack filterTypeSell = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.MENUBAR_FILTER_TYPE_SELL, null, null);
+                            ItemStack filterTypeBuy = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.MENUBAR_FILTER_TYPE_BUY, null, null);
+                            ItemStack filterTypeBarter = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.MENUBAR_FILTER_TYPE_BARTER, null, null);
+                            ItemStack filterTypeGamble = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.MENUBAR_FILTER_TYPE_GAMBLE, null, null);
+
+                            if(clicked.isSimilar(filterTypeAll)){
+                                plugin.getGuiHandler().setIconForOption(player, PlayerSettings.Option.GUI_FILTER_SHOP_TYPE, ShopGuiHandler.GuiIcon.MENUBAR_FILTER_TYPE_SELL);
+                                reloadPage = true;
+                            }
+                            else if(clicked.isSimilar(filterTypeSell)){
+                                plugin.getGuiHandler().setIconForOption(player, PlayerSettings.Option.GUI_FILTER_SHOP_TYPE, ShopGuiHandler.GuiIcon.MENUBAR_FILTER_TYPE_BUY);
+                                reloadPage = true;
+                            }
+                            else if(clicked.isSimilar(filterTypeBuy)){
+                                plugin.getGuiHandler().setIconForOption(player, PlayerSettings.Option.GUI_FILTER_SHOP_TYPE, ShopGuiHandler.GuiIcon.MENUBAR_FILTER_TYPE_BARTER);
+                                reloadPage = true;
+                            }
+                            else if(clicked.isSimilar(filterTypeBarter)){
+                                plugin.getGuiHandler().setIconForOption(player, PlayerSettings.Option.GUI_FILTER_SHOP_TYPE, ShopGuiHandler.GuiIcon.MENUBAR_FILTER_TYPE_GAMBLE);
+                                reloadPage = true;
+                            }
+                            else if(clicked.isSimilar(filterTypeGamble)){
+                                plugin.getGuiHandler().setIconForOption(player, PlayerSettings.Option.GUI_FILTER_SHOP_TYPE, ShopGuiHandler.GuiIcon.MENUBAR_FILTER_TYPE_ALL);
+                                reloadPage = true;
+                            }
+
+                            //FILTERING SHOP STOCK
+
+                            ItemStack filterStockAll = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.MENUBAR_FILTER_STOCK_ALL, null, null);
+                            ItemStack filterStockIn = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.MENUBAR_FILTER_STOCK_IN, null, null);
+                            ItemStack filterStockOut = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.MENUBAR_FILTER_STOCK_OUT, null, null);
+
+                            if(clicked.isSimilar(filterStockAll)){
+                                plugin.getGuiHandler().setIconForOption(player, PlayerSettings.Option.GUI_FILTER_SHOP_STOCK, ShopGuiHandler.GuiIcon.MENUBAR_FILTER_STOCK_IN);
+                                reloadPage = true;
+                            }
+                            else if(clicked.isSimilar(filterStockIn)){
+                                plugin.getGuiHandler().setIconForOption(player, PlayerSettings.Option.GUI_FILTER_SHOP_STOCK, ShopGuiHandler.GuiIcon.MENUBAR_FILTER_STOCK_OUT);
+                                reloadPage = true;
+                            }
+                            else if(clicked.isSimilar(filterStockOut)){
+                                plugin.getGuiHandler().setIconForOption(player, PlayerSettings.Option.GUI_FILTER_SHOP_STOCK, ShopGuiHandler.GuiIcon.MENUBAR_FILTER_STOCK_ALL);
+                                reloadPage = true;
+                            }
+
+                            //reload the page with new sorts and filters applied
+                            if(reloadPage){
+                                window.initInvContents();
+                            }
+
+                            //SEARCHING
+
+                            ItemStack searchIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.HOME_SEARCH, null, null);
+
+                            //if they click the search icon, close current window and give instruction for searching
+                            if(clicked.getType() == searchIcon.getType()){
+                                plugin.getGuiHandler().closeWindow(player);
+                                plugin.getCreativeSelectionListener().putPlayerInCreativeSelection(player, player.getLocation(), true);
+
+                                for(String message : ShopMessage.getMessageList("guiSearchSelection", "prompt", null, null)){
+                                    if(message != null && !message.isEmpty())
+                                        player.sendMessage(message);
+                                }
+                                return;
+                            }
+
                         }
                     }
                     else if(window instanceof PlayerSettingsWindow){
@@ -184,36 +291,36 @@ public class ShopGUIListener implements Listener {
                         ItemStack stockIconOn = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_STOCK_ON, null, null);
                         ItemStack stockIconOff = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_STOCK_OFF, null, null);
 
-                        PlayerSettings.Option option = PlayerSettings.Option.SALE_OWNER_NOTIFICATIONS;
+                        PlayerSettings.Option option = PlayerSettings.Option.NOTIFICATION_SALE_OWNER;
 
                         if(clicked.isSimilar(ownerIconOn)){
-                            option = PlayerSettings.Option.SALE_OWNER_NOTIFICATIONS;
+                            option = PlayerSettings.Option.NOTIFICATION_SALE_OWNER;
                             event.getInventory().setItem(event.getRawSlot(), ownerIconOff);
                         }
                         else if(clicked.isSimilar(ownerIconOff)){
-                            option = PlayerSettings.Option.SALE_OWNER_NOTIFICATIONS;
+                            option = PlayerSettings.Option.NOTIFICATION_SALE_OWNER;
                             event.getInventory().setItem(event.getRawSlot(), ownerIconOn);
                         }
 
                         else if(clicked.isSimilar(userIconOn)){
-                            option = PlayerSettings.Option.SALE_USER_NOTIFICATIONS;
+                            option = PlayerSettings.Option.NOTIFICATION_SALE_USER;
                             event.getInventory().setItem(event.getRawSlot(), userIconOff);
                         }
                         else if(clicked.isSimilar(userIconOff)){
-                            option = PlayerSettings.Option.SALE_USER_NOTIFICATIONS;
+                            option = PlayerSettings.Option.NOTIFICATION_SALE_USER;
                             event.getInventory().setItem(event.getRawSlot(), userIconOn);
                         }
 
                         else if(clicked.isSimilar(stockIconOn)){
-                            option = PlayerSettings.Option.STOCK_NOTIFICATIONS;
+                            option = PlayerSettings.Option.NOTIFICATION_STOCK;
                             event.getInventory().setItem(event.getRawSlot(), stockIconOff);
                         }
                         else if(clicked.isSimilar(stockIconOff)){
-                            option = PlayerSettings.Option.STOCK_NOTIFICATIONS;
+                            option = PlayerSettings.Option.NOTIFICATION_STOCK;
                             event.getInventory().setItem(event.getRawSlot(), stockIconOn);
                         }
 
-                        Shop.getPlugin().getGuiHandler().toggleSettingsOption(player, option);
+                        Shop.getPlugin().getGuiHandler().toggleNotificationSetting(player, option);
 
                         //switch the color
 //                        if(clicked.getDurability() == 5){

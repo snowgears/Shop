@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 public class PriceUtil {
 
@@ -53,7 +54,7 @@ public class PriceUtil {
                 prices.put(idAndMetadata, price);
             }
         } catch (IOException e) {
-            System.out.println("[Shop] ERROR! Unable to initialize prices buffer reader. Turning off price enforcement and ignoring prices.tsv.");
+            Shop.getPlugin().getLogger().log(Level.SEVERE,"Unable to initialize prices buffer reader. Turning off price enforcement and ignoring prices.tsv.");
             return;
         }
     }

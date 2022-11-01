@@ -2,6 +2,7 @@
 package com.snowgears.shop.util;
 
 import com.snowgears.shop.Shop;
+import com.snowgears.shop.handler.ShopGuiHandler;
 import com.snowgears.shop.hook.WorldGuardHook;
 import com.snowgears.shop.shop.AbstractShop;
 import com.snowgears.shop.shop.ComboShop;
@@ -143,7 +144,9 @@ public class TransactionHelper {
                             Player owner = shop.getOwner().getPlayer();
                             //the shop owner is online
                             if (owner != null && notifyOwner(shop)) {
-                                if (plugin.getGuiHandler().getSettingsOption(owner, PlayerSettings.Option.STOCK_NOTIFICATIONS)) {
+                                ShopGuiHandler.GuiIcon guiIcon = plugin.getGuiHandler().getIconFromOption(player, PlayerSettings.Option.NOTIFICATION_STOCK);
+
+                                if (guiIcon != null && guiIcon == ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_STOCK_ON) {
                                     String ownerMessage = ShopMessage.getMessage(actionType.toString(), "ownerNoStock", shop, owner);
                                     if (ownerMessage != null && !ownerMessage.isEmpty())
                                         owner.sendMessage(ownerMessage);
@@ -160,7 +163,9 @@ public class TransactionHelper {
                             Player owner = shop.getOwner().getPlayer();
                             //the shop owner is online
                             if (owner != null && notifyOwner(shop)) {
-                                if (plugin.getGuiHandler().getSettingsOption(owner, PlayerSettings.Option.STOCK_NOTIFICATIONS)) {
+                                ShopGuiHandler.GuiIcon guiIcon = plugin.getGuiHandler().getIconFromOption(player, PlayerSettings.Option.NOTIFICATION_STOCK);
+
+                                if (guiIcon != null && guiIcon == ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_STOCK_ON) {
                                     String ownerMessage = ShopMessage.getMessage(actionType.toString(), "ownerNoSpace", shop, owner);
                                     if (ownerMessage != null && !ownerMessage.isEmpty())
                                         owner.sendMessage(ownerMessage);
@@ -202,16 +207,19 @@ public class TransactionHelper {
 
         double price = getPriceFromOrders(shop, transactionType, orders);
         String message = getMessageFromOrders(shop, player, transactionType, "user", price, orders);
-        if(plugin.getGuiHandler().getSettingsOption(player, PlayerSettings.Option.SALE_USER_NOTIFICATIONS)) {
+
+        ShopGuiHandler.GuiIcon guiIcon = plugin.getGuiHandler().getIconFromOption(player, PlayerSettings.Option.NOTIFICATION_SALE_USER);
+        if(guiIcon != null && guiIcon == ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_USER_ON) {
             if(message != null && !message.isEmpty())
                 player.sendMessage(message);
         }
 
         Player owner = Bukkit.getPlayer(shop.getOwnerName());
         if ((owner != null) && (!shop.isAdmin())) {
-
             message = getMessageFromOrders(shop, player, transactionType, "owner", price, orders);
-            if(plugin.getGuiHandler().getSettingsOption(owner, PlayerSettings.Option.SALE_OWNER_NOTIFICATIONS)) {
+
+            guiIcon = plugin.getGuiHandler().getIconFromOption(owner, PlayerSettings.Option.NOTIFICATION_SALE_OWNER);
+            if(guiIcon != null && guiIcon == ShopGuiHandler.GuiIcon.SETTINGS_NOTIFY_OWNER_ON) {
                 if(message != null && !message.isEmpty())
                     owner.sendMessage(message);
             }
