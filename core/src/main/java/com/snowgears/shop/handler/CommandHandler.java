@@ -47,6 +47,8 @@ public class CommandHandler extends BukkitCommand {
             if (sender instanceof Player) {
                 Player player = (Player) sender;
 
+                plugin.getShopListener().recalculateShopPerms(player);
+
                 if(plugin.useGUI()) {
                     ShopGuiWindow window = plugin.getGuiHandler().getWindow(player);
                     window.open();

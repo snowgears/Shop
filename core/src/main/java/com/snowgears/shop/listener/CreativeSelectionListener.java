@@ -38,7 +38,7 @@ import java.util.UUID;
 
 public class CreativeSelectionListener implements Listener {
 
-    private Shop plugin = Shop.getPlugin();
+    private Shop plugin;
     private HashMap<UUID, PlayerData> playerDataMap = new HashMap<>();
 
     public CreativeSelectionListener(Shop instance) {

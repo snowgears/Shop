@@ -36,9 +36,10 @@ import java.util.concurrent.TimeUnit;
 
 public class ShopListener implements Listener {
 
-    private Shop plugin = Shop.getPlugin();
+    private Shop plugin;
     private HashMap<String, Integer> shopBuildLimits = new HashMap<String, Integer>();
     private HashMap<UUID, OfflineTransactions> transactionsWhileOffline = new HashMap<>();
+    private HashMap<UUID, Long> playerLastShopTeleport = new HashMap<>();
 
     public ShopListener(Shop instance) {
         plugin = instance;
@@ -48,27 +49,40 @@ public class ShopListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event){
         plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
             public void run() {
-                if(plugin.usePerms()){
-                    Player player = event.getPlayer();
-                    int buildPermissionNumber = -1;
-                    for(PermissionAttachmentInfo permInfo : player.getEffectivePermissions()){
-                        if(permInfo.getPermission().contains("shop.buildlimit.")){
-                            try {
-                                int tempNum = Integer.parseInt(permInfo.getPermission().substring(permInfo.getPermission().lastIndexOf(".") + 1));
-                                if(tempNum > buildPermissionNumber) {
-                                    buildPermissionNumber = tempNum;
-                                }
-                            } catch (Exception e) {}
-                        }
-                    }
-                    if(buildPermissionNumber == -1)
-                        shopBuildLimits.put(player.getName(), 10000);
-                    else {
-                        shopBuildLimits.put(player.getName(), buildPermissionNumber);
-                    }
-                }
+                recalculateShopPerms(event.getPlayer());
             }
         }, 5L);
+    }
+
+    public void recalculateShopPerms(Player player){
+        if(plugin.usePerms()){
+            int buildPermissionNumber = -1;
+            //calculate base buildlimit permission first (highest number)
+            for(PermissionAttachmentInfo permInfo : player.getEffectivePermissions()){
+                if(permInfo.getPermission().contains("shop.buildlimit.")){
+                    try {
+                        int tempNum = Integer.parseInt(permInfo.getPermission().substring(permInfo.getPermission().lastIndexOf(".") + 1));
+                        if(tempNum > buildPermissionNumber) {
+                            buildPermissionNumber = tempNum;
+                        }
+                    } catch (NumberFormatException e) {}
+                }
+            }
+            //add all extra build limits next
+            for(PermissionAttachmentInfo permInfo : player.getEffectivePermissions()){
+                if(permInfo.getPermission().contains("shop.buildlimitextra.")){
+                    try {
+                        int extraNum = Integer.parseInt(permInfo.getPermission().substring(permInfo.getPermission().lastIndexOf(".") + 1));
+                        buildPermissionNumber += extraNum;
+                    } catch (NumberFormatException e) {}
+                }
+            }
+            if(buildPermissionNumber == -1)
+                shopBuildLimits.put(player.getName(), 10000);
+            else {
+                shopBuildLimits.put(player.getName(), buildPermissionNumber);
+            }
+        }
     }
 
     public int getBuildLimit(Player player){
@@ -420,5 +434,24 @@ public class ShopListener implements Listener {
     @EventHandler
     public void onChunkLoad(ChunkLoadEvent event){
         plugin.getShopHandler().processUnloadedShopsInChunk(event.getChunk());
+    }
+
+    public int getTeleportCooldownRemaining(Player player){
+        if(plugin.getTeleportCooldown() <= 0)
+            return 0;
+        Long lastTeleport = playerLastShopTeleport.get(player.getUniqueId());
+        if(lastTeleport != null) {
+            long secondsSinceLastTeleport = (System.currentTimeMillis() - lastTeleport) / 1000;
+            int secondsLeft = (int)plugin.getTeleportCooldown() - (int)secondsSinceLastTeleport;
+            if(secondsLeft <= 0)
+                return 0;
+            else
+                return secondsLeft;
+        }
+        return 0;
+    }
+
+    public void addTeleportCooldown(Player player){
+        playerLastShopTeleport.put(player.getUniqueId(), System.currentTimeMillis());
     }
 }

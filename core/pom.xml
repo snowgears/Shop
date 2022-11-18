@@ -38,6 +38,10 @@
             <id>dynmap-repo</id>
             <url>https://repo.mikeprimm.com/</url>
         </repository>
+        <repository>
+            <id>codemc-repo</id>
+            <url>https://repo.codemc.org/repository/maven-public/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -87,6 +91,18 @@
             <groupId>com.github.BlueMap-Minecraft</groupId>
             <artifactId>BlueMapAPI</artifactId>
             <version>2.1.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>world.bentobox</groupId>
+            <artifactId>bentobox</artifactId>
+            <version>1.21.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.alex9849</groupId>
+            <artifactId>advanced-region-market</artifactId>
+            <version>3.4.3</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

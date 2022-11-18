@@ -4,10 +4,7 @@ import com.snowgears.shop.display.DisplayTagOption;
 import com.snowgears.shop.display.DisplayType;
 import com.snowgears.shop.gui.ShopGUIListener;
 import com.snowgears.shop.handler.*;
-import com.snowgears.shop.hook.BluemapHookListener;
-import com.snowgears.shop.hook.DynmapHookListener;
-import com.snowgears.shop.hook.LWCHookListener;
-import com.snowgears.shop.hook.WorldGuardHook;
+import com.snowgears.shop.hook.*;
 import com.snowgears.shop.listener.CreativeSelectionListener;
 import com.snowgears.shop.listener.DisplayListener;
 import com.snowgears.shop.listener.MiscListener;
@@ -24,10 +21,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class Shop extends JavaPlugin {
@@ -44,6 +38,7 @@ public class Shop extends JavaPlugin {
     private LWCHookListener lwcHookListener;
     private DynmapHookListener dynmapHookListener;
     private BluemapHookListener bluemapHookListener;
+    private ARMHookListener armHookListener;
 
     private ShopHandler shopHandler;
     private CommandHandler commandHandler;
@@ -65,7 +60,6 @@ public class Shop extends JavaPlugin {
     private String commandAlias;
     private DisplayType displayType;
     private DisplayTagOption displayTagOption;
-    private int displayTagLifespan;
     private DisplayType[] displayCycle;
     private boolean checkItemDurability;
     private boolean allowCreativeSelection;
@@ -73,6 +67,8 @@ public class Shop extends JavaPlugin {
     private int displayLightLevel;
     private boolean setGlowingItemFrame;
     private boolean setGlowingSignText;
+    private NavigableMap<Double, String> priceSuffixes;
+    private Double priceSuffixMinimumValue;
     private boolean destroyShopRequiresSneak;
     private int hoursOfflineToRemoveShops;
     private boolean playSounds;
@@ -86,12 +82,14 @@ public class Shop extends JavaPlugin {
     private String currencyName = "";
     private String currencyFormat = "";
     private Economy econ = null;
-    private boolean useEnderchests;
+    private List<Material> enabledContainers;
     private boolean inverseComboShops;
     private double creationCost;
     private double destructionCost;
     private double teleportCost;
+    private double teleportCooldown;
     private boolean returnCreationCost;
+    private boolean allowPartialSales;
     private double taxPercent;
     private ItemListType itemListType;
     private List<String> worldBlackList;
@@ -215,15 +213,6 @@ public class Shop extends JavaPlugin {
         } catch (Exception e){ displayTagOption = DisplayTagOption.NONE; }
 
         try {
-            displayTagLifespan = config.getInt("displayNameTagsLifespan");
-            // Catch missing or negative config entry and default to 10
-            if (displayTagLifespan <= 0) {
-                displayTagLifespan = 1;
-            }
-        // This exception will only occur if text is entered in the config
-        } catch (Exception e){ displayTagLifespan = 10; }
-
-        try {
             List<String> cycle = config.getStringList("displayCycle");
             if(cycle.isEmpty()){
                 for(DisplayType dt : DisplayType.values()){
@@ -236,6 +225,22 @@ public class Shop extends JavaPlugin {
                 displayCycle[i] = DisplayType.valueOf(cycle.get(i));
             }
         } catch (Exception e){ e.printStackTrace(); }
+
+        //TODO in the future read the Skull Texture for display item directly from a value in the config file instead of its own serialized item file
+//        ItemStack gambleDisplayItem = new ItemStack(Material.PLAYER_HEAD);
+//        SkullMeta gambleDisplayItemMeta = (SkullMeta) gambleDisplayItem.getItemMeta();
+//        GameProfile profile = new GameProfile(UUID.randomUUID(), "");
+//
+//        profile.getProperties().put("textures", new Property("texture", headTextureID));
+//        try {
+//            Field profileField = gambleDisplayItemMeta.getClass().getDeclaredField("profile");
+//            profileField.setAccessible(true);
+//            profileField.set(gambleDisplayItemMeta, profile);
+//        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+//            e.printStackTrace();
+//        }
+//        gambleDisplayItem.setItemMeta(gambleDisplayItemMeta);
+
 
         shopMessage = new ShopMessage(this);
         itemNameUtil = new ItemNameUtil();
@@ -270,6 +275,20 @@ public class Shop extends JavaPlugin {
         playSounds = config.getBoolean("playSounds");
         playEffects = config.getBoolean("playEffects");
         setGlowingSignText = config.getBoolean("setGlowingSignText");
+        priceSuffixes = new TreeMap<>();
+        for(String suffixKey : config.getConfigurationSection("priceSuffixes").getKeys(false)){
+            if(suffixKey.equals("minimumValue")){
+                priceSuffixMinimumValue = config.getDouble("priceSuffixes.minimumValue");
+            }
+            else {
+                boolean enabled = config.getBoolean("priceSuffixes." + suffixKey + ".enabled");
+                if (enabled) {
+                    Double suffixValue = config.getDouble("priceSuffixes." + suffixKey + ".value");
+                    priceSuffixes.put(suffixValue, suffixKey);
+                }
+            }
+        }
+
         destroyShopRequiresSneak = config.getBoolean("destroyShopRequiresSneak");
 
         try {
@@ -335,14 +354,21 @@ public class Shop extends JavaPlugin {
         currencyName = config.getString("currency.name");
         currencyFormat = config.getString("currency.format");
 
-        useEnderchests = config.getBoolean("enableEnderChests");
+        enabledContainers = new ArrayList<>();
+        for(String materialString : config.getStringList("enabledContainers")){
+            try{
+                enabledContainers.add(Material.valueOf(materialString));
+            } catch(IllegalArgumentException e) {}
+        }
 
         inverseComboShops = config.getBoolean("inverseComboShops");
 
         creationCost = config.getDouble("creationCost");
         destructionCost = config.getDouble("destructionCost");
         teleportCost = config.getDouble("teleportCost");
+        teleportCooldown = config.getDouble("teleportCooldown");
         returnCreationCost = config.getBoolean("returnCreationCost");
+        allowPartialSales = config.getBoolean("allowPartialSales");
 
         try {
             itemListType = ItemListType.valueOf(config.getString("itemList"));
@@ -376,7 +402,7 @@ public class Shop extends JavaPlugin {
                 log.info("[Shop] Shops will use " + itemCurrency.getType().name().replace("_", " ").toLowerCase() + " as the currency on the server.");
         }
 
-        commandHandler = new CommandHandler(this, "shop.use", commandAlias, "Base command for the Shop plugin", "/shop", new ArrayList(Arrays.asList(commandAlias)));
+        commandHandler = new CommandHandler(this, null, commandAlias, "Base command for the Shop plugin", "/shop", new ArrayList(Arrays.asList(commandAlias)));
         //this.getCommand(commandAlias).setExecutor(new CommandHandler(this));
         //this.getCommand(commandAlias).setTabCompleter(new CommandTabCompleter());
         //this.getCommand(commandAlias).setAliases(new ArrayList<>())
@@ -402,6 +428,8 @@ public class Shop extends JavaPlugin {
         getServer().getPluginManager().registerEvents(miscListener, this);
         getServer().getPluginManager().registerEvents(creativeSelectionListener, this);
         getServer().getPluginManager().registerEvents(guiListener, this);
+
+        //only define different listener hooks if the plugins are present on the server
         if(getServer().getPluginManager().getPlugin("LWC") != null){
             lwcHookListener = new LWCHookListener(this);
             getServer().getPluginManager().registerEvents(lwcHookListener, this);
@@ -415,6 +443,11 @@ public class Shop extends JavaPlugin {
         if(getServer().getPluginManager().getPlugin("BlueMap") != null){
             bluemapHookListener = new BluemapHookListener(this);
             getServer().getPluginManager().registerEvents(bluemapHookListener, this);
+        }
+
+        if(getServer().getPluginManager().getPlugin("AdvancedRegionMarket") != null){
+            armHookListener = new ARMHookListener(this);
+            getServer().getPluginManager().registerEvents(armHookListener, this);
         }
 
         displayListener.startRepeatingDisplayViewTask();
@@ -445,6 +478,9 @@ public class Shop extends JavaPlugin {
         if(bluemapHookListener != null){
             //bluemapHookListener.deleteMarkers();
             HandlerList.unregisterAll(bluemapHookListener);
+        }
+        if(armHookListener != null){
+            HandlerList.unregisterAll(armHookListener);
         }
 
         plugin.getShopHandler().removeAllDisplays(null);
@@ -537,10 +573,6 @@ public class Shop extends JavaPlugin {
         return displayTagOption;
     }
 
-    public int getDisplayTagLifespan(){
-        return displayTagLifespan;
-    }
-
     public DisplayType[] getDisplayCycle(){
         return displayCycle;
     }
@@ -579,6 +611,14 @@ public class Shop extends JavaPlugin {
 
     public boolean getGlowingSignText(){
         return setGlowingSignText;
+    }
+
+    public NavigableMap<Double, String> getPriceSuffixes(){
+        return priceSuffixes;
+    }
+
+    public Double getPriceSuffixMinimumValue(){
+        return priceSuffixMinimumValue;
     }
 
     public boolean useGUI(){
@@ -697,8 +737,12 @@ public class Shop extends JavaPlugin {
         return econ;
     }
 
+    public List<Material> getEnabledContainers(){
+        return enabledContainers;
+    }
+
     public boolean useEnderChests(){
-        return useEnderchests;
+        return enabledContainers.contains(Material.ENDER_CHEST);
     }
 
     public boolean inverseComboShops(){
@@ -721,8 +765,17 @@ public class Shop extends JavaPlugin {
         return teleportCost;
     }
 
+    public double getTeleportCooldown(){
+        return teleportCooldown;
+    }
+
     public boolean returnCreationCost(){
         return returnCreationCost;
+    }
+
+    public boolean getAllowPartialSales(){
+        return allowPartialSales;
+
     }
 
     public ItemNameUtil getItemNameUtil(){

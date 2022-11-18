@@ -60,6 +60,7 @@
 # [notify stock] : The on/off value of how the player has their stock notifications set #
 # [offline transactions]: The number of transactions that took place at a players shop while a player was offline
 # [offline profit]: The amount of currency that was either gained or lost while a player was offline
+# [tp time remaining]: The amount of seconds remaining on a players teleport to shop cooldown timer
 
 transaction:
    SELL:
@@ -165,6 +166,7 @@ interaction_issue:
    createCooldown: "&cYou can only create a shop every few seconds."
    destroyInsufficientFunds: "&cYou do not have the funds required to destroy this shop."
    teleportInsufficientFunds: "&cYou do not have the funds required to teleport to this shop."
+   teleportInsufficientCooldown: "&cYou must wait another [tp time remaining] seconds to teleport to a shop."
    initializeOtherShop: "&cYou may not initialize another players shop with an item."
    useShopAlreadyInUse: "&cThis shop is in the middle of a transaction."
    destroyChest: "&cYou must remove the sign from this shop to break it."

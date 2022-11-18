@@ -1,10 +1,7 @@
 package com.snowgears.shop.shop;
 
 import com.snowgears.shop.event.PlayerExchangeShopEvent;
-import com.snowgears.shop.util.EconomyUtils;
-import com.snowgears.shop.util.InventoryUtils;
-import com.snowgears.shop.util.ShopMessage;
-import com.snowgears.shop.util.TransactionError;
+import com.snowgears.shop.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
@@ -22,89 +19,94 @@ public class SellShop extends AbstractShop {
         this.signLines = ShopMessage.getSignLines(this, this.type);
     }
 
-    //TODO incorporate # of orders at a time into this transaction
     @Override
-    public TransactionError executeTransaction(Player player, boolean isCheck, ShopType transactionType) {
+    public TransactionError executeTransaction(Transaction transaction) {
 
         this.isPerformingTransaction = true;
-        TransactionError issue = null;
-        ItemStack is = this.getItemStack();
+
+        Player player = transaction.getPlayer();
+        ItemStack itemStack = transaction.getItemStack();
 
         //check if shop has enough items
         if (!isAdmin()) {
-            if(isCheck) {
-                int shopItems = InventoryUtils.getAmount(this.getInventory(), is);
-                if (shopItems < is.getAmount())
-                    issue = TransactionError.INSUFFICIENT_FUNDS_SHOP;
+            if(transaction.isCheck()) {
+                int shopItems = InventoryUtils.getAmount(this.getInventory(), itemStack);
+                if (shopItems < itemStack.getAmount()) {
+                    transaction.setError(TransactionError.INSUFFICIENT_FUNDS_SHOP);
+                }
             }
             else {
                 //remove items from shop
-                InventoryUtils.removeItem(this.getInventory(), is, this.getOwner());
+                InventoryUtils.removeItem(this.getInventory(), itemStack, this.getOwner());
             }
         }
 
-        if(issue == null) {
-            if (isCheck) {
+        if(transaction.getError() == null) {
+            if (transaction.isCheck()) {
                 //check if player has enough currency
-                boolean hasFunds = EconomyUtils.hasSufficientFunds(player, player.getInventory(), this.getPrice());
-                if (!hasFunds)
-                    issue = TransactionError.INSUFFICIENT_FUNDS_PLAYER;
+                boolean hasFunds = EconomyUtils.hasSufficientFunds(player, player.getInventory(), transaction.getPrice());
+                if (!hasFunds) {
+                    transaction.setError(TransactionError.INSUFFICIENT_FUNDS_PLAYER);
+                }
             } else {
 //                System.out.println("executeTransaction on sell shop. Economy is "+Shop.getPlugin().getCurrencyType().toString());
                 //remove currency from player
-                EconomyUtils.removeFunds(player, player.getInventory(), this.getPrice());
+                EconomyUtils.removeFunds(player, player.getInventory(), transaction.getPrice());
             }
         }
 
-        if(issue == null) {
+        if(transaction.getError() == null) {
             //check if shop has enough room to accept currency
             if (!isAdmin()) {
-                if (isCheck) {
-                    boolean hasRoom = EconomyUtils.canAcceptFunds(this.getOwner(), this.getInventory(), this.getPrice());
+                if (transaction.isCheck()) {
+                    boolean hasRoom = EconomyUtils.canAcceptFunds(this.getOwner(), this.getInventory(), transaction.getPrice());
                     if (!hasRoom)
-                        issue = TransactionError.INVENTORY_FULL_SHOP;
+                        transaction.setError(TransactionError.INVENTORY_FULL_SHOP);
                 } else {
                     //add currency to shop
-                    EconomyUtils.addFunds(this.getOwner(), this.getInventory(), this.getPrice());
+                    EconomyUtils.addFunds(this.getOwner(), this.getInventory(), transaction.getPrice());
                 }
             }
         }
 
-        if(issue == null) {
-            if (isCheck) {
+        if(transaction.getError() == null) {
+            if (transaction.isCheck()) {
                 //check if player has enough room to accept items
-                boolean hasRoom = InventoryUtils.hasRoom(player.getInventory(), is, player);
+                boolean hasRoom = InventoryUtils.hasRoom(player.getInventory(), itemStack, player);
                 if (!hasRoom)
-                    issue = TransactionError.INVENTORY_FULL_PLAYER;
+                    transaction.setError(TransactionError.INVENTORY_FULL_PLAYER);
             } else {
                 //add items to player's inventory
-                InventoryUtils.addItem(player.getInventory(), is, player);
+                InventoryUtils.addItem(player.getInventory(), itemStack, player);
             }
         }
 
         player.updateInventory();
 
-        if(issue != null){
+        if(transaction.getError() != null){
             this.isPerformingTransaction = false;
-            return issue;
+            return transaction.getError();
         }
 
         //if there are no issues with the test/check transaction
-        if(issue == null && isCheck){
+        if(transaction.getError() == null && transaction.isCheck()){
 
             PlayerExchangeShopEvent e = new PlayerExchangeShopEvent(player, this);
             Bukkit.getPluginManager().callEvent(e);
 
             if(e.isCancelled()) {
                 this.isPerformingTransaction = false;
+                transaction.setError(TransactionError.CANCELLED);
                 return TransactionError.CANCELLED;
             }
 
-            //run the transaction again without the check clause
-            return executeTransaction(player, false, transactionType);
+            //run the transaction again after passing the first check
+            transaction.passCheck();
+            return executeTransaction(transaction);
         }
         this.isPerformingTransaction = false;
         setGuiIcon();
+        transaction.setError(TransactionError.NONE);
         return TransactionError.NONE;
     }
 }

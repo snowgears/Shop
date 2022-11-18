@@ -6,7 +6,6 @@ import com.snowgears.shop.shop.AbstractShop;
 import com.snowgears.shop.shop.ShopType;
 import com.snowgears.shop.util.*;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -146,8 +145,10 @@ public class ListShopsWindow extends ShopGuiWindow {
         page.setItem(6, filterStockIcon);
 
         //search icon
-        ItemStack searchIcon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.HOME_SEARCH, null, null);
-        page.setItem(8, searchIcon);
+        if(Shop.getPlugin().allowCreativeSelection()) {
+            ItemStack searchIcon = Shop.getPlugin().getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.HOME_SEARCH, null, null);
+            page.setItem(8, searchIcon);
+        }
     }
 
     @Override

@@ -123,6 +123,15 @@ public abstract class AbstractShop {
                 final org.bukkit.material.Sign sign = (org.bukkit.material.Sign) signLocation.getBlock().getState().getData();
                 facing = sign.getFacing();
                 chestLocation = signLocation.getBlock().getRelative(facing.getOppositeFace()).getLocation();
+
+                //if shop is made out of a container that is no longer enabled, delete it
+                if(chestLocation != null) {
+                    if (!Shop.getPlugin().getShopHandler().isChest(chestLocation.getBlock())){
+                        this.delete();
+                        return false;
+                    }
+                }
+                this.updateSign();
                 this.setGuiIcon();
                 return true;
             } catch (ClassCastException cce) {
@@ -137,9 +146,10 @@ public abstract class AbstractShop {
 
     //abstract methods that must be implemented in each shop subclass
 
-    public abstract TransactionError executeTransaction(Player player, boolean isCheck, ShopType transactionType);
+    public abstract TransactionError executeTransaction(Transaction transaction);
 
     protected int calculateStock() {
+        int oldStock = stock;
         if(this.isAdmin) {
             stock = Integer.MAX_VALUE;
             return stock;
@@ -153,6 +163,15 @@ public abstract class AbstractShop {
             return stock;
         }
         stock = InventoryUtils.getAmount(this.getInventory(), this.getItemStack()) / this.getAmount();
+        if(stock == 0 && Shop.getPlugin().getAllowPartialSales()){
+            float remaining = (float)InventoryUtils.getAmount(this.getInventory(), this.getItemStack()) / (float)this.getAmount();
+            if(remaining > 0){
+                stock = 1;
+            }
+        }
+        if(stock != oldStock){
+            signLinesRequireRefresh = true;
+        }
         return stock;
     }
 
@@ -408,6 +427,7 @@ public abstract class AbstractShop {
                 }
 
                 signBlock.update(true);
+                signLinesRequireRefresh = false;
             }
         }, 2L);
     }
@@ -445,6 +465,7 @@ public abstract class AbstractShop {
 
             player.teleport(loc);
         }
+        Shop.getPlugin().getShopListener().addTeleportCooldown(player);
     }
 
     public void printSalesInfo(Player player) {

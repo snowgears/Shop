@@ -1,7 +1,7 @@
 package com.snowgears.shop.util;
 
 
-
+import com.snowgears.shop.Shop;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -18,38 +18,38 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.UUID;
 
 public class UtilMethods {
 
     private static ArrayList<Material> nonIntrusiveMaterials = new ArrayList<Material>();
 
     //this is used for formatting numbers like 5000 to 5k
-    private static final NavigableMap<Double, String> suffixes = new TreeMap<>();
-    static {
-        suffixes.put(1_000D, "k");
-        suffixes.put(1_000_000D, "M");
-        suffixes.put(1_000_000_000D, "B"); //should be G normally. Making 'B' to appease people
-        suffixes.put(1_000_000_000_000D, "T");
-        suffixes.put(1_000_000_000_000_000D, "P");
-        suffixes.put(1_000_000_000_000_000_000D, "E");
-    }
-
-    //this is used for formatting numbers like 5000 to 5k
     public static String formatLongToKString(double value, boolean formatZeros) {
         //Long.MIN_VALUE == -Long.MIN_VALUE so we need an adjustment here
         if (value == Double.MIN_VALUE) return formatLongToKString(Double.MIN_VALUE + 1, formatZeros);
         if (value < 0) return "-" + formatLongToKString(-value, formatZeros);
-        if (value < 10000){
+
+        //System.out.println("formatting value: "+value);
+        //NavigableMap<Double, Pair<Double, Double>> e = Shop.getPlugin().getPriceSuffixes();
+
+        Map.Entry<Double, String> e = Shop.getPlugin().getPriceSuffixes().floorEntry(value);
+        Double minimumValue = Shop.getPlugin().getPriceSuffixMinimumValue();;
+
+        if (value < 1000 || e == null || value < minimumValue){
             if(isDecimal(value))
                 return new DecimalFormat("0.00").format(value);
             else
                 return new DecimalFormat("#.##").format(value);
         }
 
-        Map.Entry<Double, String> e = suffixes.floorEntry(value);
+        //Map.Entry<Double, String> e = suffixes.floorEntry(value);
         Double divideBy = e.getKey();
         String suffix = e.getValue();
+
+        //System.out.println("divideBy: "+divideBy+", suffix: "+suffix);
 
         double truncated = value / (divideBy / 10); //the number part of the output times 10
         boolean hasDecimal = truncated < 100 && (truncated / 10d) != (truncated / 10);
@@ -324,6 +324,9 @@ public class UtilMethods {
         int i=0;
         for(Map.Entry<Enchantment, Integer> entry : enchantsMap.entrySet()){
             enchants += getEnchantmentName(entry.getKey()) + " " + entry.getValue();
+
+            //TODO if enchantment name is Unknown, look up enchantment by namedSpaceKey? Looks like other plugins can register enchantments to server similar to Recipes
+
             i++;
             if(i != enchantsMap.size())
                 enchants += ", ";

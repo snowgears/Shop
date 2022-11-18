@@ -21,7 +21,7 @@ import java.util.UUID;
 
 public class ShopGUIListener implements Listener {
 
-    private Shop plugin = Shop.getPlugin();
+    private Shop plugin;
 
     public ShopGUIListener(Shop instance) {
         plugin = instance;
@@ -151,14 +151,14 @@ public class ShopGUIListener implements Listener {
                             String signLocation = ChatColor.stripColor(shopIconLore.get(shopIconLore.size() - 1));
                             if (signLocation != null) {
                                 Location loc = UtilMethods.getLocation(signLocation);
-                                if(loc != null){
+                                if (loc != null) {
                                     AbstractShop shop = plugin.getShopHandler().getShop(loc);
 
                                     if (shop != null) {
                                         if (Shop.getPlugin().usePerms()) {
                                             if (player.hasPermission("shop.operator") || player.hasPermission("shop.gui.teleport")) {
-                                                if (player.hasPermission("shop.operator") || player.hasPermission("shop.gui.teleport")) {
-                                                    if (!player.isOp() && plugin.getTeleportCost() > 0) {
+                                                if (!player.isOp()) {
+                                                    if (plugin.getTeleportCost() > 0) {
                                                         if (EconomyUtils.hasSufficientFunds(player, player.getInventory(), plugin.getTeleportCost())) {
                                                             EconomyUtils.removeFunds(player, player.getInventory(), plugin.getTeleportCost());
                                                         } else {
@@ -169,14 +169,21 @@ public class ShopGUIListener implements Listener {
                                                             return;
                                                         }
                                                     }
+                                                    if (plugin.getTeleportCooldown() > 0) {
+                                                        int secondsRemaining = plugin.getShopListener().getTeleportCooldownRemaining(player);
+                                                        if (secondsRemaining > 0) {
+                                                            String message = ShopMessage.getMessage("interactionIssue", "teleportInsufficientCooldown", shop, player);
+                                                            if (message != null && !message.isEmpty())
+                                                                player.sendMessage(message);
+                                                            plugin.getGuiHandler().closeWindow(player);
+                                                            return;
+                                                        }
+                                                    }
+                                                } else if (player.isOp()) {
                                                     shop.teleportPlayer(player);
                                                     plugin.getGuiHandler().closeWindow(player);
                                                 }
-                                                return;
                                             }
-                                        } else if (player.isOp()) {
-                                            shop.teleportPlayer(player);
-                                            plugin.getGuiHandler().closeWindow(player);
                                         }
                                     }
                                 }

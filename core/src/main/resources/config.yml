@@ -25,14 +25,22 @@ currency:
 
 # The amount of money a player is charged to create a shop #
 creationCost: 0
+
 # The amount of money a player is charged to destroy a shop #
 destructionCost: 0
+
 # The amount of money a player is charged to teleport to a shop (via the GUI) #
 teleportCost: 0
+
+# The amount of time (in seconds) a player must wait between shop teleports #
+teleportCooldown: 0
 
 # This returns the creation cost to the shop creator when the shop is destroyed #
 # Adds virtual funds if using vault currency and drops the item on the chest location if using physical currency #
 returnCreationCost: false
+
+# This allows shops to sell partial stacks for a calculated partial rate if the shop is low on stock #
+allowPartialSales: true
 
 
 # =================================================================== #
@@ -46,9 +54,6 @@ displayType: ITEM
 # This will show the name tags above the display items #
 # The options are: NONE, RIGHT_CLICK_CHEST, VIEW_SIGN #
 displayNameTags: VIEW_SIGN
-
-# This is how long display name tags are shown for after looking away (in seconds) #
-displayNameTagsLifespan: 0
 
 # This will change the order that display types are cycled in #
 # To remove a display type as a cycle option, remove it from this list #
@@ -76,6 +81,29 @@ setGlowingItemFrame: false
 # THIS CAN ONLY BE USED IN MINECRAFT 1.17 OR ABOVE #
 setGlowingSignText: false
 
+# This formats suffixes for large numbers like (5,000 = 5k) or (5,000,000 = 5M) #
+# minimumValue = minimum value to start formatting strings #
+priceSuffixes:
+   minimumValue: 10000
+   k:
+      enabled: true
+      value: 1000
+   M:
+      enabled: true
+      value: 1000000
+   B:
+      enabled: true
+      value: 1000000000
+   T:
+      enabled: true
+      value: 1000000000000
+   P:
+      enabled: true
+      value: 1000000000000000
+   E:
+      enabled: true
+      value: 1000000000000000000
+
 
 # =================================================================== #
 #                         GENERAL SETTINGS                            #
@@ -92,6 +120,30 @@ enableGUI: true
 
 # This is the command alias that will be used as the base for all shop commands #
 commandAlias: shop
+
+# These are the different types of containers that can be used for shops #
+enabledContainers:
+   - BARREL
+   - CHEST
+   - ENDER_CHEST
+   - SHULKER_BOX
+   - BLACK_SHULKER_BOX
+   - BLUE_SHULKER_BOX
+   - BROWN_SHULKER_BOX
+   - CYAN_SHULKER_BOX
+   - GRAY_SHULKER_BOX
+   - GREEN_SHULKER_BOX
+   - LIGHT_BLUE_SHULKER_BOX
+   - LIGHT_GRAY_SHULKER_BOX
+   - LIME_SHULKER_BOX
+   - MAGENTA_SHULKER_BOX
+   - ORANGE_SHULKER_BOX
+   - PINK_SHULKER_BOX
+   - PURPLE_SHULKER_BOX
+   - RED_SHULKER_BOX
+   - WHITE_SHULKER_BOX
+   - YELLOW_SHULKER_BOX
+   - TRAPPED_CHEST
 
 # These are the methods players are able to use to create shops #
 # placeSign - players can place signs on chests and fill out the info on the sign itself #
@@ -114,9 +166,6 @@ deletePlayerShopsAfterXHoursOffline: 0
 # These will need to be set to false if your server is running anything less than Minecraft 1.9 #
 playSounds: true
 playEffects: true
-
-# This controls whether or not ender chests are able to be used as shops on the server #
-enableEnderChests: false
 
 # If this is set to true, LEFT side of combo shop signs will BUY items and RIGHT side will SELL items #
 # If this is set to false, LEFT side of combo shop signs will SELL items and RIGHT side will BUY items #

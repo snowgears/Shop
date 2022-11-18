@@ -244,6 +244,8 @@ public class ShopMessage {
             unformattedMessage = unformattedMessage.replace("[user]", "" + player.getName());
             unformattedMessage = unformattedMessage.replace("[user amount]", "" + Shop.getPlugin().getShopHandler().getNumberOfShops(player));
             unformattedMessage = unformattedMessage.replace("[build limit]", "" + Shop.getPlugin().getShopListener().getBuildLimit(player));
+            unformattedMessage = unformattedMessage.replace("[tp time remaining]", "" + Shop.getPlugin().getShopListener().getTeleportCooldownRemaining(player));
+
             if(unformattedMessage.contains("[shop types]")) {
                 List<ShopType> typeList = new ArrayList(Arrays.asList(ShopType.values()));
                 if((!Shop.getPlugin().usePerms() && !player.isOp()) || (Shop.getPlugin().usePerms() && !player.hasPermission("shop.operator"))){
@@ -513,6 +515,7 @@ public class ShopMessage {
         messageMap.put("interactionIssue_createCooldown", chatConfig.getString("interaction_issue.createCooldown"));
         messageMap.put("interactionIssue_destroyInsufficientFunds", chatConfig.getString("interaction_issue.destroyInsufficientFunds"));
         messageMap.put("interactionIssue_teleportInsufficientFunds", chatConfig.getString("interaction_issue.teleportInsufficientFunds"));
+        messageMap.put("interactionIssue_teleportInsufficientCooldown", chatConfig.getString("interaction_issue.teleportInsufficientCooldown"));
         messageMap.put("interactionIssue_initialize", chatConfig.getString("interaction_issue.initializeOtherShop"));
         messageMap.put("interactionIssue_destroyChest", chatConfig.getString("interaction_issue.destroyChest"));
         messageMap.put("interactionIssue_useOwnShop", chatConfig.getString("interaction_issue.useOwnShop"));

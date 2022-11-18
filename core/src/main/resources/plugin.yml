@@ -4,7 +4,7 @@ description: Easily create shops to buy or sell items!
 version: ${project.version}
 api-version: 1.14
 main: com.snowgears.shop.Shop
-softdepend: [Vault, WorldGuard, Towny, LWC, DynMap, BlueMap]
+softdepend: [Vault, WorldGuard, Towny, LWC, DynMap, BlueMap, BentoBox, AdvancedRegionMarket, Multiverse-Core]
 permissions:
     shop.use:
         description: Allows player to use all shops.

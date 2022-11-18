@@ -40,12 +40,12 @@ public class ShopHandler {
     private ConcurrentHashMap<String, List<Location>> chunkShops = new ConcurrentHashMap<>(); //String key = world_x_z
     private ConcurrentHashMap<UUID, HashSet<Location>> playersWithActiveShopDisplays = new ConcurrentHashMap<>();
     private HashSet<UUID> playersProcessingShopDisplays = new HashSet<>();
+    private HashMap<UUID, Location> playersActiveShopDisplayTag = new HashMap<>();
 
     //all loading of shops happens async at onEnable()
     //shops that still need to calculate their facing direction based on sign are considered "unloaded"
     //we will be loading these shops at time of chunkload and resaving them so they are saved with the 'facing' variable
     private ConcurrentHashMap<String, List<Location>> unloadedShopsByChunk = new ConcurrentHashMap<>();
-    private ArrayList<Material> chestMaterials = new ArrayList<>();
     private UUID adminUUID;
     private BlockFace[] directions = {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
 
@@ -57,7 +57,6 @@ public class ShopHandler {
         plugin = instance;
         adminUUID = UUID.randomUUID();
         initDisplayClass();
-        initChestMaterials();
         initItemList();
 
         new BukkitRunnable() {
@@ -490,6 +489,29 @@ public class ShopHandler {
         playersWithActiveShopDisplays.put(player.getUniqueId(), shops);
     }
 
+    public void addActiveShopDisplayTag(Player player, Location shopSignLocation){
+
+        if(playersActiveShopDisplayTag.containsKey(player.getUniqueId())){
+            Location oldShopSignLocation = playersActiveShopDisplayTag.get(player.getUniqueId());
+
+            if(!oldShopSignLocation.equals(shopSignLocation)) {
+                AbstractShop oldShop = getShop(oldShopSignLocation);
+                if (oldShop != null && oldShop.getDisplay() != null) {
+                    oldShop.getDisplay().removeDisplayEntities(player, true);
+                }
+            }
+        }
+        playersActiveShopDisplayTag.put(player.getUniqueId(), shopSignLocation);
+    }
+
+//    public boolean shopDisplayTagIsActive(Player player, Location shopSignLocation){
+//
+//        if(playersActiveShopDisplayTag.containsKey(player.getUniqueId())){
+//            Location oldShopSignLocation = playersActiveShopDisplayTag.get(player.getUniqueId());
+//            return oldShopSignLocation.equals(shopSignLocation);
+//        }
+//        return false;
+//    }
 
     private List<Location> getUnloadedShopsByChunk(String chunkKey){
         List<Location> unloadedShopsInChunk;
@@ -573,6 +595,13 @@ public class ShopHandler {
                         }
                     }
                     shop.getSignLocation().getWorld().getChunkAt(shop.getSignLocation()).unload();
+                }
+            }
+        }
+        for(UUID shopOwnerUUID : plugin.getShopHandler().getShopOwnerUUIDs()){
+            for(AbstractShop shop : plugin.getShopHandler().getShops(shopOwnerUUID)){
+                if(shop.getChestLocation().getChunk().isLoaded()) {
+                    shop.updateSign();
                 }
             }
         }
@@ -946,14 +975,7 @@ public class ShopHandler {
     }
 
     public boolean isChest(Block b){
-        return chestMaterials.contains(b.getType());
-    }
-
-    public void initChestMaterials(){
-        chestMaterials.add(Material.CHEST);
-        chestMaterials.add(Material.TRAPPED_CHEST);
-        if(plugin.useEnderChests())
-            chestMaterials.add(Material.ENDER_CHEST);
+        return plugin.getEnabledContainers().contains(b.getType());
     }
 
     public boolean passesItemListCheck(ItemStack is){

@@ -44,8 +44,8 @@ public class DisplayListener implements Listener {
                     for (Player player : plugin.getServer().getOnlinePlayers()) {
                         if (player != null) {
                             try {
-                                Block block = player.getTargetBlock((Set<Material>) null, 8);
-                                if (block.getType() == Material.WALL_SIGN) {
+                                Block block = player.getTargetBlock(null, 8);
+                                if (block != null && block.getType() == Material.WALL_SIGN) {
                                     AbstractShop shopObj = plugin.getShopHandler().getShop(block.getLocation());
                                     if (shopObj != null) {
                                         shopObj.getDisplay().showDisplayTags(player);
@@ -174,12 +174,13 @@ public class DisplayListener implements Listener {
                     return;
                 }
 
+                //set the GUI icon again (in case stock var needs to be updated in the GUI)
+                shop.setGuiIcon();
+
                 //if the sign lines use a variable that requires a refresh (like stock that is dynamically updated), then refresh sign
                 if(shop.getSignLinesRequireRefresh())
                     shop.updateSign();
 
-                //set the GUI icon again (in case stock var needs to be updated in the GUI)
-                shop.setGuiIcon();
                 //make sure to set gamble item again if player set it to new custom items
                 if(shop.getType() == ShopType.GAMBLE){
                     ((GambleShop)shop).setGambleItem();

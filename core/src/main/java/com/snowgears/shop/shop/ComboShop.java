@@ -2,10 +2,7 @@ package com.snowgears.shop.shop;
 
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.event.PlayerExchangeShopEvent;
-import com.snowgears.shop.util.EconomyUtils;
-import com.snowgears.shop.util.InventoryUtils;
-import com.snowgears.shop.util.ShopMessage;
-import com.snowgears.shop.util.TransactionError;
+import com.snowgears.shop.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
@@ -28,33 +25,31 @@ public class ComboShop extends AbstractShop {
         this.priceSell = priSell;
     }
 
-    //TODO incorporate # of orders at a time into this transaction
     @Override
-    public TransactionError executeTransaction(Player player, boolean isCheck, ShopType transactionType) {
+    public TransactionError executeTransaction(Transaction transaction) {
         this.isPerformingTransaction = true;
-        TransactionError issue;
-        if(transactionType == ShopType.SELL){
-            issue = executeSellTransaction(player, isCheck);
+        if(transaction.getType() == ShopType.SELL){
+            executeSellTransaction(transaction);
         }
         else{
-            issue = executeBuyTransaction(player, isCheck);
+            executeBuyTransaction(transaction);
         }
         this.isPerformingTransaction = false;
         setGuiIcon();
-        return issue;
+        return transaction.getError();
     }
 
-    private TransactionError executeSellTransaction(Player player, boolean isCheck){
-        TransactionError issue = null;
+    private TransactionError executeSellTransaction(Transaction transaction){
 
-        ItemStack is = this.getItemStack();
+        Player player = transaction.getPlayer();
+        ItemStack is = transaction.getItemStack();
 
         //check if shop has enough items
         if (!isAdmin()) {
-            if(isCheck) {
+            if(transaction.isCheck()) {
                 int shopItems = InventoryUtils.getAmount(this.getInventory(), is);
                 if (shopItems < is.getAmount())
-                    issue = TransactionError.INSUFFICIENT_FUNDS_SHOP;
+                    transaction.setError(TransactionError.INSUFFICIENT_FUNDS_SHOP);
             }
             else {
                 //remove items from shop
@@ -62,38 +57,38 @@ public class ComboShop extends AbstractShop {
             }
         }
 
-        if(issue == null) {
-            if (isCheck) {
+        if(transaction.getError() == null) {
+            if (transaction.isCheck()) {
                 //check if player has enough currency
-                boolean hasFunds = EconomyUtils.hasSufficientFunds(player, player.getInventory(), this.getPriceSell());
+                boolean hasFunds = EconomyUtils.hasSufficientFunds(player, player.getInventory(), transaction.getPrice());
                 if (!hasFunds)
-                    issue = TransactionError.INSUFFICIENT_FUNDS_PLAYER;
+                    transaction.setError(TransactionError.INSUFFICIENT_FUNDS_PLAYER);
             } else {
                 //remove currency from player
-                EconomyUtils.removeFunds(player, player.getInventory(), this.getPriceSell());
+                EconomyUtils.removeFunds(player, player.getInventory(), transaction.getPrice());
             }
         }
 
-        if(issue == null) {
+        if(transaction.getError() == null) {
             //check if shop has enough room to accept currency
             if (!isAdmin()) {
-                if (isCheck) {
-                    boolean hasRoom = EconomyUtils.canAcceptFunds(this.getOwner(), this.getInventory(), this.getPriceSell());
+                if (transaction.isCheck()) {
+                    boolean hasRoom = EconomyUtils.canAcceptFunds(this.getOwner(), this.getInventory(), transaction.getPrice());
                     if (!hasRoom)
-                        issue = TransactionError.INVENTORY_FULL_SHOP;
+                        transaction.setError(TransactionError.INVENTORY_FULL_SHOP);
                 } else {
                     //add currency to shop
-                    EconomyUtils.addFunds(this.getOwner(), this.getInventory(), this.getPriceSell());
+                    EconomyUtils.addFunds(this.getOwner(), this.getInventory(), transaction.getPrice());
                 }
             }
         }
 
-        if(issue == null) {
-            if (isCheck) {
+        if(transaction.getError() == null) {
+            if (transaction.isCheck()) {
                 //check if player has enough room to accept items
                 boolean hasRoom = InventoryUtils.hasRoom(player.getInventory(), is, player);
                 if (!hasRoom)
-                    issue = TransactionError.INVENTORY_FULL_PLAYER;
+                    transaction.setError(TransactionError.INVENTORY_FULL_PLAYER);
             } else {
                 //add items to player's inventory
                 InventoryUtils.addItem(player.getInventory(), is, player);
@@ -102,75 +97,79 @@ public class ComboShop extends AbstractShop {
 
         player.updateInventory();
 
-        if(issue != null){
-            return issue;
+        if(transaction.getError() != null){
+            return transaction.getError();
         }
 
         //if there are no issues with the test/check transaction
-        if(issue == null && isCheck){
+        if(transaction.getError() == null && transaction.isCheck()){
 
             PlayerExchangeShopEvent e = new PlayerExchangeShopEvent(player, this);
             Bukkit.getPluginManager().callEvent(e);
 
-            if(e.isCancelled())
+            if(e.isCancelled()) {
+                transaction.setError(TransactionError.CANCELLED);
                 return TransactionError.CANCELLED;
+            }
 
-            //run the transaction again without the check clause
-            return executeSellTransaction(player, false);
+            //run the transaction again after passing checks
+            transaction.passCheck();
+            return executeSellTransaction(transaction);
         }
+        transaction.setError(TransactionError.NONE);
         return TransactionError.NONE;
     }
 
-    private TransactionError executeBuyTransaction(Player player, boolean isCheck){
-        TransactionError issue = null;
+    private TransactionError executeBuyTransaction(Transaction transaction){
 
-        ItemStack is = this.getItemStack();
+        Player player = transaction.getPlayer();
+        ItemStack is = transaction.getItemStack();
 
         //check if player has enough items
-        if(isCheck) {
+        if(transaction.isCheck()) {
             int playerItems = InventoryUtils.getAmount(player.getInventory(), is);
             if (playerItems < is.getAmount())
-                return TransactionError.INSUFFICIENT_FUNDS_PLAYER;
+                transaction.setError(TransactionError.INSUFFICIENT_FUNDS_PLAYER);
         }
         else {
             //remove items from player
             InventoryUtils.removeItem(player.getInventory(), is, player);
         }
 
-        if(issue == null) {
+        if(transaction.getError() == null) {
             //check if shop has enough currency
             if(!this.isAdmin()) {
-                if(isCheck) {
-                    boolean hasFunds = EconomyUtils.hasSufficientFunds(this.getOwner(), this.getInventory(), this.getPrice());
+                if(transaction.isCheck()) {
+                    boolean hasFunds = EconomyUtils.hasSufficientFunds(this.getOwner(), this.getInventory(), transaction.getPrice());
                     if (!hasFunds)
-                        return TransactionError.INSUFFICIENT_FUNDS_SHOP;
+                        transaction.setError(TransactionError.INSUFFICIENT_FUNDS_SHOP);
                 }
                 else {
-                    EconomyUtils.removeFunds(this.getOwner(), this.getInventory(), this.getPrice());
+                    EconomyUtils.removeFunds(this.getOwner(), this.getInventory(), transaction.getPrice());
                 }
             }
         }
 
-        if(issue == null) {
-            if(isCheck) {
+        if(transaction.getError() == null) {
+            if(transaction.isCheck()) {
                 //check if player has enough room to accept currency
-                boolean hasRoom = EconomyUtils.canAcceptFunds(player, player.getInventory(), this.getPrice());
+                boolean hasRoom = EconomyUtils.canAcceptFunds(player, player.getInventory(), transaction.getPrice());
                 if (!hasRoom)
-                    return TransactionError.INVENTORY_FULL_PLAYER;
+                    transaction.setError(TransactionError.INVENTORY_FULL_PLAYER);
             }
             else {
                 //add currency to player
-                EconomyUtils.addFunds(player, player.getInventory(), this.getPrice());
+                EconomyUtils.addFunds(player, player.getInventory(), transaction.getPrice());
             }
         }
 
-        if(issue == null) {
+        if(transaction.getError() == null) {
             //check if shop has enough room to accept items
             if(!this.isAdmin()) {
-                if(isCheck) {
+                if(transaction.isCheck()) {
                     boolean shopHasRoom = InventoryUtils.hasRoom(this.getInventory(), is, this.getOwner());
                     if (!shopHasRoom)
-                        return TransactionError.INVENTORY_FULL_SHOP;
+                        transaction.setError(TransactionError.INVENTORY_FULL_SHOP);
                 }
                 else{
                     //add items to shop's inventory
@@ -181,22 +180,26 @@ public class ComboShop extends AbstractShop {
 
         player.updateInventory();
 
-        if(issue != null){
-            return issue;
+        if(transaction.getError() != null){
+            return transaction.getError();
         }
 
         //if there are no issues with the test/check transaction
-        if(issue == null && isCheck){
+        if(transaction.getError() == null && transaction.isCheck()){
 
             PlayerExchangeShopEvent e = new PlayerExchangeShopEvent(player, this);
             Bukkit.getPluginManager().callEvent(e);
 
-            if(e.isCancelled())
+            if(e.isCancelled()) {
+                transaction.setError(TransactionError.CANCELLED);
                 return TransactionError.CANCELLED;
+            }
 
-            //run the transaction again without the check clause
-            return executeBuyTransaction(player, false);
+            //run the transaction again after passing checks
+            transaction.passCheck();
+            return executeBuyTransaction(transaction);
         }
+        transaction.setError(TransactionError.NONE);
         return TransactionError.NONE;
     }
 
@@ -215,5 +218,21 @@ public class ComboShop extends AbstractShop {
 
     public double getPriceSell(){
         return priceSell;
+    }
+
+    @Override
+    protected int calculateStock(){
+        if(this.isAdmin) {
+            stock = Integer.MAX_VALUE;
+        }
+        else {
+            double funds = EconomyUtils.getFunds(this.getOwner(), this.getInventory());
+            if (this.getPrice() == 0)
+                stock = Integer.MAX_VALUE;
+            else{
+                stock = (int)(funds / this.getPrice());
+            }
+        }
+        return stock;
     }
 }
