@@ -250,13 +250,18 @@ public class TransactionHelper {
             switch (transaction.getType()){
                 case SELL:
                     double pricePerItem = transaction.getPricePerItem();
-                    double maxItemsWithFunds = Math.floor((float)EconomyUtils.getFunds(player, player.getInventory()) / pricePerItem);
+                    //double maxItemsWithFunds = Math.floor((float)EconomyUtils.getFunds(player, player.getInventory()) / pricePerItem);
+                    double maxItemsWithFunds = Math.round((float)EconomyUtils.getFunds(player, player.getInventory()) / pricePerItem);
+                    //System.out.println("getFunds(player): "+EconomyUtils.getFunds(player, player.getInventory()));
+                    //System.out.println("pricePerItem: "+pricePerItem);
+                    //System.out.println("maxItemsWithFunds: "+maxItemsWithFunds);
                     if(maxItemsWithFunds > 0) {
                         processAgain = transaction.setAmountCalculatePrice((int) maxItemsWithFunds);
                     }
                     break;
                 case BUY:
                     int maxItems = InventoryUtils.getAmount(player.getInventory(), transaction.getItemStack());
+
                     if(maxItems > 0) {
                         processAgain = transaction.setAmountCalculatePrice(maxItems);
                     }

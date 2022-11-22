@@ -83,6 +83,8 @@ public class Transaction {
             this.itemStack.setAmount(primaryItemAmount);
             this.price = price * percentage;
             if(Shop.getPlugin().getCurrencyType() == CurrencyType.ITEM){
+                this.price = Math.round(this.price);
+                //System.out.println("new price: "+this.price);
                 return this.price >= 1;
             }
             return true;
