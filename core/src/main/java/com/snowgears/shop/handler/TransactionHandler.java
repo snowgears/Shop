@@ -1,11 +1,11 @@
 
-package com.snowgears.shop.util;
+package com.snowgears.shop.handler;
 
 import com.snowgears.shop.Shop;
-import com.snowgears.shop.handler.ShopGuiHandler;
 import com.snowgears.shop.hook.WorldGuardHook;
 import com.snowgears.shop.shop.AbstractShop;
 import com.snowgears.shop.shop.ShopType;
+import com.snowgears.shop.util.*;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -16,16 +16,14 @@ import java.util.HashMap;
 import java.util.UUID;
 
 
-public class TransactionHelper {
+public class TransactionHandler {
 
     private Shop plugin;
     private HashMap<Location, UUID> shopMessageCooldown = new HashMap<>(); //shop location, shop owner
 
-    public TransactionHelper(Shop instance) {
+    public TransactionHandler(Shop instance) {
         plugin = instance;
     }
-
-    //TODO will need to update ender chest contents at the end of every transaction involving an ender chest
 
     public void executeTransactionFromEvent(PlayerInteractEvent event, AbstractShop shop, boolean fullStackOrder){
         Player player = event.getPlayer();
@@ -207,11 +205,6 @@ public class TransactionHelper {
 
         //TODO update enderchest shop inventory?
 
-        //this cleans up the while loop logic. If an order is on 2 and fails, they got 1 order. etc
-        if(issue != TransactionError.NONE)
-            orderNum = orderNum - 1;
-
-
         //the transaction has finished and the exchange event has not been cancelled
         sendExchangeMessagesAndLog(shop, player, actionType, successfulTransactions);
         sendEffects(true, player, shop);
@@ -293,7 +286,7 @@ public class TransactionHelper {
                 player.sendMessage(message);
         }
 
-        Player owner = Bukkit.getPlayer(shop.getOwnerName());
+        Player owner = Bukkit.getPlayer(shop.getOwnerUUID());
         if ((owner != null) && (!shop.isAdmin())) {
             message = getMessageFromOrders(shop, player, transactionType, "owner", price, transactions);
 

@@ -8,6 +8,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
+import java.util.HashSet;
 import java.util.UUID;
 
 public class ARMHookListener implements Listener {
@@ -32,14 +33,20 @@ public class ARMHookListener implements Listener {
 
     private void deleteAllShopsInRegion(Region region){
 
+        HashSet<UUID> shopOwnersToSave = new HashSet<>();
         for(UUID shopOwnerUUID : plugin.getShopHandler().getShopOwnerUUIDs()){
             for(AbstractShop shop : plugin.getShopHandler().getShops(shopOwnerUUID)) {
                 if (shop != null && shop.getSignLocation() != null && shop.getSignLocation().getWorld().getName().equals(region.getRegionworld().getName())) {
                     if (region.getRegion().contains(shop.getSignLocation().getBlockX(), shop.getSignLocation().getBlockY(), shop.getSignLocation().getBlockZ())) {
                         shop.delete();
+                        shopOwnersToSave.add(shopOwnerUUID);
                     }
                 }
             }
+        }
+
+        for(UUID shopOwner : shopOwnersToSave) {
+            plugin.getShopHandler().saveShops(shopOwner);
         }
     }
 }

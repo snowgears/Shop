@@ -117,6 +117,11 @@
             <version>2.7.5</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>de.tr7zw</groupId>
+            <artifactId>item-nbt-api</artifactId>
+            <version>2.11.1</version>
+        </dependency>
     </dependencies>
 
     <!--  this shade plugin is to shade in hikari so that database connections can be used -->
@@ -143,6 +148,10 @@
                                 <relocation>
                                     <pattern>org.mariadb.jdbc</pattern>
                                     <shadedPattern>com.snowgears.shop.artifact.mariadbjdbc</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>de.tr7zw.changeme.nbtapi</pattern>
+                                    <shadedPattern>com.snowgears.shop.artifact.nbtapi</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>

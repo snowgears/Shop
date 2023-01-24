@@ -3,6 +3,7 @@ package com.snowgears.shop.util;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.shop.AbstractShop;
 import com.snowgears.shop.shop.ComboShop;
+import com.snowgears.shop.shop.GambleShop;
 import com.snowgears.shop.shop.ShopType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -24,6 +25,11 @@ public class Transaction {
         this.transactionType = transactionType;
         this.isCheck = true;
         this.itemStack = shop.getItemStack();
+
+        if(shop instanceof GambleShop){
+            ((GambleShop)shop).setGambleItem();
+            this.itemStack = ((GambleShop) shop).getGambleItem();
+        }
         if(shop.getType() == ShopType.BARTER){
             this.secondaryItemStack = shop.getSecondaryItemStack();
         }
@@ -73,21 +79,38 @@ public class Transaction {
             this.itemStack.setAmount(primaryItemAmount);
             return (primaryItemAmount > 0 && secondaryItemAmount > 0);
         }
-//        else if(shop instanceof ComboShop && transactionType == ShopType.SELL) {
-//            float percentage = (float) primaryItemAmount / (float) itemStack.getAmount();
-//            this.itemStack.setAmount(primaryItemAmount);
-//            this.price = ((ComboShop)shop).getPriceSell();
-//        }
         else{
-            float percentage = (float) primaryItemAmount / (float) itemStack.getAmount();
-            this.itemStack.setAmount(primaryItemAmount);
-            this.price = price * percentage;
             if(Shop.getPlugin().getCurrencyType() == CurrencyType.ITEM){
-                this.price = Math.round(this.price);
-                //System.out.println("new price: "+this.price);
+                float amountPerPriceUnit = getAmountPerPrice();
+                float maxSplit = (float)primaryItemAmount / amountPerPriceUnit;
+                //if maxSplit is less than 1, try flooring the value of amountPerPriceUnit
+                if(maxSplit < 1){
+                    amountPerPriceUnit = (int)Math.floor(amountPerPriceUnit);
+                    maxSplit = (float)primaryItemAmount / amountPerPriceUnit;
+                }
+                int maxPrice = (int)Math.floor(maxSplit + 0.05); //add a bit for float rounding issues
+                int maxItems = (int)Math.floor(maxPrice * amountPerPriceUnit);
+
+                this.itemStack.setAmount(maxItems);
+                this.price = maxPrice;
+
+//                System.out.println("amountPerPriceUnit - "+amountPerPriceUnit);
+//                System.out.println("maxSplit - "+maxSplit);
+//                System.out.println("maxItems - "+maxItems);
+//                System.out.println("price - "+maxPrice);
+
                 return this.price >= 1;
             }
-            return true;
+            else {
+                float percentage = (float) primaryItemAmount / (float) itemStack.getAmount();
+                this.itemStack.setAmount(primaryItemAmount);
+                this.price = price * percentage;
+
+//                System.out.println("percentage - " + percentage);
+//                System.out.println("primaryItemAmount - " + primaryItemAmount);
+//                System.out.println("price - " + price);
+                return true;
+            }
         }
     }
 
@@ -112,6 +135,11 @@ public class Transaction {
     public float getPricePerItem(){
         float pricePer = (float)this.getPrice() / (float)this.getItemStack().getAmount();
         return pricePer;
+    }
+
+    public float getAmountPerPrice(){
+        float amountPer = (float)this.getItemStack().getAmount() / (float)this.getPrice();
+        return amountPer;
     }
 
     public TransactionError getError(){

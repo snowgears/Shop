@@ -110,7 +110,7 @@ public class ShopMessage {
         }
 
         if (player != null) {
-            unformattedMessage = unformattedMessage.replace("[owner]", "" + Bukkit.getOfflinePlayer(process.getPlayerUUID().toString()));
+            unformattedMessage = unformattedMessage.replace("[owner]", "" + Bukkit.getOfflinePlayer(process.getPlayerUUID()));
 
             if (unformattedMessage.contains("[shop types]")) {
                 List<ShopType> typeList = new ArrayList(Arrays.asList(ShopType.values()));

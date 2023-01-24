@@ -84,6 +84,7 @@ public class LogHandler {
             dataSource.setPassword(password);
             dataSource.setLeakDetectionThreshold(10000);
             dataSource.setMaximumPoolSize(10);
+            dataSource.setMaxLifetime(600000);
         }
         else{ //type.equalsIgnoreCase("MARIADB")
             HikariConfig config = new HikariConfig();
@@ -95,6 +96,7 @@ public class LogHandler {
             config.addDataSourceProperty("password", password);
             config.setLeakDetectionThreshold(10000);
             config.setMaximumPoolSize(10);
+            config.setMaxLifetime(600000);
 
             dataSource = new HikariDataSource(config);
         }

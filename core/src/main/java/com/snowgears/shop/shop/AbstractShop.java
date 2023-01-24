@@ -171,6 +171,7 @@ public abstract class AbstractShop {
         }
         if(stock != oldStock){
             signLinesRequireRefresh = true;
+            Shop.getPlugin().getShopHandler().saveShops(getOwnerUUID());
         }
         return stock;
     }

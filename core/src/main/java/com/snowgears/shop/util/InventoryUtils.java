@@ -4,7 +4,6 @@ package com.snowgears.shop.util;
 import com.snowgears.shop.Shop;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -44,9 +43,6 @@ public class InventoryUtils {
             }
         }
         inventory.setContents(contents);
-        if(inventory.getType() == InventoryType.ENDER_CHEST){
-            Shop.getPlugin().getEnderChestHandler().saveInventory(inventoryOwner, inventory);
-        }
         return amount;
     }
 
@@ -79,9 +75,6 @@ public class InventoryUtils {
             for(ItemStack noAddItemstack : noAdd.values()) {
                 amount += noAddItemstack.getAmount();
             }
-        }
-        if(inventory.getType() == InventoryType.ENDER_CHEST){
-            Shop.getPlugin().getEnderChestHandler().saveInventory(inventoryOwner, inventory);
         }
         return amount;
     }

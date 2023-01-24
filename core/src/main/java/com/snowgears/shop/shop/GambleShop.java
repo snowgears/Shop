@@ -36,9 +36,9 @@ public class GambleShop extends AbstractShop {
         Player player = transaction.getPlayer();
 
         //set gamble item to random in the first check
-        if (transaction.isCheck()) {
-            setGambleItem();
-        }
+//        if (transaction.isCheck()) {
+//            setGambleItem();
+//        }
 
         //commented out because shop type is always admin
         //check if shop has enough items
@@ -90,6 +90,12 @@ public class GambleShop extends AbstractShop {
                 boolean hasRoom = InventoryUtils.hasRoom(player.getInventory(), gambleItem, player);
                 if (!hasRoom)
                     transaction.setError(TransactionError.INVENTORY_FULL_PLAYER);
+
+                //additional check for a free slot, as to not allow a player to cheat the system with a full inventory and only allow for the item they want
+                if (player.getInventory().firstEmpty() == -1){
+                    transaction.setError(TransactionError.INVENTORY_FULL_PLAYER);
+                }
+
             } else {
                 //add items to player's inventory
                 InventoryUtils.addItem(player.getInventory(), gambleItem, player);
@@ -136,7 +142,7 @@ public class GambleShop extends AbstractShop {
         final DisplayType initialDisplayType = this.getDisplay().getType();
         this.getDisplay().setType(DisplayType.ITEM, false);
         setGambleItem();
-        this.getDisplay().spawn(player); //TODO maybe only show what item player got to the player themselves???
+        this.getDisplay().spawn(player);
 
         new BukkitRunnable() {
             @Override
@@ -144,11 +150,11 @@ public class GambleShop extends AbstractShop {
                 setItemStack(Shop.getPlugin().getGambleDisplayItem());
                 if(initialDisplayType == null) {
                     display.setType(Shop.getPlugin().getDisplayType(), false);
-                    getDisplay().spawn(player); //TODO maybe only show what item player got to the player themselves???
+                    getDisplay().spawn(player);
                 }
                 else {
                     display.setType(initialDisplayType, false);
-                    getDisplay().spawn(player); //TODO maybe only show what item player got to the player themselves???
+                    getDisplay().spawn(player);
                 }
                 isPerformingTransaction = false;
             }

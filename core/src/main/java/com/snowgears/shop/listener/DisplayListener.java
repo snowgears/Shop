@@ -9,10 +9,7 @@ import com.snowgears.shop.shop.ShopType;
 import com.snowgears.shop.util.InventoryUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.Chest;
-import org.bukkit.block.DoubleChest;
+import org.bukkit.block.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -22,6 +19,7 @@ import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -159,8 +157,12 @@ public class DisplayListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onBlockPlace(BlockPlaceEvent event) {
         AbstractShop shop = plugin.getShopHandler().getShopByChest(event.getBlock().getRelative(BlockFace.DOWN));
-        if (shop != null && shop.getDisplay().getType() != DisplayType.NONE)
-            event.setCancelled(true);
+        if(shop != null){
+            if(shop.getDisplay().getType() == null && plugin.getDisplayType() != DisplayType.NONE)
+                event.setCancelled(true);
+            else if (shop.getDisplay().getType() != null && shop.getDisplay().getType() != DisplayType.NONE)
+                event.setCancelled(true);
+        }
     }
 
     @EventHandler (priority = EventPriority.HIGHEST)
@@ -195,12 +197,42 @@ public class DisplayListener implements Listener {
                     return;
                 }
 
+                //set the GUI icon again (in case stock var needs to be updated in the GUI)
+                shop.setGuiIcon();
+
                 //if the sign lines use a variable that requires a refresh (like stock that is dynamically updated), then refresh sign
                 if(shop.getSignLinesRequireRefresh())
                     shop.updateSign();
 
+                //make sure to set gamble item again if player set it to new custom items
+                if(shop.getType() == ShopType.GAMBLE){
+                    ((GambleShop)shop).setGambleItem();
+                }
+            }
+            //for some reason, EnderChest also does not extend Container
+            else if(event.getInventory().getType() == InventoryType.ENDER_CHEST){
+                AbstractShop shop = null;
+                try {
+                    shop = plugin.getShopHandler().getShopByChest(event.getInventory().getLocation().getBlock());
+                } catch(NoSuchMethodError e){
+                    Block targetBlock = event.getPlayer().getTargetBlock(null, 10);
+                    if(targetBlock == null || targetBlock.getType() != Material.ENDER_CHEST){
+                        return;
+                    }
+                    shop = plugin.getShopHandler().getShopByChest(targetBlock);
+                }
+
+                if(shop == null) {
+                    return;
+                }
+
                 //set the GUI icon again (in case stock var needs to be updated in the GUI)
                 shop.setGuiIcon();
+
+                //if the sign lines use a variable that requires a refresh (like stock that is dynamically updated), then refresh sign
+                if(shop.getSignLinesRequireRefresh())
+                    shop.updateSign();
+
                 //make sure to set gamble item again if player set it to new custom items
                 if(shop.getType() == ShopType.GAMBLE){
                     ((GambleShop)shop).setGambleItem();

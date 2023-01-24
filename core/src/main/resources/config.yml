@@ -189,7 +189,7 @@ destroyShopRequiresSneak: false
 #                    INTEGRATION HOOK SETTINGS                        #
 # =================================================================== #
 
-# Setting this to true will force all Shops to be created in WorldGuard regions with a shop flag #
+# Setting this to true will force all Shops to be created in WorldGuard regions with a shop flag (flag=allow-shop) #
 # WorldGuard plugin must be installed for this feature to work #
 hookWorldGuard: false
 
