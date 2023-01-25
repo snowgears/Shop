@@ -211,8 +211,12 @@ public class DisplayListener implements Listener {
             }
             //for some reason, EnderChest also does not extend Container
             else if(event.getInventory().getType() == InventoryType.ENDER_CHEST){
-                AbstractShop shop = null;
+
+                AbstractShop shop;
                 try {
+                    if(event.getInventory().getLocation() == null){
+                        return;
+                    }
                     shop = plugin.getShopHandler().getShopByChest(event.getInventory().getLocation().getBlock());
                 } catch(NoSuchMethodError e){
                     Block targetBlock = event.getPlayer().getTargetBlock(null, 10);
