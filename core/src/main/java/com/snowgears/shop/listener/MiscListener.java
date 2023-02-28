@@ -134,11 +134,13 @@ public class MiscListener implements Listener {
                     return;
                 }
 
-                AbstractShop shop = plugin.getShopCreationUtil().createShop(player, chest, signBlock.getBlock(), pricePair, amount, isAdmin, type, signDirection, false);
+                System.out.println("MiscListener 1 -> "+b.getType().toString());
+                AbstractShop shop = plugin.getShopCreationUtil().createShop(player, chest, b, pricePair, amount, isAdmin, type, signDirection, false);
                 if (shop == null) {
                     event.setCancelled(true);
                     return;
                 }
+                System.out.println("MiscListener 2 -> "+b.getType().toString());
 
                 String message = ShopMessage.getMessage(type.toString(), "initialize", shop, player);
                 if (message != null && !message.isEmpty())

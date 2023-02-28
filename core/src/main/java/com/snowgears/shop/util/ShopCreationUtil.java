@@ -171,19 +171,68 @@ public class ShopCreationUtil {
             }
 
 
-            if (!(signBlock.getType() == Material.WALL_SIGN)) {
+            if (signBlock.getType() != Material.WALL_SIGN) {
                 if (!signBlock.getType().toString().contains("SIGN")) {
                     return null;
                 }
-                signBlock.setType(Material.WALL_SIGN);
+                //signBlock.getChunk().load();
+                signBlock.setType(Material.WALL_SIGN, false);
+                System.out.println(signBlock.getType().toString());
 
-                org.bukkit.material.Sign sign = (org.bukkit.material.Sign) signBlock.getState().getData();
-                sign.setFacingDirection(signDirection);
-                signBlock.setData(sign.getData(), true);
-                signBlock.getState().update();
+//                if (block.getType() == Material.WALL_SIGN) {
+//                    org.bukkit.material.Sign sign = (org.bukkit.material.Sign) block.getState().getData();
+//                    sign.setFacingDirection(facing);
+//                    block.setData(sign.getData(), true);
+//                }
+
+//                System.out.println(signBlock.getType().toString());
+//                org.bukkit.material.Sign sign = (org.bukkit.material.Sign) signBlock.getLocation().getBlock().getState().getData();
+//                sign.setFacingDirection(signDirection);
+//                signBlock.getLocation().getBlock().setData(sign.getData(), true);
+//                signBlock.getLocation().getBlock().getState().update(true);
+
+                org.bukkit.material.Sign matSign = new org.bukkit.material.Sign(Material.WALL_SIGN);
+                matSign.setFacingDirection(signDirection);
+
+                if(signBlock.getState() instanceof org.bukkit.block.Sign){
+                    org.bukkit.block.Sign sign = (org.bukkit.block.Sign) signBlock.getState();
+                    sign.setData(matSign);
+                    sign.update(true);
+                }
+                else {
+                    Class clazz = signBlock.getState().getClass();
+                    for(Class classInterface : clazz.getInterfaces()){
+                        System.out.println(classInterface.getName());
+                    }
+                    System.out.println("----------------------------------");
+                    System.out.println(clazz.getSuperclass().getName());
+                    System.out.println(signBlock.getType().toString());
+                }
+
+
+//                final org.bukkit.block.Sign sign = (org.bukkit.block.Sign) signBlock.getState();
+//
+//                final org.bukkit.block.Sign newSign = (org.bukkit.block.Sign) signBlock.getState();
+//
+//                org.bukkit.material.Sign matSign = new org.bukkit.material.Sign(Material.WALL_SIGN);
+//                matSign.setFacingDirection(signDirection);
+//
+//                newSign.setData(matSign);
+//                newSign.update();
+//
+//                sign.update();
+
+//                try {
+//                    org.bukkit.material.Sign sign = (org.bukkit.material.Sign) signBlock.getState().getData();
+//                    sign.setFacingDirection(signDirection);
+//                    signBlock.setData(sign.getData(), true);
+//                    signBlock.getState().update();
+//                } catch (ClassCastException cce) {
+//                    System.out.println("ClassCastException - Shop cast material sign");
+//                }
             }
-            Sign signBlockState = (Sign) signBlock.getState();
-            signBlockState.update();
+//            Sign signBlockState = (Sign) signBlock.getState();
+//            signBlockState.update();
 
             shop.setAdmin(isAdmin);
             shop.load();
@@ -209,6 +258,15 @@ public class ShopCreationUtil {
 
             plugin.getShopHandler().addShop(shop);
             shop.updateSign();
+
+//            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+//                public void run() {
+//                    final Sign signState = (Sign) signBlock.getState();
+//                    signState.update();
+//                    signBlock.getState().update();
+//                    shop.updateSign();
+//                }
+//            }, 2L);
         }
         return shop;
     }
