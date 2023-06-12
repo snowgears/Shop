@@ -1,17 +1,13 @@
 package com.snowgears.shop.hook;
 
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldguard.LocalPlayer;
-import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.bukkit.RegionContainer;
+import com.sk89q.worldguard.bukkit.RegionQuery;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-import com.sk89q.worldguard.protection.flags.BooleanFlag;
-import com.sk89q.worldguard.protection.flags.Flag;
-import com.sk89q.worldguard.protection.flags.Flags;
-import com.sk89q.worldguard.protection.flags.StateFlag;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.*;
 import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
 import com.sk89q.worldguard.protection.managers.RegionManager;
-import com.sk89q.worldguard.protection.regions.RegionQuery;
 import com.snowgears.shop.Shop;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -119,10 +115,21 @@ public class WorldGuardHook {
             return true;
         }
         try {
-            LocalPlayer localPlayer = WorldGuardPlugin.inst().wrapPlayer(player);
-            RegionManager regions = WorldGuard.getInstance().getPlatform().getRegionContainer().get(localPlayer.getWorld());
-            BlockVector3 vLoc = BlockVector3.at(location.getX(), location.getY(), location.getZ());
-            return regions == null || regions.getApplicableRegions(vLoc).queryState(localPlayer, Flags.USE) != StateFlag.State.DENY;
+            //WG 7
+//            LocalPlayer localPlayer = WorldGuardPlugin.inst().wrapPlayer(player);
+//            RegionManager regions = WorldGuard.getInstance().getPlatform().getRegionContainer().get(localPlayer.getPosition().getw);
+//            BlockVector3 vLoc = BlockVector3.at(location.getX(), location.getY(), location.getZ());
+//            return regions == null || regions.getApplicableRegions(vLoc).queryState(localPlayer, Flags.USE) != StateFlag.State.DENY;
+
+            //WG 6
+            RegionContainer container = ((WorldGuardPlugin)getPlugin()).getRegionContainer();
+            RegionQuery query = container.createQuery();
+            ApplicableRegionSet set = query.getApplicableRegions(location);
+            if (!set.testState(null, DefaultFlag.USE)) {
+                return false;
+            }
+            return true;
+
         } catch (NoClassDefFoundError ignore) {
         }
         return true;
