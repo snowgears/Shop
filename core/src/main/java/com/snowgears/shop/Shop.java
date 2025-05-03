@@ -1,5 +1,10 @@
 package com.snowgears.shop;
 
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.protection.flags.Flag;
+import com.sk89q.worldguard.protection.flags.StateFlag;
+import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
+import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import com.snowgears.shop.display.DisplayTagOption;
 import com.snowgears.shop.display.DisplayType;
 import com.snowgears.shop.gui.ShopGUIListener;
@@ -160,22 +165,23 @@ public class Shop extends JavaPlugin {
         hookWorldGuard = config.getBoolean("hookWorldGuard");
         // Check if WorldGuard exists
         // Note: If WorldGuard exists we will check to verify a user can build in the region
-        if (getServer().getPluginManager().getPlugin("WorldGuard") != null) {
-            this.getLogger().notice("WorldGuard detected, Shop will respect `passthrough`, `build`, and `chest-access` region flags during shop creation!");
-            // Store for later
-            this.worldGuardExists = true;
+        // if (getServer().getPluginManager().getPlugin("WorldGuard") != null) {
+        //     this.getLogger().notice("WorldGuard detected, Shop will respect `passthrough`, `build`, and `chest-access` region flags during shop creation!");
+        //     // Store for later
+        //     this.worldGuardExists = true;
             // Check if we want to require `allow-shop: true` to exist on regions
-            if(hookWorldGuard){
-                this.getLogger().notice("Registering WorldGuard `allow-shop` flag...");
-                // Register flag for WorldGuard if we are hooking into the flag system
-                WorldGuardHook.registerAllowShopFlag();
-                this.getLogger().notice("WorldGuard `allow-shop` flag restriction enabled, Shops can only be created in regions with the `allow-shop` flag set!");
-            } else {
-                this.getLogger().notice("WorldGuard `allow-shop` flag restriction is disabled, if you want to only allow shops in regions with the `allow-shop` flag, please set `hookWorldGuard` to `true` in `config.yml`");
-            }
+        if(hookWorldGuard){
+            this.getLogger().notice("Registering WorldGuard `allow-shop` flag...");
+            // Register flag for WorldGuard if we are hooking into the flag system
+            WorldGuardHook.registerAllowShopFlag();
+            this.getLogger().notice("WorldGuard `allow-shop` flag restriction enabled, Shops can only be created in regions with the `allow-shop` flag set!");
         } else {
-            this.worldGuardExists = false;
+            this.getLogger().notice("WorldGuard `allow-shop` flag restriction is disabled, if you want to only allow shops in regions with the `allow-shop` flag, please set `hookWorldGuard` to `true` in `config.yml`");
         }
+        // } else {
+        //     this.worldGuardExists = false;
+        // }
+        this.worldGuardExists = getServer().getPluginManager().getPlugin("WorldGuard") != null;
     }
 
     @Override
