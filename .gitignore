@@ -6,3 +6,7 @@ dependency-reduced-pom.xml
 SpigotBuildTools
 */node_modules
 .vscode/settings.json
+/test/environments
+/test/results
+/test/supported_versions
+/test/*.jar
