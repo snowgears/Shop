@@ -96,10 +96,10 @@ public class ShopHandler {
             if (AbstractDisplay.class.isAssignableFrom(clazz))
                 this.displayClass = clazz;
         } catch (final Exception e) {
-            Shop.getPlugin().getLogger().severe("Failed to load DisplayDisabled class.");
+            Shop.getPlugin().getShopLogger().severe("Failed to load DisplayDisabled class.");
             Shop.getPlugin().onDisable();
         } catch (Error e) {
-            Shop.getPlugin().getLogger().severe("Failed to load DisplayDisabled class.");
+            Shop.getPlugin().getShopLogger().severe("Failed to load DisplayDisabled class.");
             Shop.getPlugin().onDisable();
         }
     }
@@ -129,19 +129,19 @@ public class ShopHandler {
         if (packageName.equals("org.bukkit.craftbukkit") || isNewVersion) {
             // We are on a newer version that does not relocate CB classes, load the default display package
             try {
-                Shop.getPlugin().getLogger().info("Using item display handler - com.snowgears.shop.display.Display");
+                Shop.getPlugin().getShopLogger().info("Using item display handler - com.snowgears.shop.display.Display");
                 final Class<?> clazz = Class.forName("com.snowgears.shop.display.Display");
                 if (AbstractDisplay.class.isAssignableFrom(clazz)) {
                     this.displayClass = clazz;
                     return true;
                 }
             } catch (final Exception e) {
-                Shop.getPlugin().getLogger().severe("Error while loading 'com.snowgears.shop.display.Display'. " + e.getMessage());
+                Shop.getPlugin().getShopLogger().severe("Error while loading 'com.snowgears.shop.display.Display'. " + e.getMessage());
                 e.printStackTrace();
                 disableDisplayClass();
                 return false;
             } catch (Error e) {
-                Shop.getPlugin().getLogger().severe("Error while loading 'com.snowgears.shop.display.Display'. " + e.getMessage());
+                Shop.getPlugin().getShopLogger().severe("Error while loading 'com.snowgears.shop.display.Display'. " + e.getMessage());
                 e.printStackTrace();
                 disableDisplayClass();
                 return false;
@@ -159,26 +159,26 @@ public class ShopHandler {
             //        }
 
             try {
-                Shop.getPlugin().getLogger().info( "Minecraft version is old or Spigot, watch out for bugs!");
-                Shop.getPlugin().getLogger().info("Using display class - com.snowgears.shop.display.Display_" + nmsVersion);
+                Shop.getPlugin().getShopLogger().info( "Minecraft version is old or Spigot, watch out for bugs!");
+                Shop.getPlugin().getShopLogger().info("Using display class - com.snowgears.shop.display.Display_" + nmsVersion);
                 final Class<?> clazz = Class.forName("com.snowgears.shop.display.Display_" + nmsVersion);
                 if (AbstractDisplay.class.isAssignableFrom(clazz)) {
                     this.displayClass = clazz;
                     return true;
                 }
             } catch (final Exception e) {
-                Shop.getPlugin().getLogger().severe("Error while loading com.snowgears.shop.display.Display_" + nmsVersion + " " + e.getMessage());
+                Shop.getPlugin().getShopLogger().severe("Error while loading com.snowgears.shop.display.Display_" + nmsVersion + " " + e.getMessage());
                 e.printStackTrace();
                 disableDisplayClass();
                 return false;
             } catch (Error e) {
-                Shop.getPlugin().getLogger().severe("Error while loading com.snowgears.shop.display.Display_" + nmsVersion + " " + e.getMessage());
+                Shop.getPlugin().getShopLogger().severe("Error while loading com.snowgears.shop.display.Display_" + nmsVersion + " " + e.getMessage());
                 e.printStackTrace();
                 disableDisplayClass();
                 return false;
             }
             
-            Shop.getPlugin().getLogger().severe("Unknown issue hooking into Minecraft Packet Classes, disabling display features.");
+            Shop.getPlugin().getShopLogger().severe("Unknown issue hooking into Minecraft Packet Classes, disabling display features.");
             disableDisplayClass();
             return false;
         }
@@ -190,7 +190,7 @@ public class ShopHandler {
             return display;
         } catch (Exception e){
             // e.printStackTrace();
-            plugin.getLogger().warning("Error creating display at | World: " + loc.getWorld().getName() + " at " + loc.getX() + ", " + loc.getY() + ", " + loc.getZ());
+            plugin.getShopLogger().warning("Error creating display at | World: " + loc.getWorld().getName() + " at " + loc.getX() + ", " + loc.getY() + ", " + loc.getZ());
         }
         return null;
     }
@@ -640,7 +640,7 @@ public class ShopHandler {
                 processBatchDisplayUpdates(player, playerLocation, nearbyShopLocations);
                 
             } catch (Exception e) {
-                plugin.getLogger().warning("Error processing shop displays for player " + player.getName());
+                plugin.getShopLogger().warning("Error processing shop displays for player " + player.getName());
                 e.printStackTrace();
             } finally {
                 // Always ensure player is removed from processing list
@@ -659,7 +659,7 @@ public class ShopHandler {
         if (!player.isOnline()) return;
         
         // Log the processing if in debug mode
-        plugin.getLogger().debug("Processing batch display update for " + player.getName() + 
+        plugin.getShopLogger().debug("Processing batch display update for " + player.getName() + 
             " at " + playerLocation.getWorld().getName() + 
             " [" + playerLocation.getBlockX() + "," + playerLocation.getBlockY() + "," + playerLocation.getBlockZ() + "]" +
             " with " + shopLocations.size() + " nearby shops");
@@ -725,7 +725,7 @@ public class ShopHandler {
             int batchDelay = plugin.getDisplayBatchDelay();
             int totalBatches = (sortedLocations.size() + batchSize - 1) / batchSize;
             
-            plugin.getLogger().debug("Creating " + sortedLocations.size() + " displays in " + totalBatches + " batches for " + player.getName());
+            plugin.getShopLogger().debug("Creating " + sortedLocations.size() + " displays in " + totalBatches + " batches for " + player.getName());
             
             for (int batch = 0; batch < totalBatches; batch++) {
                 final int currentBatch = batch;
@@ -781,7 +781,7 @@ public class ShopHandler {
         
         // If player is on cooldown, skip this update
         if (lastTeleport != null && currentTime - lastTeleport < TELEPORT_COOLDOWN_MS) {
-            plugin.getLogger().debug("Skipping display update for " + player.getName() + " - on teleport cooldown");
+            plugin.getShopLogger().debug("Skipping display update for " + player.getName() + " - on teleport cooldown");
             return;
         }
         
@@ -794,7 +794,7 @@ public class ShopHandler {
         // Remove any previous location tracking
         lastProcessedLocations.remove(player.getUniqueId());
         
-        plugin.getLogger().debug("Force processing shop displays for " + player.getName() + " after teleport");
+        plugin.getShopLogger().debug("Force processing shop displays for " + player.getName() + " after teleport");
         
         // Clear all existing displays for this player to ensure a clean slate
         plugin.getFoliaLib().getScheduler().runAtEntityLater(player, () -> {
@@ -802,7 +802,7 @@ public class ShopHandler {
                 if (playersWithActiveShopDisplays.containsKey(player.getUniqueId())) {
                     HashSet<Location> displays = playersWithActiveShopDisplays.get(player.getUniqueId());
                     if (displays != null) {
-                        plugin.getLogger().debug("Removing " + displays.size() + " existing displays for " + player.getName());
+                        plugin.getShopLogger().debug("Removing " + displays.size() + " existing displays for " + player.getName());
                         for (Location displayLoc : new HashSet<>(displays)) {
                             AbstractShop shop = getShop(displayLoc);
                             if (shop != null) {
@@ -1035,7 +1035,7 @@ public class ShopHandler {
         for(UUID shopOwnerUUID : plugin.getShopHandler().getShopOwnerUUIDs()){
             for(AbstractShop shop : plugin.getShopHandler().getShops(shopOwnerUUID)){
                 if(shop.getChestLocation().getChunk().isLoaded()) {
-                    plugin.getLogger().debug("[ShopHander.removeLegacyDisplays] updateSign");
+                    plugin.getShopLogger().debug("[ShopHander.removeLegacyDisplays] updateSign");
                     shop.updateSign();
                 }
             }
@@ -1067,7 +1067,7 @@ public class ShopHandler {
         String playerName = player == this.getAdminUUID() ? "admin" : plugin.getServer().getOfflinePlayer(player).getName();
         int numWantingToUpdate = numShopsNeedSave(player);
         if (!force && numWantingToUpdate == 0) {
-            plugin.getLogger().trace("save shops for player (" + playerName + ") was called, but no shops for player need updating! " + player.toString());
+            plugin.getShopLogger().trace("save shops for player (" + playerName + ") was called, but no shops for player need updating! " + player.toString());
 //            // async code
 //            if(playersSavingShops.contains(player)){
 //                playersSavingShops.remove(player);
@@ -1076,7 +1076,7 @@ public class ShopHandler {
         }
 
         // There are shops that need to be saved, so go ahead and save the file!
-        plugin.getLogger().debug("attempting to save shops for player " + playerName + " (" + player.toString() + ") isAdmin: " + (player == Shop.getPlugin().getShopHandler().getAdminUUID()));
+        plugin.getShopLogger().debug("attempting to save shops for player " + playerName + " (" + player.toString() + ") isAdmin: " + (player == Shop.getPlugin().getShopHandler().getAdminUUID()));
         File currentFile = null;
         try {
 
@@ -1097,7 +1097,7 @@ public class ShopHandler {
             }
             //owner = currentFile.getName().substring(0, currentFile.getName().length()-4); //remove .yml
 
-            plugin.getLogger().trace("    current file " + currentFile);
+            plugin.getShopLogger().trace("    current file " + currentFile);
 
             if (!currentFile.exists()) // file doesn't exist
                 currentFile.createNewFile();
@@ -1106,12 +1106,12 @@ public class ShopHandler {
                 currentFile.createNewFile();
             }
             YamlConfiguration config = YamlConfiguration.loadConfiguration(currentFile);
-            plugin.getLogger().trace("    loaded yaml... " + currentFile);
+            plugin.getShopLogger().trace("    loaded yaml... " + currentFile);
 
             List<AbstractShop> shopList = getShops(player);
             if (shopList.isEmpty()) {
                 currentFile.delete();
-                plugin.getLogger().debug("    no shops exist for player (" + playerName + "), deleting file... " + currentFile);
+                plugin.getShopLogger().debug("    no shops exist for player (" + playerName + "), deleting file... " + currentFile);
 //                // async code
 //                if(playersSavingShops.contains(player)){
 //                    playersSavingShops.remove(player);
@@ -1173,15 +1173,15 @@ public class ShopHandler {
             }
             
             // Only generate the stringified config for logging if spam logging is enabled
-            if (plugin.getLogger().isLevelEnabled(ShopLogger.SPAM)) {
-                plugin.getLogger().spam("    built config to save... \n" + config.saveToString());
+            if (plugin.getShopLogger().isLevelEnabled(ShopLogger.SPAM)) {
+                plugin.getShopLogger().spam("    built config to save... \n" + config.saveToString());
             }
             
             config.save(currentFile);
-            plugin.getLogger().helpful("Saved " + shopNumber + " Shops for Player " + playerName + " to file: " + currentFile);
+            plugin.getShopLogger().helpful("Saved " + shopNumber + " Shops for Player " + playerName + " to file: " + currentFile);
             return shopNumber;
         } catch (Exception e){
-            plugin.getLogger().severe("Unable to save player shop file: " + currentFile);
+            plugin.getShopLogger().severe("Unable to save player shop file: " + currentFile);
             e.printStackTrace();
             return 0;
         }
@@ -1203,7 +1203,7 @@ public class ShopHandler {
                 playersWithUpdate++;
             }
         }
-        if (playersWithUpdate > 0) plugin.getLogger().info("Saved " + playersWithUpdate + " Player Shop file updates to disk");
+        if (playersWithUpdate > 0) plugin.getShopLogger().info("Saved " + playersWithUpdate + " Player Shop file updates to disk");
         return numberUpdated;
     }
 
@@ -1240,7 +1240,7 @@ public class ShopHandler {
 
             // load all the yml files from the data directory
             for (File file : fileDirectory.listFiles()) {
-                Shop.getPlugin().getLogger().debug("Loading player shops from file: " + file.getName());
+                Shop.getPlugin().getShopLogger().debug("Loading player shops from file: " + file.getName());
                 try {
                     if (file.isFile()) {
                         if (file.getName().endsWith(".yml")
@@ -1282,14 +1282,14 @@ public class ShopHandler {
                     }
                 }
                 catch (Exception e) {
-                    Shop.getPlugin().getLogger().log(Level.SEVERE, "Error while loading Shop from player file (" + file.getName() + "), please report this error to the Shop developers: " + e.getMessage());
+                    Shop.getPlugin().getShopLogger().log(Level.SEVERE, "Error while loading Shop from player file (" + file.getName() + "), please report this error to the Shop developers: " + e.getMessage());
                     e.printStackTrace();
                 }
             }
             if(convertLegacySaves)
                 convertLegacyShopSaves();
 
-            Shop.getPlugin().getLogger().log(Level.INFO, "Loaded " + numShopsLoaded + " Shops!");
+            Shop.getPlugin().getShopLogger().log(Level.INFO, "Loaded " + numShopsLoaded + " Shops!");
 
             //dont refresh displays at load time anymore. they are now loaded in client side on login
     //                new BukkitRunnable() {
@@ -1356,7 +1356,7 @@ public class ShopHandler {
                         }
 
                         if (itemStack == null) {
-                            Shop.getPlugin().getLogger().log(Level.WARNING, "Unable to load Shop #" + shopNumber + " for owner '" + shopOwner + "'! Skipping!");
+                            Shop.getPlugin().getShopLogger().log(Level.WARNING, "Unable to load Shop #" + shopNumber + " for owner '" + shopOwner + "'! Skipping!");
                             continue;
                         }
 
@@ -1409,7 +1409,7 @@ public class ShopHandler {
                 }
             }
             String ownerName = shopOwner.equals("admin") ? "admin" : plugin.getServer().getOfflinePlayer(UUID.fromString(shopOwner)).getName();
-            plugin.getLogger().helpful("Loaded (" + playerLoadedShops + ") shops for Player " + ownerName + " from: " + shopOwner + ".yml");
+            plugin.getShopLogger().helpful("Loaded (" + playerLoadedShops + ") shops for Player " + ownerName + " from: " + shopOwner + ".yml");
         }
 
         return numShopsLoaded;
@@ -1635,12 +1635,12 @@ public class ShopHandler {
             // Skip players who recently teleported
             Long lastTeleport = teleportCooldowns.get(player.getUniqueId());
             if (lastTeleport != null && System.currentTimeMillis() - lastTeleport < TELEPORT_COOLDOWN_MS) {
-                plugin.getLogger().debug("Skipping chunk display update for " + player.getName() + " - on teleport cooldown");
+                plugin.getShopLogger().debug("Skipping chunk display update for " + player.getName() + " - on teleport cooldown");
                 continue;
             }
             
             if (isPlayerNearChunk(player, chunk, plugin.getMaxShopDisplayDistance())) {
-                plugin.getLogger().debug("Rebuilding shop displays for " + player.getName() + " in chunk " + chunkKey);
+                plugin.getShopLogger().debug("Rebuilding shop displays for " + player.getName() + " in chunk " + chunkKey);
                 
                 // Don't force a refresh - just run the normal process which respects all the checks
                 processShopDisplaysNearPlayer(player);

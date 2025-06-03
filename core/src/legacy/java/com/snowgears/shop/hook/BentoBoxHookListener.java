@@ -12,7 +12,7 @@ public class BentoBoxHookListener implements Listener {
     private Shop plugin;
 
     public BentoBoxHookListener() {
-        Shop.getPlugin().getLogger().info("[Legacy] BentoBox integration disabled for legacy compatibility");
+        Shop.getPlugin().getShopLogger().info("[Legacy] BentoBox integration disabled for legacy compatibility");
     }
 
     // Constructor that matches the expected signature

@@ -12,7 +12,7 @@ import org.bukkit.event.Listener;
 public class CreativeSelectionListener implements Listener {
 
     public CreativeSelectionListener(Shop shop) {
-        Shop.getPlugin().getLogger().info("[Legacy] Creative selection features disabled for legacy compatibility");
+        Shop.getPlugin().getShopLogger().info("[Legacy] Creative selection features disabled for legacy compatibility");
     }
 
     /**

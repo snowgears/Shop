@@ -12,8 +12,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.block.*;
-import org.bukkit.block.data.Directional;
-import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -169,16 +167,23 @@ public class ShopCreationUtil {
             }
 
 
-            if (!(signBlock.getBlockData() instanceof WallSign)) {
+            if (!CompatibilityUtil.isWallSignBlock(signBlock)) {
                 if (!signBlock.getType().toString().contains("_SIGN")) {
                     return null;
                 }
-                String wallSignString = signBlock.getType().toString().replaceAll("_SIGN", "_WALL_SIGN");
-                signBlock.setType(Material.valueOf(wallSignString));
-
-                Directional wallSignData = (Directional) signBlock.getBlockData();
-                wallSignData.setFacing(signDirection);
-                signBlock.setBlockData(wallSignData);
+                
+                // Convert regular sign to wall sign with proper facing
+                if (!CompatibilityUtil.convertToWallSign(signBlock, signDirection)) {
+                    // Fallback: try legacy approach
+                    String wallSignString = signBlock.getType().toString().replaceAll("_SIGN", "_WALL_SIGN");
+                    try {
+                        signBlock.setType(Material.valueOf(wallSignString));
+                        CompatibilityUtil.setWallSignFacing(signBlock, signDirection);
+                    } catch (IllegalArgumentException e) {
+                        // Could not convert to wall sign
+                        return null;
+                    }
+                }
             }
             Sign signBlockState = (Sign) signBlock.getState();
             signBlockState.update();
@@ -214,7 +219,7 @@ public class ShopCreationUtil {
                             }
                         } catch (Exception lightException) {
                             // Silently handle any compatibility issues with Light blocks
-                            Shop.getPlugin().getLogger().debug("Light block not supported on this version: " + lightException.getMessage());
+                            Shop.getPlugin().getShopLogger().debug("Light block not supported on this version: " + lightException.getMessage());
                         }
                     }
                 }
@@ -232,7 +237,7 @@ public class ShopCreationUtil {
             }
 
             plugin.getShopHandler().addShop(shop);
-            Shop.getPlugin().getLogger().trace("[ShopCreationUtil.createShop] updateSign");
+            Shop.getPlugin().getShopLogger().trace("[ShopCreationUtil.createShop] updateSign");
             shop.updateSign();
         }
         return shop;
@@ -248,7 +253,7 @@ public class ShopCreationUtil {
 
     public void sendCreationSuccess(Player player, AbstractShop shop){
         if (shop.getDisplay() != null) shop.getDisplay().spawn(player);
-        Shop.getPlugin().getLogger().trace("[ShopCreationUtil.sendCreationSuccess] updateSign");
+        Shop.getPlugin().getShopLogger().trace("[ShopCreationUtil.sendCreationSuccess] updateSign");
         shop.setSignLinesRequireRefresh(true);
         shop.updateSign();
         shop.setNeedsSave(true);

@@ -4,6 +4,7 @@ import com.snowgears.shop.Shop;
 import com.snowgears.shop.shop.AbstractShop;
 import com.snowgears.shop.shop.ShopType;
 import com.snowgears.shop.util.ArmorStandData;
+import com.snowgears.shop.util.CompatibilityUtil;
 import com.snowgears.shop.util.DisplayUtil;
 import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.util.UtilMethods;
@@ -245,7 +246,7 @@ public abstract class AbstractDisplay {
                 String tagLine = entry.getKey();
                 Location asTagLocation = entry.getValue();
                 
-                Shop.getPlugin().getLogger().spam("[Display] Adding tag line: " + tagLine, true);
+                Shop.getPlugin().getShopLogger().spam("[Display] Adding tag line: " + tagLine, true);
                 createTagEntity(player, tagLine, asTagLocation);
             }
 
@@ -288,7 +289,7 @@ public abstract class AbstractDisplay {
     }
 
     public void createTagEntity(Player player, String text, Location location){
-        Shop.getPlugin().getLogger().debug("Spawning hologram for player " + player.getName() + " at " + location.getBlockX() + "/" + location.getBlockY() + "/" + location.getBlockZ() + ": " + text, true);
+        Shop.getPlugin().getShopLogger().debug("Spawning hologram for player " + player.getName() + " at " + location.getBlockX() + "/" + location.getBlockY() + "/" + location.getBlockZ() + ": " + text, true);
         ArmorStandData caseStandData = new ArmorStandData();
         caseStandData.setSmall(false);
         caseStandData.setLocation(location);
@@ -390,7 +391,8 @@ public abstract class AbstractDisplay {
                 for(Entity e : this.getShop().getChestLocation().getWorld().getNearbyEntities(this.getItemDropLocation(false), 1, 1, 1)){
                     if(e.getType() == EntityType.ITEM_FRAME){
                         ItemFrame i = (ItemFrame)e;
-                        if(i.getAttachedFace() == getShop().getSign().getFacing().getOppositeFace()) {
+                        BlockFace signFacing = CompatibilityUtil.getWallSignFacing(getShop().getSignLocation().getBlock());
+                        if(signFacing != null && i.getAttachedFace() == signFacing.getOppositeFace()) {
                             skip = true;
                             break;
                         }
@@ -408,7 +410,7 @@ public abstract class AbstractDisplay {
         this.setType(cycle[index], true);
         this.spawn(player);
         Shop.getPlugin().getShopHandler().addActiveShopDisplay(player, this.shopSignLocation);
-        Shop.getPlugin().getLogger().trace("[AbstractDisplay.cycleType] updateSign");
+        Shop.getPlugin().getShopLogger().trace("[AbstractDisplay.cycleType] updateSign");
 
 //        getShop().updateSign();
         getShop().setNeedsSave(true);

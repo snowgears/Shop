@@ -256,7 +256,7 @@ public class MiscListener implements Listener {
                     }
                 }
                 event.setCancelled(true); //cancel event regardless
-                Shop.getPlugin().getLogger().trace("[MiscListener.onPreShopSignClick] updateSign");
+                Shop.getPlugin().getShopLogger().trace("[MiscListener.onPreShopSignClick] updateSign");
                 shop.updateSign();
             }
             else if(plugin.getShopHandler().isChest(clicked)){
@@ -314,7 +314,7 @@ public class MiscListener implements Listener {
                 }
                 else {
                     ShopCreationProcess currentProcess = playerChatCreationSteps.get(player.getUniqueId());
-                    plugin.getLogger().debug("Current Shop Creation Process: " + currentProcess);
+                    plugin.getShopLogger().debug("Current Shop Creation Process: " + currentProcess);
                     if (currentProcess != null && currentProcess.getStep() == ShopCreationProcess.ChatCreationStep.BARTER_ITEM) {
                         if (!plugin.getShopCreationUtil().itemsCanBeInitialized(player, currentProcess.getItemStack(), event.getItem())) {
                             event.setCancelled(true);
@@ -384,11 +384,11 @@ public class MiscListener implements Listener {
                         setChatCompletionsMethod.invoke(player, autocomplete);
                     } catch (Exception reflectionError) {
                         // Silently ignore if method isn't available or reflection fails
-                        plugin.getLogger().debug("setCustomChatCompletions not available in legacy version");
+                        plugin.getShopLogger().debug("setCustomChatCompletions not available in legacy version");
                     }
                 } else {
                     // Legacy versions don't support custom chat completions
-                    plugin.getLogger().debug("setCustomChatCompletions not supported in legacy version, skipping");
+                    plugin.getShopLogger().debug("setCustomChatCompletions not supported in legacy version, skipping");
                 }
                 if((!plugin.usePerms() && player.isOp()) || (plugin.usePerms() && player.hasPermission("shop.operator"))) {
                     ShopMessage.sendMessage("adminCreateHitChest", null, process, player);
@@ -415,7 +415,7 @@ public class MiscListener implements Listener {
         Player player = event.getPlayer();
         if(playerChatCreationSteps.containsKey(player.getUniqueId())){
             ShopCreationProcess process = playerChatCreationSteps.get(player.getUniqueId());
-            plugin.getLogger().debug("Shop Creation Process: " + process.getStep() + " Player " + player.getName() + " input: " + event.getMessage(), true);
+            plugin.getShopLogger().debug("Shop Creation Process: " + process.getStep() + " Player " + player.getName() + " input: " + event.getMessage(), true);
             switch (process.getStep()){
                 case SHOP_TYPE:
                     ShopType type = plugin.getShopCreationUtil().getShopType(event.getMessage());
@@ -573,7 +573,7 @@ public class MiscListener implements Listener {
             if(plugin.getDestroyShopRequiresSneak()){
                 if(!player.isSneaking()){
                     event.setCancelled(true);
-                    Shop.getPlugin().getLogger().trace("[MiscListener.shopDestroy : getDestroyShopRequiresSneak] updateSign");
+                    Shop.getPlugin().getShopLogger().trace("[MiscListener.shopDestroy : getDestroyShopRequiresSneak] updateSign");
                     shop.updateSign();
                     return;
                 }

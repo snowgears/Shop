@@ -50,7 +50,7 @@ public class EnderChestHandler {
                 }
             }
         } catch (Exception e) {
-            plugin.getLogger().log(Level.SEVERE, "Unable to load EnderChest inventory! There might be an issue with EnderChestHandler/NBTAPI.");
+            plugin.getShopLogger().log(Level.SEVERE, "Unable to load EnderChest inventory! There might be an issue with EnderChestHandler/NBTAPI.");
 //            e.printStackTrace();
         }
         return null;
@@ -92,7 +92,7 @@ public class EnderChestHandler {
                 }
             }
         } catch (Exception e) {
-            Shop.getPlugin().getLogger().log(Level.SEVERE, "Unable to save enderchest to file!");
+            Shop.getPlugin().getShopLogger().log(Level.SEVERE, "Unable to save enderchest to file!");
 //            e.printStackTrace();
         }
 

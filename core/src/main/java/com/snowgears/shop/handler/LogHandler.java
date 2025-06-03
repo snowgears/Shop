@@ -52,7 +52,7 @@ public class LogHandler {
         } catch (SQLException e){
             e.printStackTrace();
             enabled = false;
-            plugin.getLogger().log(Level.WARNING, "Error establishing connection to defined database. Logging will not be used.");
+            plugin.getShopLogger().log(Level.WARNING, "Error establishing connection to defined database. Logging will not be used.");
             return;
         }
 
@@ -61,12 +61,12 @@ public class LogHandler {
         } catch (SQLException e){
             e.printStackTrace();
             enabled = false;
-            plugin.getLogger().log(Level.WARNING, "Error initializing tables in database. Logging will not be used.");
+            plugin.getShopLogger().log(Level.WARNING, "Error initializing tables in database. Logging will not be used.");
             return;
         }
 
-        plugin.getLogger().notice("Shop Database Logging initialized successfully!");
-        plugin.getLogger().helpful("Offline Purchase Notifications are Enabled!");
+        plugin.getShopLogger().notice("Shop Database Logging initialized successfully!");
+        plugin.getShopLogger().helpful("Offline Purchase Notifications are Enabled!");
     }
 
     public void defineDataSource(YamlConfiguration shopConfig){
@@ -84,7 +84,7 @@ public class LogHandler {
             return;
         }
 
-        plugin.getLogger().debug("Starting Database (" + type + ") connection to track purchases and Shop actions!");
+        plugin.getShopLogger().debug("Starting Database (" + type + ") connection to track purchases and Shop actions!");
 
         if (type.equalsIgnoreCase("MYSQL")) {
             dataSource = new HikariDataSource();
@@ -129,7 +129,7 @@ public class LogHandler {
             dataSource = new HikariDataSource(config);
         }
         else {
-            plugin.getLogger().log(Level.WARNING, "Unsupported database type! Please check your `config.yml` file! type: " + type);
+            plugin.getShopLogger().log(Level.WARNING, "Unsupported database type! Please check your `config.yml` file! type: " + type);
             this.enabled = false;
             return;
         }
@@ -139,7 +139,7 @@ public class LogHandler {
 
     public void logAction(Player player, AbstractShop shop, ShopActionType actionType) {
         if (actionType == ShopActionType.INIT) {
-            plugin.getLogger().notice(
+            plugin.getShopLogger().notice(
                     player.getName() + " created a " + shop.getType().name().toUpperCase() + " shop at ("
                             + "x: " + shop.getChestLocation().getBlockX() + " y: " + shop.getChestLocation().getBlockY() + " z: " + shop.getChestLocation().getBlockZ()
                             + ") item: " + ChatColor.stripColor(new ItemNameUtil().getName(shop.getItemStack()).toPlainText())
@@ -147,7 +147,7 @@ public class LogHandler {
             );
         }
         if (actionType == ShopActionType.DESTROY) {
-            plugin.getLogger().notice(
+            plugin.getShopLogger().notice(
                     player.getName() + " destroyed a " + shop.getType().name().toUpperCase() + " shop at ("
                             + "x: " + shop.getChestLocation().getBlockX() + " y: " + shop.getChestLocation().getBlockY() + " z: " + shop.getChestLocation().getBlockZ()
                             + ") item: " + ChatColor.stripColor(new ItemNameUtil().getName(shop.getItemStack()).toPlainText())
@@ -177,14 +177,14 @@ public class LogHandler {
                 stmt.setInt(9, shop.getSignLocation().getBlockZ());
                 stmt.execute();
             } catch (SQLException e) {
-                plugin.getLogger().log(Level.WARNING, "SQL error occurred while trying to log player action.");
+                plugin.getShopLogger().log(Level.WARNING, "SQL error occurred while trying to log player action.");
                 e.printStackTrace();
             }
         });
     }
 
     public void logTransaction(Player player, AbstractShop shop, ShopType transactionType, double price, int amount){
-        plugin.getLogger().helpful(
+        plugin.getShopLogger().helpful(
             "Shop " + shop.getType().name().toUpperCase() + " from/to " + player.getName() + ": "
                 + ChatColor.stripColor(new ItemNameUtil().getName(shop.getItemStack()).toPlainText()) + "(x" + amount + ")" + " for " + plugin.getPriceString(price, true)
                 + " | Shop owned by " + shop.getOwnerName() + " at (x: " + shop.getChestLocation().getBlockX() + " y: " + shop.getChestLocation().getBlockY() + " z: " + shop.getChestLocation().getBlockZ() + ")"
@@ -218,10 +218,10 @@ public class LogHandler {
                 txRS.next();
                 transactionID = txRS.getInt(1);
             } catch (SQLException e) {
-                plugin.getLogger().log(Level.WARNING,"SQL error occurred while trying to log transaction/shop action.");
+                plugin.getShopLogger().log(Level.WARNING,"SQL error occurred while trying to log transaction/shop action.");
                 e.printStackTrace();
             } catch (IOException e) {
-                plugin.getLogger().log(Level.WARNING,"SQL error occurred while trying to log transaction/shop action. Issue with converting itemstack to base64!");
+                plugin.getShopLogger().log(Level.WARNING,"SQL error occurred while trying to log transaction/shop action. Issue with converting itemstack to base64!");
                 e.printStackTrace();
             }
 
@@ -249,7 +249,7 @@ public class LogHandler {
                 actionStmt.setInt(10, shop.getSignLocation().getBlockZ());
                 actionStmt.execute();
             } catch (SQLException e) {
-                plugin.getLogger().log(Level.WARNING,"SQL error occurred while trying to log transaction/shop action.");
+                plugin.getShopLogger().log(Level.WARNING,"SQL error occurred while trying to log transaction/shop action.");
                 e.printStackTrace();
             }
         });
@@ -348,15 +348,15 @@ public class LogHandler {
                 offlineTransactions.setItemsSold(itemsSold);
                 offlineTransactions.setIsCalculating(false);
             } catch (SQLException e){
-                plugin.getLogger().log(Level.WARNING,"SQL error occurred while trying to get offline transactions.");
+                plugin.getShopLogger().log(Level.WARNING,"SQL error occurred while trying to get offline transactions.");
                 e.printStackTrace();
                 offlineTransactions.setIsCalculating(false);
             } catch (IOException e) {
-                plugin.getLogger().log(Level.WARNING,"IOException occurred while trying to get offline transactions. Unable to parse itemstack from base64!");
+                plugin.getShopLogger().log(Level.WARNING,"IOException occurred while trying to get offline transactions. Unable to parse itemstack from base64!");
                 e.printStackTrace();
                 offlineTransactions.setIsCalculating(false);
             } catch (ClassNotFoundException e) {
-                plugin.getLogger().log(Level.WARNING,"ClassNotFoundException occurred while trying to get offline transactions. Unable to parse itemstack from base64!");
+                plugin.getShopLogger().log(Level.WARNING,"ClassNotFoundException occurred while trying to get offline transactions. Unable to parse itemstack from base64!");
                 e.printStackTrace();
                 offlineTransactions.setIsCalculating(false);
             }
@@ -368,13 +368,13 @@ public class LogHandler {
         try (Connection conn = dataSource.getConnection()) {
             if (!conn.isValid(1000)) {
                 enabled = false;
-                plugin.getLogger().log(Level.WARNING, "Could not establish database connection!");
-                plugin.getLogger().log(Level.WARNING, "Purchase Database Logging and Offline Purchase notifications are disabled!");
+                plugin.getShopLogger().log(Level.WARNING, "Could not establish database connection!");
+                plugin.getShopLogger().log(Level.WARNING, "Purchase Database Logging and Offline Purchase notifications are disabled!");
                 throw new SQLException("Could not establish database connection.");
             }
             else{
                 enabled = true;
-                plugin.getLogger().debug("Established connection to database.");
+                plugin.getShopLogger().debug("Established connection to database.");
             }
         }
     }
@@ -426,7 +426,7 @@ public class LogHandler {
             txMetrics.resetItemVolume();
             return volume;
         } catch (Exception e) {
-            plugin.getLogger().debug("Error calculating recent item volume");
+            plugin.getShopLogger().debug("Error calculating recent item volume");
             return 0; // Return 0 if any error occurs
         }
     }
@@ -441,7 +441,7 @@ public class LogHandler {
             setup = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining("\n")); // Legacy way
         } catch (IOException e) {
             e.printStackTrace();
-            plugin.getLogger().log(Level.WARNING,"Could not read db setup file.");
+            plugin.getShopLogger().log(Level.WARNING,"Could not read db setup file.");
             return;
         }
         // Mariadb can only handle a single query per statement. We need to split at ;.
@@ -460,7 +460,7 @@ public class LogHandler {
                 stmt.execute();
             }
         }
-        plugin.getLogger().debug("Successfully initialized database.");
+        plugin.getShopLogger().debug("Successfully initialized database.");
     }
 
     public boolean isEnabled() {

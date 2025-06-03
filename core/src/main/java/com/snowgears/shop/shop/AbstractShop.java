@@ -15,8 +15,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.Sound;
 import org.bukkit.Effect;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
@@ -26,6 +24,7 @@ import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import com.snowgears.shop.util.CompatibilityUtil;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -137,8 +136,14 @@ public abstract class AbstractShop {
     public boolean load() {
         if (signLocation != null) {
             try {
-                facing = ((WallSign) signLocation.getBlock().getBlockData()).getFacing();
-                chestLocation = signLocation.getBlock().getRelative(facing.getOppositeFace()).getLocation();
+                facing = CompatibilityUtil.getWallSignFacing(signLocation.getBlock());
+                if (facing != null) {
+                    chestLocation = signLocation.getBlock().getRelative(facing.getOppositeFace()).getLocation();
+                } else {
+                    //this shop has no valid wall sign. return false
+                    Shop.getPlugin().getShopLogger().warning("Failed to load shop, invalid sign: " + this);
+                    return false;
+                }
 
                 //if shop is made out of a container that is no longer enabled, delete it
                 if(chestLocation != null) {
@@ -148,16 +153,16 @@ public abstract class AbstractShop {
                     }
                 }
                 this.updateStock();
-                Shop.getPlugin().getLogger().debug("Loaded shop: " + this);
+                Shop.getPlugin().getShopLogger().debug("Loaded shop: " + this);
                 return true;
-            } catch (ClassCastException cce) {
+            } catch (Exception e) {
                 //this shop has no sign on it. return false
-                Shop.getPlugin().getLogger().warning("Failed to load shop, no sign for chest: " + this);
+                Shop.getPlugin().getShopLogger().warning("Failed to load shop, error with sign: " + this);
                 return false;
             }
         } else {
             //this shop has no sign location defined
-            Shop.getPlugin().getLogger().warning("Failed to load shop, no signLocation: " + this);
+            Shop.getPlugin().getShopLogger().warning("Failed to load shop, no signLocation: " + this);
             return false;
         }
     }
@@ -209,7 +214,7 @@ public abstract class AbstractShop {
         boolean hasStockChange = stock != oldStock;
         if(hasStockChange){
             signLinesRequireRefresh = true;
-            Shop.getPlugin().getLogger().trace("[AbstractShop.updateStock] updateSign, new stock != oldStock! newStock: " + stock + " old stock: " + oldStock + "\n" + this);
+            Shop.getPlugin().getShopLogger().trace("[AbstractShop.updateStock] updateSign, new stock != oldStock! newStock: " + stock + " old stock: " + oldStock + "\n" + this);
             this.updateSign();
 
             //also set marker in here if using a marker integration
@@ -249,10 +254,13 @@ public abstract class AbstractShop {
         return signLocation;
     }
 
-    public WallSign getSign(){
-        BlockData signBlockData = this.getSignLocation().getBlock().getBlockData();
-        if(signBlockData instanceof WallSign){
-            return (WallSign)signBlockData;
+    public Object getSign(){
+        try {
+            if (CompatibilityUtil.isWallSignBlock(signLocation.getBlock())) {
+                return signLocation.getBlock().getBlockData();
+            }
+        } catch (Exception e) {
+            // Legacy versions or invalid sign
         }
         return null;
     }
@@ -434,7 +442,7 @@ public abstract class AbstractShop {
                         java.lang.reflect.Method createItemStackMethod = Bukkit.getItemFactory().getClass().getMethod("createItemStack", String.class);
                         return (ItemStack) createItemStackMethod.invoke(Bukkit.getItemFactory(), itemAsString);
                     } catch (Exception reflectionError) {
-                        Shop.getPlugin().getLogger().debug("Reflection failed for component string methods: " + reflectionError.getMessage());
+                        Shop.getPlugin().getShopLogger().debug("Reflection failed for component string methods: " + reflectionError.getMessage());
                         // Fall through to legacy approach
                     }
                 }
@@ -463,12 +471,12 @@ public abstract class AbstractShop {
             // Default return original item
             return item;
         } catch (Exception e) {
-            Shop.getPlugin().getLogger().warning("Error removing zero damage meta from item: " + item);
-            Shop.getPlugin().getLogger().warning("checkItemDurability feature may be unsupported on your version of Paper/Spigot!");
+            Shop.getPlugin().getShopLogger().warning("Error removing zero damage meta from item: " + item);
+            Shop.getPlugin().getShopLogger().warning("checkItemDurability feature may be unsupported on your version of Paper/Spigot!");
             return item;
         } catch (Error e) {
-            Shop.getPlugin().getLogger().warning("Error removing zero damage meta from item: " + item);
-            Shop.getPlugin().getLogger().warning("checkItemDurability feature may be unsupported on your version of Paper/Spigot!");
+            Shop.getPlugin().getShopLogger().warning("Error removing zero damage meta from item: " + item);
+            Shop.getPlugin().getShopLogger().warning("checkItemDurability feature may be unsupported on your version of Paper/Spigot!");
             return item;
         }
     }
@@ -515,8 +523,15 @@ public abstract class AbstractShop {
         iconMeta.setDisplayName(name);
         iconMeta.setLore(lore);
 
-        PersistentDataContainer container = iconMeta.getPersistentDataContainer();
-        container.set(Shop.getPlugin().getSignLocationNameSpacedKey(), PersistentDataType.STRING, UtilMethods.getCleanLocation(this.getSignLocation(), true));
+        if (CompatibilityUtil.hasPersistentDataContainer()) {
+            try {
+                Object container = iconMeta.getPersistentDataContainer();
+                CompatibilityUtil.setPersistentDataString(container, Shop.getPlugin().getSignLocationNameSpacedKey(), UtilMethods.getCleanLocation(this.getSignLocation(), true));
+            } catch (Exception e) {
+                // Legacy versions don't support PersistentDataContainer
+                Shop.getPlugin().getShopLogger().debug("PersistentDataContainer not available: " + e.getMessage());
+            }
+        }
 
         guiIcon.setItemMeta(iconMeta);
     }
@@ -583,7 +598,7 @@ public abstract class AbstractShop {
                         java.lang.reflect.Method setGlowingTextMethod = signBlock.getClass().getMethod("setGlowingText", boolean.class);
                         setGlowingTextMethod.invoke(signBlock, Shop.getPlugin().getGlowingSignText());
                     } catch (Exception reflectionError) {
-                        Shop.getPlugin().getLogger().debug("Reflection failed for setGlowingText: " + reflectionError.getMessage());
+                        Shop.getPlugin().getShopLogger().debug("Reflection failed for setGlowingText: " + reflectionError.getMessage());
                     }
                 }
             }
@@ -607,7 +622,7 @@ public abstract class AbstractShop {
         }
 
         Block b = this.getSignLocation().getBlock();
-        if (b.getBlockData() instanceof WallSign) {
+        if (CompatibilityUtil.isWallSignBlock(b)) {
             Sign signBlock = (Sign) b.getState();
             signBlock.setLine(0, "");
             signBlock.setLine(1, "");
@@ -618,7 +633,7 @@ public abstract class AbstractShop {
 
         //finally remove the shop from the shop handler
         Shop.getPlugin().getShopHandler().removeShop(this);
-        Shop.getPlugin().getLogger().debug("Deleted Shop " + this);
+        Shop.getPlugin().getShopLogger().debug("Deleted Shop " + this);
     }
 
     public void teleportPlayer(Player player){

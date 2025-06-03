@@ -13,7 +13,7 @@ public class NMSBullshitHandler {
     private Shop plugin;
 
     public NMSBullshitHandler() {
-        Shop.getPlugin().getLogger().info("[Legacy] NMS features disabled for legacy compatibility");
+        Shop.getPlugin().getShopLogger().info("[Legacy] NMS features disabled for legacy compatibility");
     }
 
     // Constructor that matches the expected signature

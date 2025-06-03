@@ -182,7 +182,7 @@ public class CreativeSelectionListener implements Listener {
                 return;
             }
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            plugin.getLogger().log(Level.SEVERE, "Error checking inventory title", e);
+            plugin.getShopLogger().log(Level.SEVERE, "Error checking inventory title", e);
         }
         
         // Check if player is online - this handles the PlayerQuitEvent case as well
@@ -559,7 +559,7 @@ public class CreativeSelectionListener implements Listener {
             
             // We're going to handle the player data restoration during respawn
             // so we store the UUID in case they disconnect
-            plugin.getLogger().log(Level.WARNING, 
+            plugin.getShopLogger().log(Level.WARNING, 
                 "Player " + player.getName() + " died during creative selection. " +
                 "Their gamemode will be restored on respawn.");
         }
@@ -578,7 +578,7 @@ public class CreativeSelectionListener implements Listener {
             boolean removed = removePlayerFromCreativeSelection(player);
             if (removed) {
                 player.updateInventory();
-                plugin.getLogger().log(Level.INFO, 
+                plugin.getShopLogger().log(Level.INFO, 
                     "Player " + player.getName() + "'s gamemode restored after death during creative selection.");
             }
         }

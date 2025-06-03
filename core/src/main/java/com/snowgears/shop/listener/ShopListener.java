@@ -154,7 +154,7 @@ public class ShopListener implements Listener {
                 }
 
                 if((!plugin.getShopHandler().isChest(shop.getChestLocation().getBlock())) || !(shop.getSignLocation().getBlock().getBlockData() instanceof WallSign)){
-                    plugin.getLogger().warning("Deleting Shop because chest does not exist, or sign is not exist! " + shop);
+                    plugin.getShopLogger().warning("Deleting Shop because chest does not exist, or sign is not exist! " + shop);
                     shop.delete();
                     return;
                 }
@@ -344,7 +344,7 @@ public class ShopListener implements Listener {
                     if (hoursSinceLastPlayed >= plugin.getHoursOfflineToRemoveShops()) {
                         boolean deletedShop = false;
                         for (AbstractShop shop : plugin.getShopHandler().getShops(offlinePlayer.getUniqueId())) {
-                            plugin.getLogger().notice("Deleting Shop because player " + offlinePlayer.getName() + " has not logged in within the required " + (int) hoursSinceLastPlayed + " hours! " + shop);
+                            plugin.getShopLogger().notice("Deleting Shop because player " + offlinePlayer.getName() + " has not logged in within the required " + (int) hoursSinceLastPlayed + " hours! " + shop);
                             shop.delete();
                             deletedShop = true;
                         }
@@ -434,7 +434,7 @@ public class ShopListener implements Listener {
         // Skip shop display processing if player is in creative selection mode
         CreativeSelectionListener creativeModeListener = plugin.getCreativeSelectionListener();
         if (creativeModeListener != null && creativeModeListener.isPlayerInCreativeSelection(player)) {
-            plugin.getLogger().debug("Skipping shop display refresh for " + player.getName() + " (in creative selection)");
+            plugin.getShopLogger().debug("Skipping shop display refresh for " + player.getName() + " (in creative selection)");
             return;
         }
         
@@ -447,10 +447,10 @@ public class ShopListener implements Listener {
             if (player.isOnline()) {
                 // Check again inside the delayed task in case player entered selection during the delay
                 if (creativeModeListener != null && creativeModeListener.isPlayerInCreativeSelection(player)) {
-                    plugin.getLogger().debug("Skipping delayed shop display refresh for " + player.getName() + " (in creative selection)");
+                    plugin.getShopLogger().debug("Skipping delayed shop display refresh for " + player.getName() + " (in creative selection)");
                     return;
                 }
-                plugin.getLogger().debug("First display refresh for " + player.getName() + " after teleport");
+                plugin.getShopLogger().debug("First display refresh for " + player.getName() + " after teleport");
                 plugin.getShopHandler().forceProcessShopDisplaysNearPlayer(player);
             }
         }, 5); // 5 ticks (250ms) delay
@@ -460,10 +460,10 @@ public class ShopListener implements Listener {
             if (player.isOnline()) {
                 // Check again inside the delayed task in case player entered selection during the delay
                 if (creativeModeListener != null && creativeModeListener.isPlayerInCreativeSelection(player)) {
-                    plugin.getLogger().debug("Skipping delayed shop display refresh for " + player.getName() + " (in creative selection)");
+                    plugin.getShopLogger().debug("Skipping delayed shop display refresh for " + player.getName() + " (in creative selection)");
                     return;
                 }
-                plugin.getLogger().debug("Second display refresh for " + player.getName() + " after teleport");
+                plugin.getShopLogger().debug("Second display refresh for " + player.getName() + " after teleport");
                 plugin.getShopHandler().forceProcessShopDisplaysNearPlayer(player);
             }
         }, 15); // 750ms delay

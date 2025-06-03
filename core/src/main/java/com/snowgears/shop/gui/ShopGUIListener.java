@@ -20,6 +20,19 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
+import com.snowgears.shop.gui.ListPlayersWindow;
+import com.snowgears.shop.gui.ListPlayerShopsWindow;
+import com.snowgears.shop.gui.ListSearchResultsWindow;
+import com.snowgears.shop.gui.ListShopsWindow;
+import com.snowgears.shop.gui.PlayerSettingsWindow;
+import com.snowgears.shop.gui.ShopGuiWindow;
+import com.snowgears.shop.shop.AbstractShop;
+import com.snowgears.shop.util.CompatibilityUtil;
+import com.snowgears.shop.util.EconomyUtils;
+import com.snowgears.shop.util.PlayerSettings;
+import com.snowgears.shop.util.ShopMessage;
+import com.snowgears.shop.util.UtilMethods;
+
 public class ShopGUIListener implements Listener {
 
     private Shop plugin;
@@ -171,7 +184,7 @@ public class ShopGUIListener implements Listener {
                         //ItemStack playerIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.LIST_PLAYER, null, null); //for some reason this is returning null
                         //ItemStack adminPlayerIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.LIST_PLAYER_ADMIN, null, null);
 
-                        String playerUUIDString = clicked.getItemMeta().getPersistentDataContainer().get(plugin.getPlayerUUIDNameSpacedKey(), PersistentDataType.STRING);
+                        String playerUUIDString = CompatibilityUtil.getPersistentDataString(clicked.getItemMeta().getPersistentDataContainer(), plugin.getPlayerUUIDNameSpacedKey(), "");
                         UUID uuid;
                         try {
                             uuid = UUID.fromString(playerUUIDString);
@@ -186,7 +199,7 @@ public class ShopGUIListener implements Listener {
                     }
                     else if(window instanceof ListPlayerShopsWindow || window instanceof ListSearchResultsWindow || window instanceof ListShopsWindow){
 
-                        String signLocation = clicked.getItemMeta().getPersistentDataContainer().get(plugin.getSignLocationNameSpacedKey(), PersistentDataType.STRING);
+                        String signLocation = CompatibilityUtil.getPersistentDataString(clicked.getItemMeta().getPersistentDataContainer(), plugin.getSignLocationNameSpacedKey(), "");
                         if(signLocation != null){
                             Location loc = UtilMethods.getLocation(signLocation);
                             AbstractShop shop = plugin.getShopHandler().getShop(loc);

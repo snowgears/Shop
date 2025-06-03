@@ -12,7 +12,7 @@ public class PlotSquaredHookListener implements Listener {
     private Shop plugin;
 
     public PlotSquaredHookListener() {
-        Shop.getPlugin().getLogger().info("[Legacy] PlotSquared integration disabled for legacy compatibility");
+        Shop.getPlugin().getShopLogger().info("[Legacy] PlotSquared integration disabled for legacy compatibility");
     }
 
     // Constructor that matches the expected signature

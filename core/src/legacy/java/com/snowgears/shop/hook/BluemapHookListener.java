@@ -14,7 +14,7 @@ public class BluemapHookListener implements Listener {
     private Shop plugin;
 
     public BluemapHookListener() {
-        Shop.getPlugin().getLogger().info("[Legacy] BlueMap integration disabled for legacy compatibility");
+        Shop.getPlugin().getShopLogger().info("[Legacy] BlueMap integration disabled for legacy compatibility");
     }
 
     // Constructor that matches the expected signature

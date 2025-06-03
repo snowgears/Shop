@@ -716,7 +716,7 @@ public class UtilMethods {
      * @return Formatted color name
      */
     private static String formatFireworkColor(org.bukkit.Color color) {
-        Shop.getPlugin().getLogger().debug("[formatFireworkColor]     color: " + color.toString());
+        Shop.getPlugin().getShopLogger().debug("[formatFireworkColor]     color: " + color.toString());
 
         // Map common RGB values to color names
         if(color.equals(org.bukkit.Color.WHITE)) return "White";
@@ -1000,7 +1000,7 @@ public class UtilMethods {
         boolean isUnderlined = false;
         boolean isObfuscated = false;
         for (String word : words) {
-            if (Shop.getPlugin() != null) Shop.getPlugin().getLogger().hyper("[ShopMessage.format]     word: " + word);
+            if (Shop.getPlugin() != null) Shop.getPlugin().getShopLogger().hyper("[ShopMessage.format]     word: " + word);
             
             boolean isStandardColor = word.matches(COLOR_CODE_REGEX);
             boolean isHexColor = word.matches(HEX_COLOR_CODE_REGEX);
@@ -1013,7 +1013,7 @@ public class UtilMethods {
                     else if (newColor == ChatColor.UNDERLINE) isUnderlined = true;
                     else if (newColor == ChatColor.MAGIC) isObfuscated = true;
                     else if (newColor == ChatColor.RESET) {
-                        if (Shop.getPlugin() != null) Shop.getPlugin().getLogger().hyper("[ShopMessage.format]     matched RESET color code: " + word);
+                        if (Shop.getPlugin() != null) Shop.getPlugin().getShopLogger().hyper("[ShopMessage.format]     matched RESET color code: " + word);
                         latestColor = ChatColor.WHITE;
                         latestHexColor = ""; // Reset hex color when RESET code is found
                         isBold = false;
@@ -1069,10 +1069,10 @@ public class UtilMethods {
             int currentLineLength = ChatColor.stripColor(currentLine.toString()).length();
             int nextWordLength = ChatColor.stripColor(word).length();
             int potentialLength = currentLineLength + nextWordLength;
-            if (Shop.getPlugin() != null) Shop.getPlugin().getLogger().spam("[ShopMessage.format]     potentialLength: " + potentialLength + " maxLineLength: " + maxLineLength);
+            if (Shop.getPlugin() != null) Shop.getPlugin().getShopLogger().spam("[ShopMessage.format]     potentialLength: " + potentialLength + " maxLineLength: " + maxLineLength);
             
             if (word.matches(" ") && potentialLength > maxLineLength) {
-                if (Shop.getPlugin() != null) Shop.getPlugin().getLogger().spam("[ShopMessage.format]     adding line: " + currentLine.toString().trim(), true);
+                if (Shop.getPlugin() != null) Shop.getPlugin().getShopLogger().spam("[ShopMessage.format]     adding line: " + currentLine.toString().trim(), true);
                 linesByColor.add(currentLine.toString());
                 currentLine = new StringBuilder(latestColors);
             } else {
@@ -1082,7 +1082,7 @@ public class UtilMethods {
 
         // Append the last line if there's any content left
         if (currentLine.length() > 0) {
-            if (Shop.getPlugin() != null) Shop.getPlugin().getLogger().spam("[ShopMessage.format]     adding line: " + currentLine.toString().trim(), true);
+            if (Shop.getPlugin() != null) Shop.getPlugin().getShopLogger().spam("[ShopMessage.format]     adding line: " + currentLine.toString().trim(), true);
             linesByColor.add(currentLine.toString());
         }
 

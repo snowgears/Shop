@@ -3,6 +3,7 @@ package com.snowgears.shop.handler;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.gui.*;
 import com.snowgears.shop.shop.AbstractShop;
+import com.snowgears.shop.util.CompatibilityUtil;
 import com.snowgears.shop.util.ConfigUpdater;
 import com.snowgears.shop.util.PlayerSettings;
 import com.snowgears.shop.util.ShopMessage;
@@ -135,7 +136,7 @@ public class ShopGuiHandler {
         itemMeta.setLore(lore);
 
         PersistentDataContainer container = itemMeta.getPersistentDataContainer();
-        container.set(Shop.getPlugin().getPlayerUUIDNameSpacedKey(), PersistentDataType.STRING, playerUUID.toString());
+        CompatibilityUtil.setPersistentDataString(container, Shop.getPlugin().getPlayerUUIDNameSpacedKey(), playerUUID.toString());
 
         playerHead.setItemMeta(itemMeta);
 

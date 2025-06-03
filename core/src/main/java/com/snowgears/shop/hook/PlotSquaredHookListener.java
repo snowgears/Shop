@@ -49,7 +49,7 @@ public class PlotSquaredHookListener implements Listener {
                             shop.getChestLocation().getBlockZ()
                         );
                         if (plot.getArea().contains(location)) {
-                            plugin.getLogger().notice("Deleting Shop because PlotSquared Plot is being reset! " + shop);
+                            plugin.getShopLogger().notice("Deleting Shop because PlotSquared Plot is being reset! " + shop);
                             shop.delete();
                             shopOwnersToSave.add(shopOwnerUUID);
                             shopsDeleted++;
@@ -64,7 +64,7 @@ public class PlotSquaredHookListener implements Listener {
         }
 
         if (shopsDeleted > 0) {
-            plugin.getLogger().notice("(PlotSquared Hook) Deleted " + shopsDeleted + " Shops inside Plot `" + plot.getId() + "` during plot reset");
+            plugin.getShopLogger().notice("(PlotSquared Hook) Deleted " + shopsDeleted + " Shops inside Plot `" + plot.getId() + "` during plot reset");
         }
     }
 }

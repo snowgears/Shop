@@ -28,7 +28,7 @@ public class BentoBoxHookListener implements Listener {
             for(AbstractShop shop : plugin.getShopHandler().getShops(shopOwnerUUID)){
                 if(shop != null && shop.getSignLocation() != null && shop.getSignLocation().getWorld().getName().equals(world.getName())) {
                     if (boundingBox.contains(shop.getSignLocation().getX(), shop.getSignLocation().getY(), shop.getSignLocation().getZ())){
-                        plugin.getLogger().notice("Deleting Shop because BentoBox Island is being deleted! " + shop);
+                        plugin.getShopLogger().notice("Deleting Shop because BentoBox Island is being deleted! " + shop);
                         shop.delete();
                     }
                 }

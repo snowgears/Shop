@@ -241,7 +241,7 @@ public class ShopCreationProcess {
 
     public void displayFloatingLines(List<String> lines) {
         if (!this.display.isEnabled()) {
-            Shop.getPlugin().getLogger().warning("Unable to display floating text for player " + player.getName() + ", Display is disabled");
+            Shop.getPlugin().getShopLogger().warning("Unable to display floating text for player " + player.getName() + ", Display is disabled");
             return;
         }
         // Remove any existing text

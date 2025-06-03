@@ -13,9 +13,9 @@ public class DisplayDisabled extends AbstractDisplay {
     public DisplayDisabled(Location shopSignLocation) {
         super(shopSignLocation);
         if (!Shop.loggedDisplayDisabledWarning) {
-            Shop.getPlugin().getLogger().warning("[DisplayDisabled] Display is disabled! No display features will be used.");
-            Shop.getPlugin().getLogger().warning("[DisplayDisabled] This could mean there was an error with the server running an unsupported version or unsupported server software.");
-            Shop.getPlugin().getLogger().warning("[DisplayDisabled] Shop will attempt to function without display features, but some features may not work as expected.");
+            Shop.getPlugin().getShopLogger().warning("[DisplayDisabled] Display is disabled! No display features will be used.");
+            Shop.getPlugin().getShopLogger().warning("[DisplayDisabled] This could mean there was an error with the server running an unsupported version or unsupported server software.");
+            Shop.getPlugin().getShopLogger().warning("[DisplayDisabled] Shop will attempt to function without display features, but some features may not work as expected.");
             Shop.loggedDisplayDisabledWarning = true;
         }
     }
@@ -25,27 +25,27 @@ public class DisplayDisabled extends AbstractDisplay {
 
     @Override
     protected void spawnItemPacket(Player player, ItemStack is, Location location) {
-        Shop.getPlugin().getLogger().debug("Display is disabled, item packet not sent");
+        Shop.getPlugin().getShopLogger().debug("Display is disabled, item packet not sent");
     }
 
     @Override
     protected void spawnArmorStandPacket(Player player, ArmorStandData armorStandData, String text) {
-        Shop.getPlugin().getLogger().debug("Display is disabled, armor stand packet not sent");
+        Shop.getPlugin().getShopLogger().debug("Display is disabled, armor stand packet not sent");
     }
 
     @Override
     protected void spawnItemFramePacket(Player player, ItemStack is, Location location, BlockFace facing, boolean isGlowing){
-        Shop.getPlugin().getLogger().debug("Display is disabled, item frame packet not sent");
+        Shop.getPlugin().getShopLogger().debug("Display is disabled, item frame packet not sent");
     }
 
     @Override
     public void removeDisplayEntities(Player player, boolean onlyDisplayTags) {
-        Shop.getPlugin().getLogger().debug("Display is disabled, removeDisplayEntities not called");
+        Shop.getPlugin().getShopLogger().debug("Display is disabled, removeDisplayEntities not called");
     }
 
     @Override
     public String getItemNameNMS(ItemStack item) {
-        Shop.getPlugin().getLogger().debug("Display is disabled, getItemNameNMS not called, returning basic item name");
+        Shop.getPlugin().getShopLogger().debug("Display is disabled, getItemNameNMS not called, returning basic item name");
         if (item.getItemMeta() != null && item.getItemMeta().hasDisplayName()) {
             return item.getItemMeta().getDisplayName();
         } else {

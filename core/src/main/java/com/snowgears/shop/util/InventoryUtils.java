@@ -188,11 +188,11 @@ public class InventoryUtils {
                     // If not repairable, just continue without doing anything
                 } catch (Exception e) {
                     // Legacy versions don't have repair cost, so skip this entirely
-                    Shop.getPlugin().getLogger().debug("Repair cost not supported in legacy version, skipping");
+                    Shop.getPlugin().getShopLogger().debug("Repair cost not supported in legacy version, skipping");
                 }
             } else {
                 // Legacy versions don't have repair cost functionality, so skip this
-                Shop.getPlugin().getLogger().debug("Repair cost not supported in legacy version, skipping");
+                Shop.getPlugin().getShopLogger().debug("Repair cost not supported in legacy version, skipping");
             }
         }
 

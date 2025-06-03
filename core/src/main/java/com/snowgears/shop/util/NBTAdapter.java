@@ -16,10 +16,10 @@ public class NBTAdapter {
         plugin = shop;
         // Check if NBTAPI plugin is installed
         if (Bukkit.getPluginManager().getPlugin("NBTAPI") != null) {
-            plugin.getLogger().helpful("[NBTAdapter] NBTAPI plugin is installed, using NBTAPI");
+            plugin.getShopLogger().helpful("[NBTAdapter] NBTAPI plugin is installed, using NBTAPI");
             useNBTAPIPlugin = true;
         } else {
-            plugin.getLogger().helpful("[NBTAdapter] NBTAPI plugin is not installed, using built in NBTAPI library");
+            plugin.getShopLogger().helpful("[NBTAdapter] NBTAPI plugin is not installed, using built in NBTAPI library");
             useNBTAPIPlugin = false;
         }
     }
@@ -43,14 +43,14 @@ public class NBTAdapter {
 
     public Inventory getEnderChestNBT(File playerFile) {
         if (useNBTAPIPlugin) {
-            plugin.getLogger().severe("[NBTAdapter] EnderChestNBT reading is not supported with the NBTAPI plugin! Attempting to fallback to built in NBTAPI library.");
+            plugin.getShopLogger().severe("[NBTAdapter] EnderChestNBT reading is not supported with the NBTAPI plugin! Attempting to fallback to built in NBTAPI library.");
         }
         return builtIn_getEnderChestNBT(playerFile);
     }
 
     public Inventory saveEnderChestNBT(File playerFile, Inventory enderInventory) {
         if (useNBTAPIPlugin) {
-            plugin.getLogger().severe("[NBTAdapter] EnderChestNBT saving is not supported with the NBTAPI plugin! Attempting to fallback to built in NBTAPI library.");
+            plugin.getShopLogger().severe("[NBTAdapter] EnderChestNBT saving is not supported with the NBTAPI plugin! Attempting to fallback to built in NBTAPI library.");
         }
         return builtIn_saveEnderChestNBT(playerFile, enderInventory);
     }
@@ -75,9 +75,9 @@ public class NBTAdapter {
         } catch (Exception e) { handleException(e.getMessage()); }
         catch (NoClassDefFoundError e) { handleException(e.getMessage()); }
         catch (Error e) { handleException(e.getMessage()); }
-        plugin.getLogger().severe("[NBTAdapter] Error while trying to use built in NBTAPI library! Unable to read EnderChest player data!");
-        plugin.getLogger().severe("[NBTAdapter] Please disable Ender Chests as a supported container, or install the latest version of Shop!");
-        plugin.getLogger().severe("[NBTAdapter] Shutting Down Shop!");
+        plugin.getShopLogger().severe("[NBTAdapter] Error while trying to use built in NBTAPI library! Unable to read EnderChest player data!");
+        plugin.getShopLogger().severe("[NBTAdapter] Please disable Ender Chests as a supported container, or install the latest version of Shop!");
+        plugin.getShopLogger().severe("[NBTAdapter] Shutting Down Shop!");
         Bukkit.getPluginManager().disablePlugin(plugin);
         return null;
     }
@@ -106,9 +106,9 @@ public class NBTAdapter {
         catch (NoClassDefFoundError e) { handleException(e.getMessage()); }
         catch (Error e) { handleException(e.getMessage()); }
         // Note, should have shut down shop already, but just in case
-        plugin.getLogger().severe("[NBTAdapter] Error while trying to use built in NBTAPI library! Unable to save EnderChest player data!");
-        plugin.getLogger().severe("[NBTAdapter] Please disable Ender Chests as a supported container, or install the latest version of Shop!");
-        plugin.getLogger().severe("[NBTAdapter] Shutting Down Shop!");
+        plugin.getShopLogger().severe("[NBTAdapter] Error while trying to use built in NBTAPI library! Unable to save EnderChest player data!");
+        plugin.getShopLogger().severe("[NBTAdapter] Please disable Ender Chests as a supported container, or install the latest version of Shop!");
+        plugin.getShopLogger().severe("[NBTAdapter] Shutting Down Shop!");
         Bukkit.getPluginManager().disablePlugin(plugin);
         return null;
     }
@@ -116,14 +116,14 @@ public class NBTAdapter {
     public void handleException(String message) {
         errorCount++;
         if (errorCount < 5){
-            plugin.getLogger().severe("[NBTAdapter] Error while trying to use NBTAPI, NBTAPI might not be up to date for your Minecraft version! Some features of Shop will not work as expected!");
+            plugin.getShopLogger().severe("[NBTAdapter] Error while trying to use NBTAPI, NBTAPI might not be up to date for your Minecraft version! Some features of Shop will not work as expected!");
             if (useNBTAPIPlugin) {
-                plugin.getLogger().severe("[NBTAdapter] Shop is attempting to use the installed NBTAPI Plugin.");
+                plugin.getShopLogger().severe("[NBTAdapter] Shop is attempting to use the installed NBTAPI Plugin.");
             } else {
-                plugin.getLogger().severe("[NBTAdapter] Shop is using its built in NBTAPI library and may be out of date.");
+                plugin.getShopLogger().severe("[NBTAdapter] Shop is using its built in NBTAPI library and may be out of date.");
             }
-            plugin.getLogger().severe("[NBTAdapter] Please install the latest version of the NBTAPI plugin! https://www.spigotmc.org/resources/nbt-api.7939/");
-            plugin.getLogger().severe("[NBTAdapter] Error message: " + message);
+            plugin.getShopLogger().severe("[NBTAdapter] Please install the latest version of the NBTAPI plugin! https://www.spigotmc.org/resources/nbt-api.7939/");
+            plugin.getShopLogger().severe("[NBTAdapter] Error message: " + message);
         }
     }
 }

@@ -48,7 +48,7 @@ public class TransactionHandler {
 
         //delete shop if it does not have a chest attached to it
         if(!(plugin.getShopHandler().isChest(shop.getChestLocation().getBlock()))){
-            plugin.getLogger().warning("Deleting Shop because chest does not exist! " + shop);
+            plugin.getShopLogger().warning("Deleting Shop because chest does not exist! " + shop);
             shop.delete();
             return;
         }
@@ -124,7 +124,7 @@ public class TransactionHandler {
         shop.sendEffects(true, player);
         //make sure to update the shop sign, but only if the sign lines use a variable that requires a refresh (like stock that is dynamically updated)
         if(shop.getSignLinesRequireRefresh()){
-            plugin.getLogger().trace("[TransactionHandler.executeTransactionSequence] updateSign");
+            plugin.getShopLogger().trace("[TransactionHandler.executeTransactionSequence] updateSign");
             shop.updateSign();
         }
     }

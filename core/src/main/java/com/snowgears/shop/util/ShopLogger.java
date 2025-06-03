@@ -30,7 +30,7 @@
  *      - Deprecated API usage or conflicts with other plugins.
  *
  * 3. **INFO**
- *    - **Purpose**: Provides general informational messages about the plugin’s
+ *    - **Purpose**: Provides general informational messages about the plugin's
  *      operations, typically logged during startup and shutdown.
  *    - **Use Cases**:
  *      - *"ChestShop plugin enabled successfully."*
@@ -103,6 +103,7 @@ import java.util.logging.Logger;
 public class ShopLogger extends Logger {
 
     Plugin plugin;
+    private final boolean isLegacyEnvironment;
 
     // Custom log levels - Note: must be greater than INFO (800) to show up!
     public static final Level NOTICE = new Level("NOTICE", 700) {};
@@ -143,8 +144,38 @@ public class ShopLogger extends Logger {
         plugin = context;
         enableColor = colorEnabled;
 
-        setParent(context.getServer().getLogger());
+        // Detect legacy environment for automatic compatibility
+        this.isLegacyEnvironment = detectLegacyEnvironment();
+        
+        if (isLegacyEnvironment) {
+            // In legacy environments, use more conservative logger setup
+            setParent(Bukkit.getLogger());
+        } else {
+            setParent(context.getServer().getLogger());
+        }
         setLevel(Level.ALL);
+    }
+    
+    /**
+     * Detect if we're running in a legacy environment that may not support
+     * all modern logging features (Java 8, MC 1.8.8-1.16.3).
+     */
+    private boolean detectLegacyEnvironment() {
+        try {
+            // Check Bukkit version - versions before 1.17 are considered legacy
+            String bukkitVersion = Bukkit.getBukkitVersion();
+            if (bukkitVersion.contains("1.8") || bukkitVersion.contains("1.9") || 
+                bukkitVersion.contains("1.10") || bukkitVersion.contains("1.11") || 
+                bukkitVersion.contains("1.12") || bukkitVersion.contains("1.13") || 
+                bukkitVersion.contains("1.14") || bukkitVersion.contains("1.15") || 
+                bukkitVersion.contains("1.16")) {
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            // If detection fails, assume legacy environment for safety
+            return true;
+        }
     }
 
     public boolean isLevelEnabled(Level level) {
@@ -184,20 +215,91 @@ public class ShopLogger extends Logger {
     public void warning(String message) { super.log(Level.WARNING, addColor(BOLD + INTENSE_YELLOW, message)); }
     public void info(String message) { super.log(Level.INFO, addColor(YELLOW, message)); }
     // Additional Log Levels
-    public void notice(String message) { logFilterLevel(NOTICE, addColor(BLUE, "[Notice] " + message)); }
-    public void helpful(String message) { logFilterLevel(HELPFUL, addColor(CYAN, "[Helpful] " + message)); }
-    public void debug(String message) { logFilterLevel(DEBUG, addColor(DIM_GREY, "[Debug] " + message)); }
+    public void notice(String message) { 
+        if (isLegacyEnvironment) {
+            // Route to INFO with prefix in legacy environments
+            if (this.getLogLevel().intValue() <= NOTICE.intValue()) {
+                super.log(Level.INFO, addColor(BLUE, "[NOTICE] " + message));
+            }
+        } else {
+            logFilterLevel(NOTICE, addColor(BLUE, "[Notice] " + message)); 
+        }
+    }
+    
+    public void helpful(String message) { 
+        if (isLegacyEnvironment) {
+            // Route to INFO with prefix in legacy environments
+            if (this.getLogLevel().intValue() <= HELPFUL.intValue()) {
+                super.log(Level.INFO, addColor(CYAN, "[HELPFUL] " + message));
+            }
+        } else {
+            logFilterLevel(HELPFUL, addColor(CYAN, "[Helpful] " + message)); 
+        }
+    }
+    
+    public void debug(String message) { 
+        if (isLegacyEnvironment) {
+            // Route to INFO with prefix in legacy environments
+            if (this.getLogLevel().intValue() <= DEBUG.intValue()) {
+                super.log(Level.INFO, addColor(DIM_GREY, "[DEBUG] " + message));
+            }
+        } else {
+            logFilterLevel(DEBUG, addColor(DIM_GREY, "[Debug] " + message)); 
+        }
+    }
+    
     public void debug(String message, boolean withChatColors) {
         if (this.getLogLevel().intValue() > DEBUG.intValue()) { return; }
-        Bukkit.getConsoleSender().sendMessage(INTENSE_WHITE + "[" + plugin.getDescription().getName() + "] " + DIM_GREY + "[Debug] " + message + RESET);
+        if (isLegacyEnvironment) {
+            // Use simpler console output in legacy environments
+            super.log(Level.INFO, "[" + plugin.getDescription().getName() + "] [DEBUG] " + message);
+        } else {
+            Bukkit.getConsoleSender().sendMessage(INTENSE_WHITE + "[" + plugin.getDescription().getName() + "] " + DIM_GREY + "[Debug] " + message + RESET);
+        }
     }
-    public void trace(String message) { logFilterLevel(TRACE, addColor(VERY_DIM_GREY, "[Trace] " + message)); }
-    public void spam(String message) { logFilterLevel(SPAM, addColor(VERY_VERY_DIM_GREY, "[Spam] " + message)); }
+    
+    public void trace(String message) { 
+        if (isLegacyEnvironment) {
+            // Route to INFO with prefix in legacy environments
+            if (this.getLogLevel().intValue() <= TRACE.intValue()) {
+                super.log(Level.INFO, addColor(VERY_DIM_GREY, "[TRACE] " + message));
+            }
+        } else {
+            logFilterLevel(TRACE, addColor(VERY_DIM_GREY, "[Trace] " + message)); 
+        }
+    }
+    
+    public void spam(String message) { 
+        if (isLegacyEnvironment) {
+            // Route to INFO with prefix in legacy environments
+            if (this.getLogLevel().intValue() <= SPAM.intValue()) {
+                super.log(Level.INFO, addColor(VERY_VERY_DIM_GREY, "[SPAM] " + message));
+            }
+        } else {
+            logFilterLevel(SPAM, addColor(VERY_VERY_DIM_GREY, "[Spam] " + message)); 
+        }
+    }
+    
     public void spam(String message, boolean withChatColors) {
         if (this.getLogLevel().intValue() > SPAM.intValue()) { return; }
-        Bukkit.getConsoleSender().sendMessage(INTENSE_WHITE + "[" + plugin.getDescription().getName() + "] " + DIM_GREY + "[Spam] " + message + RESET);
+        if (isLegacyEnvironment) {
+            // Use simpler console output in legacy environments
+            super.log(Level.INFO, "[" + plugin.getDescription().getName() + "] [SPAM] " + message);
+        } else {
+            Bukkit.getConsoleSender().sendMessage(INTENSE_WHITE + "[" + plugin.getDescription().getName() + "] " + DIM_GREY + "[Spam] " + message + RESET);
+        }
     }
-    public void hyper(String message) { logFilterLevel(SPAM, addColor(ALMOST_BLACK, "[Hyper] " + message)); }
+    
+    public void hyper(String message) { 
+        if (isLegacyEnvironment) {
+            // Route to INFO with prefix in legacy environments
+            if (this.getLogLevel().intValue() <= HYPER.intValue()) {
+                super.log(Level.INFO, addColor(ALMOST_BLACK, "[HYPER] " + message));
+            }
+        } else {
+            logFilterLevel(SPAM, addColor(ALMOST_BLACK, "[Hyper] " + message)); 
+        }
+    }
 
     public void setLogLevel(String level) {
         if (level == null) { setLevel(Level.INFO); return; }
