@@ -4,15 +4,10 @@
 
 GAMBLE_DISPLAY:
   ==: org.bukkit.inventory.ItemStack
-  v: 3955
-  type: PLAYER_HEAD
+  type: SKULL_ITEM
+  damage: 3
   meta:
     ==: ItemMeta
     meta-type: SKULL
-    display-name: '{"text":"Random Item!","italic":false,"underlined":true,"color":"gold","bold":true}'
-    skull-owner:
-      ==: PlayerProfile
-      uniqueId: 6934d68c-730c-4a17-9f13-6dc839a82095
-      properties:
-        - name: textures
-          value: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvM2ZkYWI0MDQzNGVkNWQwMWY1OGM0NWNhMGM5ZmFkYTQ2NjJlMTc3MmZmNDNlMjk3NDk3OTQ0MGE1Y2ZlMTVjOSJ9fX0=
+    display-name: Random Item
+    internal: H4sIAAAAAAAAAE2PzWqDQBzE/y0UrPQxehXWjzV4yCFUIbtErYmarLeoK7rZtcFoE/tcfcB67GEYht/MYXQAHd4Ol0nKz+Gr6STX4JnU8I44slcetgzPq0rDcT1klDbCBm8s3LgVN00L66Avoysfxo7fXkEb+WOcBn7TAeBJg5f8LCcOv3ymqDi1qD5RWc3EXXJ6QDIm4roifT6XH8QlauHbjbubvX9dPJ6PWDKbtkWfTKXK0c7eS77dm5XKvpmIuugnuDOxcZjI5tCiHUtrWSjahn4tIkEwU8E99i8mOyZWmAZzpJJFoRMpKplY3M+s0I/aOK1QKApBetNrkvV6eQB/IuRRgxwBAAA=
