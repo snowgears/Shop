@@ -10,6 +10,7 @@ import com.snowgears.shop.util.DisplayUtil;
 import com.snowgears.shop.util.ItemListType;
 import com.snowgears.shop.util.ShopLogger;
 import com.snowgears.shop.util.UtilMethods;
+import com.snowgears.shop.util.CompatibilityUtil;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -109,7 +110,23 @@ public class ShopHandler {
         // Check if we are on a Paper 1.20.6+ server, or if we are running Spigot v1.20.6 or later :)
         // Now that our new Display class purely uses Class loading to get the appropriate class, we don't
         // need to load a specific revision version class (unless we are old)
-        if (packageName.equals("org.bukkit.craftbukkit") || plugin.getNmsBullshitHandler().getServerVersion() >= 120.6D) {
+        
+        boolean isNewVersion = false;
+        try {
+            // Try to get server version - could be double (modern) or String (legacy)
+            Object serverVersion = plugin.getNmsBullshitHandler().getServerVersion();
+            if (serverVersion instanceof Double) {
+                isNewVersion = ((Double) serverVersion) >= 120.6D;
+            } else if (serverVersion instanceof String) {
+                // Legacy versions return String - treat as old version
+                isNewVersion = false;
+            }
+        } catch (Exception e) {
+            // Fallback to legacy behavior if something goes wrong
+            isNewVersion = false;
+        }
+        
+        if (packageName.equals("org.bukkit.craftbukkit") || isNewVersion) {
             // We are on a newer version that does not relocate CB classes, load the default display package
             try {
                 Shop.getPlugin().getLogger().info("Using item display handler - com.snowgears.shop.display.Display");
@@ -1007,7 +1024,7 @@ public class ShopHandler {
                     entity.remove();
                 }
                 //make to sure to clear items from old version of plugin too
-                else if (entity.getType() == EntityType.ITEM) {
+                else if (CompatibilityUtil.hasItemEntityType() && entity.getType().name().equals("ITEM")) {
                     ItemMeta itemMeta = ((Item) entity).getItemStack().getItemMeta();
                     if (UtilMethods.stringStartsWithUUID(itemMeta.getDisplayName())) {
                         entity.remove();

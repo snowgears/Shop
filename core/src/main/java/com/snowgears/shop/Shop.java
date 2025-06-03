@@ -14,7 +14,6 @@ import com.snowgears.shop.util.*;
 import com.snowgears.shop.util.Metrics;
 import com.snowgears.shop.util.Metrics.*;
 import java.util.concurrent.Callable;
-import de.bluecolored.bluemap.api.BlueMapAPI;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -578,15 +577,35 @@ public class Shop extends JavaPlugin {
             plugin.getLogger().notice("BlueMap is installed, starting BlueMap integration");
             // Wait for 2 minutes for BlueMap to become available/boot up, then initialize listener.
             foliaLib.getScheduler().runTimer(task -> {
-                BlueMapAPI.getInstance().ifPresent(api -> {
-                    plugin.getLogger().debug("BlueMap is ready, creating BlueMap listener");
-                    bluemapHookListener = new BluemapHookListener(plugin);
-                    getServer().getPluginManager().registerEvents(bluemapHookListener, plugin);
-                    // Make sure we load the markers in case there are shops that BlueMap doesn't know about
-                    bluemapHookListener.reloadMarkers(shopHandler);
-                    // Mark the task as complete and cancel the timer
+                // Check if BlueMapAPI classes are available before using them
+                if (CompatibilityUtil.hasBlueMapAPI()) {
+                    try {
+                        // Use reflection to avoid import issues in legacy builds
+                        Class<?> blueMapAPIClass = Class.forName("de.bluecolored.bluemap.api.BlueMapAPI");
+                        java.lang.reflect.Method getInstanceMethod = blueMapAPIClass.getMethod("getInstance");
+                        Object apiOptional = getInstanceMethod.invoke(null);
+                        
+                        // Check if Optional.isPresent()
+                        java.lang.reflect.Method isPresentMethod = apiOptional.getClass().getMethod("isPresent");
+                        boolean isPresent = (Boolean) isPresentMethod.invoke(apiOptional);
+                        
+                        if (isPresent) {
+                            plugin.getLogger().debug("BlueMap is ready, creating BlueMap listener");
+                            bluemapHookListener = new BluemapHookListener(plugin);
+                            getServer().getPluginManager().registerEvents(bluemapHookListener, plugin);
+                            // Make sure we load the markers in case there are shops that BlueMap doesn't know about
+                            bluemapHookListener.reloadMarkers(shopHandler);
+                            // Mark the task as complete and cancel the timer
+                            foliaLib.getScheduler().cancelTask(task);
+                        }
+                    } catch (Exception e) {
+                        plugin.getLogger().warning("Failed to initialize BlueMap integration: " + e.getMessage());
+                        foliaLib.getScheduler().cancelTask(task);
+                    }
+                } else {
+                    plugin.getLogger().warning("BlueMapAPI not available in this Minecraft version - BlueMap integration disabled");
                     foliaLib.getScheduler().cancelTask(task);
-                });
+                }
             }, 20, 20); // Check every second (20 ticks) until BlueMap is booted
         }
 

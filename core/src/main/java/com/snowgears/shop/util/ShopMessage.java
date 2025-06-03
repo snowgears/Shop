@@ -561,7 +561,25 @@ public class ShopMessage {
         }
         try {
             if (item == null) { return null; }
-            BaseComponent msg = TextComponent.fromLegacy(UtilMethods.removeColorsIfOnlyWhite(message.toLegacyText()));
+            
+            BaseComponent msg;
+            String legacyText = UtilMethods.removeColorsIfOnlyWhite(message.toLegacyText());
+            
+            if (CompatibilityUtil.hasTextComponentFromLegacy()) {
+                // Modern approach using TextComponent.fromLegacy() via reflection
+                try {
+                    java.lang.reflect.Method fromLegacyMethod = 
+                        Class.forName("net.md_5.bungee.api.chat.TextComponent").getMethod("fromLegacy", String.class);
+                    msg = (BaseComponent) fromLegacyMethod.invoke(null, legacyText);
+                } catch (Exception reflectionError) {
+                    // Fallback to legacy approach
+                    msg = new TextComponent(legacyText);
+                }
+            } else {
+                // Legacy approach - create TextComponent directly
+                msg = new TextComponent(legacyText);
+            }
+            
             HoverEvent event = getItemHoverEvent(item);
             if (event != null) { msg.setHoverEvent(event); }
             return (TextComponent) msg;
@@ -576,7 +594,24 @@ public class ShopMessage {
 
     private static HoverEvent getTransactionsHoverEvent(PlaceholderContext context) {
         try {
-            BaseComponent hoverText = TextComponent.fromLegacy(context.getOfflineTransactions().getTransactionsLore());
+            BaseComponent hoverText;
+            String transactionLore = context.getOfflineTransactions().getTransactionsLore();
+            
+            if (CompatibilityUtil.hasTextComponentFromLegacy()) {
+                // Modern approach using TextComponent.fromLegacy() via reflection
+                try {
+                    java.lang.reflect.Method fromLegacyMethod = 
+                        Class.forName("net.md_5.bungee.api.chat.TextComponent").getMethod("fromLegacy", String.class);
+                    hoverText = (BaseComponent) fromLegacyMethod.invoke(null, transactionLore);
+                } catch (Exception reflectionError) {
+                    // Fallback to legacy approach
+                    hoverText = new TextComponent(transactionLore);
+                }
+            } else {
+                // Legacy approach - create TextComponent directly
+                hoverText = new TextComponent(transactionLore);
+            }
+            
             return new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{hoverText});
         } catch (Exception e) {}
         return null;

@@ -75,12 +75,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>5.11.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
             <version>${spigot.version}</version>
@@ -129,18 +123,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>de.bluecolored.bluemap</groupId>
-            <artifactId>BlueMapAPI</artifactId>
-            <version>2.7.2</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>world.bentobox</groupId>
-            <artifactId>bentobox</artifactId>
-            <version>1.21.1</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>com.github.alex9849</groupId>
             <artifactId>advanced-region-market</artifactId>
             <version>3.5.3</version>
@@ -149,48 +131,36 @@
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
-            <version>5.0.1</version>
+            <version>${hikaricp.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
-            <version>2.7.5</version>
+            <version>${mariadb.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>2.1.214</version> <!-- Updating to 2.2.220 broke things, leave it here for now -->
+            <version>${h2.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>de.tr7zw</groupId>
             <artifactId>item-nbt-api-plugin</artifactId>
-            <version>2.14.1</version>
+            <version>${nbt-api.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>de.tr7zw</groupId>
             <artifactId>item-nbt-api</artifactId>
-            <version>2.14.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.intellectualsites.plotsquared</groupId>
-            <artifactId>plotsquared-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot</artifactId>
-            <version>${spigot.version}</version>
-            <classifier>remapped-mojang</classifier>
-            <scope>provided</scope>
+            <version>${nbt-api.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>24.0.1</version>
+            <version>${jetbrains-annotations.version}</version>
             <scope>provided</scope>
         </dependency>
         <!-- FoliaLib dependency -->
@@ -201,6 +171,117 @@
             <scope>compile</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>modern</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.junit.jupiter</groupId>
+                    <artifactId>junit-jupiter</artifactId>
+                    <version>${junit.version}</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.spigotmc</groupId>
+                    <artifactId>spigot</artifactId>
+                    <version>${spigot.version}</version>
+                    <classifier>remapped-mojang</classifier>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>com.intellectualsites.plotsquared</groupId>
+                    <artifactId>plotsquared-core</artifactId>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>de.bluecolored.bluemap</groupId>
+                    <artifactId>BlueMapAPI</artifactId>
+                    <version>${bluemap.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>world.bentobox</groupId>
+                    <artifactId>bentobox</artifactId>
+                    <version>1.21.1</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <executions>
+                            <execution>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>add-source</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>src/modern/java</source>
+                                    </sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
+        <profile>
+            <id>legacy</id>
+            <dependencies>
+                <dependency>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                    <version>${junit.version}</version>
+                    <scope>test</scope>
+                </dependency>
+                <!-- Legacy builds use standard Spigot jar without remapped-mojang -->
+                <dependency>
+                    <groupId>org.spigotmc</groupId>
+                    <artifactId>spigot</artifactId>
+                    <version>${spigot.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <!-- TODO: Phase 2 - Add compatible PlotSquared version for legacy builds -->
+                <!-- <dependency>
+                    <groupId>com.github.intellectualsites.plotsquared</groupId>
+                    <artifactId>plotsquared-core</artifactId>
+                    <version>${plotsquared.version}</version>
+                    <scope>provided</scope>
+                </dependency> -->
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <executions>
+                            <execution>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>add-source</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>src/legacy/java</source>
+                                    </sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <!--  this shade plugin is to shade in hikari so that database connections can be used -->
     <build>
@@ -262,7 +343,7 @@
 <!--                        <configuration>-->
 <!--                            <srgIn>org.spigotmc:minecraft-server:${spigot.version}:txt:maps-mojang</srgIn>-->
 <!--                            <reverse>true</reverse>-->
-<!--                            <remappedDependencies>org.spigotmc:spigot:${spigot.version}:jar:remapped-mojang</remappedDependencies>-->
+<!--                            <remappedDependencies>org.spigotmc:spigot:${spigot.version}:jar:remapped-obf</remappedDependencies>-->
 <!--                            <remappedArtifactAttached>true</remappedArtifactAttached>-->
 <!--                            <remappedClassifierName>remapped-obf</remappedClassifierName>-->
 <!--                        </configuration>-->
@@ -285,7 +366,6 @@
     </build>
 
     <properties>
-        <spigot.version>1.21-R0.1-SNAPSHOT</spigot.version>
     </properties>
 
 </project>

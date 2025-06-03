@@ -26,6 +26,85 @@
         <module>v1_14_R1</module>
     </modules>
 
+    <properties>
+        <revision>1.10.1</revision>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>modern</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <maven.compiler.source>17</maven.compiler.source>
+                <maven.compiler.target>17</maven.compiler.target>
+                <build.suffix></build.suffix>
+                <!-- Modern dependency versions (Java 17) -->
+                <spigot.version>1.21-R0.1-SNAPSHOT</spigot.version>
+                <hikaricp.version>5.0.1</hikaricp.version>
+                <h2.version>2.1.214</h2.version>
+                <junit.version>5.11.0</junit.version>
+                <mariadb.version>2.7.5</mariadb.version>
+                <nbt-api.version>2.14.1</nbt-api.version>
+                <jetbrains-annotations.version>24.0.1</jetbrains-annotations.version>
+                <bluemap.version>2.7.2</bluemap.version>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.11.0</version>
+                        <configuration>
+                            <source>17</source>
+                            <target>17</target>
+                            <compilerArgs>
+                                <arg>-parameters</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>legacy</id>
+            <properties>
+                <maven.compiler.source>8</maven.compiler.source>
+                <maven.compiler.target>8</maven.compiler.target>
+                <build.suffix>-legacy</build.suffix>
+                <!-- Java 8 compatible dependency versions -->
+                <spigot.version>1.16.5-R0.1-SNAPSHOT</spigot.version>
+                <hikaricp.version>3.4.5</hikaricp.version>
+                <h2.version>1.4.200</h2.version>
+                <junit.version>4.13.2</junit.version>
+                <mariadb.version>2.7.5</mariadb.version>
+                <nbt-api.version>2.12.4</nbt-api.version>
+                <jetbrains-annotations.version>20.1.0</jetbrains-annotations.version>
+                <plotsquared.version>6.11.0</plotsquared.version>
+                <bluemap.version>2.3.0</bluemap.version>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.8.1</version>
+                        <configuration>
+                            <source>8</source>
+                            <target>8</target>
+                            <compilerArgs>
+                                <arg>-parameters</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <build>
         <resources>
             <resource>
@@ -33,29 +112,7 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
-        
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
-                <configuration>
-                    <source>17</source>
-                    <target>17</target>
-                    <compilerArgs>
-                        <arg>-parameters</arg>
-                    </compilerArgs>
-                </configuration>
-            </plugin>
-        </plugins>
     </build>
-
-    <properties>
-        <revision>1.10.1</revision>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
 
     <repositories>
         <repository>

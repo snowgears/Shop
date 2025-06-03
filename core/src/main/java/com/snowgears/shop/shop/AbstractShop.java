@@ -413,17 +413,51 @@ public abstract class AbstractShop {
             // with extra NBT data that we don't actually want. For example, dirt shouldn't have a damage of 0.
             // Detect if we set it to 0, and if so, remove it from the ItemMeta!
             if (item.getItemMeta() instanceof Damageable && ((Damageable) item.getItemMeta()).getDamage() == 0) {
-                String components = item.getItemMeta().getAsComponentString(); // example: "[minecraft:damage=53]"
+                
+                // Check if modern component string methods are available
+                if (CompatibilityUtil.hasGetAsComponentString() && CompatibilityUtil.hasCreateItemStackFromString()) {
+                    try {
+                        // Use reflection to avoid compile-time dependency on modern methods
+                        ItemMeta itemMeta = item.getItemMeta();
+                        java.lang.reflect.Method getAsComponentStringMethod = itemMeta.getClass().getMethod("getAsComponentString");
+                        String components = (String) getAsComponentStringMethod.invoke(itemMeta); // example: "[minecraft:damage=53]"
 
-                // Remove it from the array
-                components = components.replace(",minecraft:damage=0", ""); // Middle of an array
-                components = components.replace("minecraft:damage=0,", ""); // Start of an array
-                components = components.replace("minecraft:damage=0", ""); // Only object in array
+                        // Remove it from the array
+                        components = components.replace(",minecraft:damage=0", ""); // Middle of an array
+                        components = components.replace("minecraft:damage=0,", ""); // Start of an array
+                        components = components.replace("minecraft:damage=0", ""); // Only object in array
 
-                // Convert it back into an item
-                String itemTypeKey = item.getType().getKey().toString(); // example: "minecraft:diamond_sword"
-                String itemAsString = itemTypeKey + components; // results in: "minecraft:diamond_sword[minecraft:damage=53]"
-                return Bukkit.getItemFactory().createItemStack(itemAsString);
+                        // Convert it back into an item using reflection
+                        String itemTypeKey = item.getType().getKey().toString(); // example: "minecraft:diamond_sword"
+                        String itemAsString = itemTypeKey + components; // results in: "minecraft:diamond_sword[minecraft:damage=53]"
+                        
+                        java.lang.reflect.Method createItemStackMethod = Bukkit.getItemFactory().getClass().getMethod("createItemStack", String.class);
+                        return (ItemStack) createItemStackMethod.invoke(Bukkit.getItemFactory(), itemAsString);
+                    } catch (Exception reflectionError) {
+                        Shop.getPlugin().getLogger().debug("Reflection failed for component string methods: " + reflectionError.getMessage());
+                        // Fall through to legacy approach
+                    }
+                }
+                
+                // Legacy fallback: create a new item without the damage
+                ItemStack newItem = new ItemStack(item.getType(), item.getAmount());
+                ItemMeta newMeta = newItem.getItemMeta();
+                ItemMeta originalMeta = item.getItemMeta();
+                
+                // Copy over basic properties that exist in legacy versions
+                if (originalMeta.hasDisplayName()) {
+                    newMeta.setDisplayName(originalMeta.getDisplayName());
+                }
+                if (originalMeta.hasLore()) {
+                    newMeta.setLore(originalMeta.getLore());
+                }
+                if (originalMeta.hasEnchants()) {
+                    newMeta.getEnchants().forEach((enchantment, level) -> 
+                        newMeta.addEnchant(enchantment, level, true));
+                }
+                
+                newItem.setItemMeta(newMeta);
+                return newItem;
             }
 
             // Default return original item
@@ -543,11 +577,14 @@ public abstract class AbstractShop {
             }
 
             if(isMCVersion17Plus()) {
-                if (Shop.getPlugin().getGlowingSignText()) {
-                    signBlock.setGlowingText(true);
-                }
-                else{
-                    signBlock.setGlowingText(false);
+                if (CompatibilityUtil.hasGlowingText()) {
+                    try {
+                        // Use reflection to avoid compile-time dependency on modern methods
+                        java.lang.reflect.Method setGlowingTextMethod = signBlock.getClass().getMethod("setGlowingText", boolean.class);
+                        setGlowingTextMethod.invoke(signBlock, Shop.getPlugin().getGlowingSignText());
+                    } catch (Exception reflectionError) {
+                        Shop.getPlugin().getLogger().debug("Reflection failed for setGlowingText: " + reflectionError.getMessage());
+                    }
                 }
             }
 

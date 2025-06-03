@@ -374,9 +374,22 @@ public class MiscListener implements Listener {
                 process.displayFloatingText("createHitChest", null);
                 List<String> autocomplete = new ArrayList<>();
                 Arrays.asList(ShopType.values()).forEach((shopType -> autocomplete.add(shopType.toString().toLowerCase())));
-                try {
-                    player.setCustomChatCompletions(autocomplete);
-                } catch (Error error) {} // Suppress error if autocomplete is not supported
+                
+                // Check if setCustomChatCompletions is available (modern versions only)
+                if (CompatibilityUtil.hasCustomChatCompletions()) {
+                    try {
+                        // Use reflection to avoid compilation errors in legacy builds
+                        java.lang.reflect.Method setChatCompletionsMethod = 
+                            player.getClass().getMethod("setCustomChatCompletions", java.util.List.class);
+                        setChatCompletionsMethod.invoke(player, autocomplete);
+                    } catch (Exception reflectionError) {
+                        // Silently ignore if method isn't available or reflection fails
+                        plugin.getLogger().debug("setCustomChatCompletions not available in legacy version");
+                    }
+                } else {
+                    // Legacy versions don't support custom chat completions
+                    plugin.getLogger().debug("setCustomChatCompletions not supported in legacy version, skipping");
+                }
                 if((!plugin.usePerms() && player.isOp()) || (plugin.usePerms() && player.hasPermission("shop.operator"))) {
                     ShopMessage.sendMessage("adminCreateHitChest", null, process, player);
                 }

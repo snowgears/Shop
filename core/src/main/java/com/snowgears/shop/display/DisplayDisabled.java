@@ -3,7 +3,6 @@ package com.snowgears.shop.display;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.util.ArmorStandData;
 import net.minecraft.core.Direction;
-import net.minecraft.network.protocol.Packet;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
@@ -40,47 +39,9 @@ public class DisplayDisabled extends AbstractDisplay {
         Shop.getPlugin().getLogger().debug("Display is disabled, item frame packet not sent");
     }
 
-    private void sendPacket(Player player, Packet packet){
-        Shop.getPlugin().getLogger().debug("Display is disabled, packet not sent");
-    }
-
     @Override
     public void removeDisplayEntities(Player player, boolean onlyDisplayTags) {
         Shop.getPlugin().getLogger().debug("Display is disabled, removeDisplayEntities not called");
-    }
-
-    private Direction getMojangDirection(BlockFace facing){
-        switch (facing){
-            case NORTH:
-                return Direction.NORTH;
-            case SOUTH:
-                return Direction.SOUTH;
-            case WEST:
-                return Direction.WEST;
-            case EAST:
-                return Direction.EAST;
-            case DOWN:
-                return Direction.DOWN;
-            default:
-                return Direction.UP;
-        }
-    }
-
-    private net.minecraft.world.entity.EquipmentSlot getMojangEquipmentSlot(EquipmentSlot equipmentSlot){
-        switch(equipmentSlot){
-            case HAND:
-                return net.minecraft.world.entity.EquipmentSlot.MAINHAND;
-            case OFF_HAND:
-                return net.minecraft.world.entity.EquipmentSlot.OFFHAND;
-            case FEET:
-                return net.minecraft.world.entity.EquipmentSlot.FEET;
-            case LEGS:
-                return net.minecraft.world.entity.EquipmentSlot.LEGS;
-            case CHEST:
-                return net.minecraft.world.entity.EquipmentSlot.CHEST;
-            default:
-                return net.minecraft.world.entity.EquipmentSlot.HEAD;
-        }
     }
 
     @Override

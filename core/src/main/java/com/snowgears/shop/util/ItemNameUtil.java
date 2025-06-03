@@ -6,9 +6,11 @@ import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ArmorMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+// TODO: Phase 2 - Add conditional import for ArmorMeta (Java 17+ only)
+// import org.bukkit.inventory.meta.ArmorMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.ChatColor;
 
@@ -38,8 +40,13 @@ public class ItemNameUtil {
         // Add custom formatting for player heads
         if(item.getItemMeta() != null && item.getItemMeta() instanceof SkullMeta){
             SkullMeta skullMeta = (SkullMeta) item.getItemMeta();
-            if (skullMeta.getOwningPlayer() != null) {
-                return new TextComponent(skullMeta.getOwnerProfile().getName() + "'s Head");
+            if (skullMeta != null) {
+                // Use the forwards-compatible getOwningPlayer() method - no reflection needed
+                if (skullMeta.getOwningPlayer() != null && skullMeta.getOwningPlayer().getName() != null) {
+                    return new TextComponent(skullMeta.getOwningPlayer().getName() + "'s Head");
+                } else {
+                    return new TextComponent("Player Head");
+                }
             }
         }
 
@@ -70,28 +77,61 @@ public class ItemNameUtil {
         // Add custom potion formatting
         if(item.getItemMeta() != null && item.getItemMeta() instanceof PotionMeta){
             PotionMeta potionMeta = (PotionMeta) item.getItemMeta();
-            if (potionMeta.getBasePotionType() != null) {
-                String formattedName = UtilMethods.capitalize(item.getType().name().replace("_", " ").toLowerCase());
-                formattedName += " of ";
-                formattedName += UtilMethods.capitalize(potionMeta.getBasePotionType().toString().replace("_", " ").toLowerCase());
-                return new TextComponent(formattedName);
+            // Check if getBasePotionType() is available (modern versions only)
+            if (CompatibilityUtil.hasPotionBaseType()) {
+                try {
+                    // Use reflection to avoid compilation errors in legacy builds
+                    java.lang.reflect.Method getBasePotionTypeMethod = 
+                        potionMeta.getClass().getMethod("getBasePotionType");
+                    Object basePotionType = getBasePotionTypeMethod.invoke(potionMeta);
+                    if (basePotionType != null) {
+                        String formattedName = UtilMethods.capitalize(item.getType().name().replace("_", " ").toLowerCase());
+                        formattedName += " of ";
+                        formattedName += UtilMethods.capitalize(basePotionType.toString().replace("_", " ").toLowerCase());
+                        return new TextComponent(formattedName);
+                    }
+                } catch (Exception reflectionError) {
+                    // Silently ignore if method isn't available or reflection fails
+                }
             }
+            // Legacy versions don't support getBasePotionType(), skip custom potion formatting
         }
 
-        try {
-            // Ominous Bottle's are Yellow *shrug*
-            if (item.getItemMeta() != null && item.getItemMeta() instanceof org.bukkit.inventory.meta.OminousBottleMeta) {
-                TextComponent name = getNameTranslatable(item.getType());
-                name.setColor(net.md_5.bungee.api.ChatColor.YELLOW);
-                return name;
+        // Check for Ominous Bottle (modern versions only)
+        if (CompatibilityUtil.hasOminousBottle()) {
+            try {
+                // Use reflection to avoid compilation errors in legacy builds
+                Class<?> ominousBottleMetaClass = Class.forName("org.bukkit.inventory.meta.OminousBottleMeta");
+                if (item.getItemMeta() != null && ominousBottleMetaClass.isInstance(item.getItemMeta())) {
+                    TextComponent name = getNameTranslatable(item.getType());
+                    name.setColor(net.md_5.bungee.api.ChatColor.YELLOW);
+                    return name;
+                }
+            } catch (Exception e) {
+                // Backwards compatibility - silently ignore if class not available
+            } catch (Error e) {
+                // Backwards compatibility - silently ignore if class not available
             }
-        } catch (Exception e) {} catch (Error e) {} // Backwards compatibility
+        }
 
         // Fallback to the material name
         return getNameTranslatable(item.getType());
     }
 
     public TextComponent getNameTranslatable(Material material){
-        return new TextComponent(new TranslatableComponent(material.getTranslationKey()));
+        // Check if getTranslationKey() is available (modern versions only)
+        if (CompatibilityUtil.hasGetTranslationKey()) {
+            try {
+                // Use reflection to avoid compilation errors in legacy builds
+                java.lang.reflect.Method getTranslationKeyMethod = 
+                    material.getClass().getMethod("getTranslationKey");
+                String translationKey = (String) getTranslationKeyMethod.invoke(material);
+                return new TextComponent(new TranslatableComponent(translationKey));
+            } catch (Exception reflectionError) {
+                // Fallback to legacy method if reflection fails
+            }
+        }
+        // Legacy fallback: use material name() method
+        return new TextComponent(new TranslatableComponent("block.minecraft." + material.name().toLowerCase()));
     }
 }

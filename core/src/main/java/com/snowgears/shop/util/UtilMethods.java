@@ -12,9 +12,11 @@ import org.bukkit.block.data.type.WallSign;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.ArmorMeta;
+// TODO: Phase 2 - Add conditional import for ArmorMeta (Java 17+ only)
+// import org.bukkit.inventory.meta.ArmorMeta;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 import org.bukkit.inventory.meta.PotionMeta;
@@ -445,39 +447,16 @@ public class UtilMethods {
     }
 
     public static TextComponent getEnchantmentsComponent(ItemStack item){
-        TextComponent formattedMessage = new TextComponent("");
-
-        if(item.getItemMeta() instanceof EnchantmentStorageMeta || item.getEnchantments().size() > 0){
-            Map<Enchantment, Integer> enchantsMap;
-            if(item.getItemMeta() instanceof EnchantmentStorageMeta){
-                enchantsMap = ((EnchantmentStorageMeta) item.getItemMeta()).getStoredEnchants();
-            }
-            else { enchantsMap = item.getEnchantments(); }
-
-            if(enchantsMap == null || enchantsMap.isEmpty()) return formattedMessage;
-
-            formattedMessage.addExtra(" [");
-            int i=0;
-            for(Map.Entry<Enchantment, Integer> entry : enchantsMap.entrySet()){
-                formattedMessage.addExtra(new TranslatableComponent(entry.getKey().getTranslationKey()));
-                formattedMessage.addExtra(formatRomanNumerals(entry.getValue()));
-                i++;
-                if(i != enchantsMap.size()) formattedMessage.addExtra(", ");
-                else formattedMessage.addExtra("]");
-            }
-        }
-
-        if(item.getItemMeta() != null && item.getItemMeta() instanceof ArmorMeta){
-            ArmorMeta armorMeta = (ArmorMeta) item.getItemMeta();
-            if (armorMeta.getTrim() != null) {
-                String material = translate(armorMeta.getTrim().getMaterial().getTranslationKey());
-                String pattern = translate(armorMeta.getTrim().getPattern().getTranslationKey());
-                // Since we want to remove the "Armor Trim" and "Material" from the string, we have to translate it first
-                // causing translatable components to not work clientside.
-                formattedMessage.addExtra(" [" + pattern.replace(" Armor Trim", ""));
-                formattedMessage.addExtra(" (" + material.replace(" Material", "") + ")]");
-            }
-        }
+        TextComponent formattedMessage = new TextComponent(getItemName(item));
+        
+        // Use our clean hybrid pattern for version-specific functionality
+        ItemDisplayHandler displayHandler = ItemDisplayFactory.getInstance();
+        
+        // Add enchantments using the appropriate handler
+        displayHandler.addEnchantmentDisplayInfo(item, formattedMessage);
+        
+        // Add armor information (trims, etc.) using the appropriate handler
+        displayHandler.addArmorDisplayInfo(item, formattedMessage);
         
         // Add support for displaying music disc information and goat horn sounds
         if(item.getItemMeta() != null) {
@@ -496,27 +475,11 @@ public class UtilMethods {
             else if(itemType.equals("FIVE")) { formattedMessage.addExtra(" [Song: 5]"); }
             else if(itemType.equals("RELIC")) { formattedMessage.addExtra(" [Song: Relic]"); }
             
-            // Add support for displaying goat horn sounds
-            else if(itemType.equals("GOAT_HORN")) {
-                // Try to get the instrument type from item data if available
-                try {
-                    org.bukkit.inventory.meta.MusicInstrumentMeta instrumentMeta = (org.bukkit.inventory.meta.MusicInstrumentMeta) item.getItemMeta();
-                    if (instrumentMeta != null && instrumentMeta.getInstrument() != null) {
-                        String instrumentKey = instrumentMeta.getInstrument().getKey().getKey();
-                        // Format the instrument key properly (e.g., "ponder_goat_horn" -> "Ponder")
-                        String soundType = instrumentKey.replace("_goat_horn", "");
-                        formattedMessage.addExtra(" [Sound: " + capitalize(soundType) + "]");
-                    } else {
-                        formattedMessage.addExtra(" [Sound: Unknown]");
-                    }
-                } catch (Exception e) {
-                    // Fallback for older versions or if the meta is not available
-                    formattedMessage.addExtra(" [Sound: Unknown]");
-                }
-            }
+            // Add goat horn support using the appropriate handler
+            displayHandler.addMusicInstrumentDisplayInfo(item, formattedMessage);
             
             // Add support for displaying bee hive/nest information
-            else if(itemType.equals("BEE_NEST") || itemType.equals("BEEHIVE")) {
+            if(itemType.equals("BEE_NEST") || itemType.equals("BEEHIVE")) {
                 try {
                     if(item.getItemMeta() instanceof org.bukkit.inventory.meta.BlockStateMeta) {
                         org.bukkit.inventory.meta.BlockStateMeta blockStateMeta = (org.bukkit.inventory.meta.BlockStateMeta) item.getItemMeta();
@@ -552,28 +515,11 @@ public class UtilMethods {
             }
         }
 
-        // Add Ominous Bottle support (Bad Omen level)
-        try {
-            if(item.getItemMeta() != null && item.getItemMeta() instanceof org.bukkit.inventory.meta.OminousBottleMeta) {
-                org.bukkit.inventory.meta.OminousBottleMeta ominousMeta = (org.bukkit.inventory.meta.OminousBottleMeta) item.getItemMeta();
-                int level = ominousMeta.hasAmplifier() ? ominousMeta.getAmplifier() + 1 : 1; // zero based
-                formattedMessage.addExtra(" [Bad Omen" + formatRomanNumerals(level) + "]");
-            }
-        } catch (Error e) {} catch (Exception e) {  /* This might happen on older versions where OminousBottleMeta isn't available */ }
+        // Add ominous bottle support using the appropriate handler
+        displayHandler.addOminousBottleDisplayInfo(item, formattedMessage);
 
-        // Add custom potion formatting
-        if(item.getItemMeta() != null && item.getItemMeta() instanceof PotionMeta){
-            PotionMeta potionMeta = (PotionMeta) item.getItemMeta();
-            if (potionMeta.getBasePotionType() != null) {
-                formattedMessage.addExtra(getPotionEffects(potionMeta.getBasePotionType().getPotionEffects()));
-            }
-            
-            // Check for custom effects
-            List<PotionEffect> customEffects = potionMeta.getCustomEffects();
-            if(!customEffects.isEmpty()) {
-                formattedMessage.addExtra(getPotionEffects(customEffects));
-            }
-        }
+        // Add potion support using the appropriate handler
+        displayHandler.addPotionDisplayInfo(item, formattedMessage);
 
         // Add detailed firework effect information
         if(item.getItemMeta() != null) {
@@ -620,7 +566,20 @@ public class UtilMethods {
         formattedEffects.addExtra(" (");
         for (int i = 0; i < numEffects; i++) {
             PotionEffect effect = effects.get(i);
-            formattedEffects.addExtra(new TranslatableComponent(effect.getType().getTranslationKey()));
+            
+            // Use CompatibilityUtil check for translation key support
+            if (CompatibilityUtil.hasGetTranslationKey()) {
+                try {
+                    String translationKey = (String) effect.getType().getClass().getMethod("getTranslationKey").invoke(effect.getType());
+                    formattedEffects.addExtra(new TranslatableComponent(translationKey));
+                } catch (Exception e) {
+                    // Fallback to effect type name
+                    formattedEffects.addExtra(effect.getType().getName());
+                }
+            } else {
+                // Fallback to effect type name for older versions
+                formattedEffects.addExtra(effect.getType().getName());
+            }
             
             // Show level for all potions, not just those with amplifier > 0
             // For potions with amplifier 0, we don't add any suffix (it's the base level)
@@ -629,9 +588,18 @@ public class UtilMethods {
             }
             
             // Only add duration for non-instant effects
-            // Instant effects like Instant Health and Instant Damage shouldn't show duration
-            boolean isInstantEffect = effect.getType().equals(org.bukkit.potion.PotionEffectType.INSTANT_HEALTH) || 
-                                     effect.getType().equals(org.bukkit.potion.PotionEffectType.INSTANT_DAMAGE);
+            // Use CompatibilityUtil checks for instant effect types
+            boolean isInstantEffect = false;
+            if (CompatibilityUtil.hasInstantHealth() && CompatibilityUtil.hasInstantDamage()) {
+                try {
+                    Object instantHealth = org.bukkit.potion.PotionEffectType.class.getField("INSTANT_HEALTH").get(null);
+                    Object instantDamage = org.bukkit.potion.PotionEffectType.class.getField("INSTANT_DAMAGE").get(null);
+                    isInstantEffect = effect.getType().equals(instantHealth) || effect.getType().equals(instantDamage);
+                } catch (Exception e) {
+                    // Fallback - assume not instant if we can't check
+                    isInstantEffect = false;
+                }
+            }
             
             if(effect.getDuration() > 0 && !isInstantEffect) {
                 formattedEffects.addExtra(formatTickTime(effect.getDuration()));
@@ -815,7 +783,14 @@ public class UtilMethods {
         nonIntrusiveMaterials.remove(Material.PLAYER_HEAD);
         nonIntrusiveMaterials.remove(Material.CREEPER_HEAD);
 
-        try{ nonIntrusiveMaterials.add(Material.LIGHT); } catch(NoSuchFieldError e){}
+        // Use CompatibilityUtil to safely add LIGHT material if available
+        if (CompatibilityUtil.hasLightMaterial()) {
+            try {
+                nonIntrusiveMaterials.add(Material.valueOf("LIGHT"));
+            } catch (Exception e) {
+                // Silently ignore if LIGHT material isn't available
+            }
+        }
     }
 
     public static BlockFace getDirectionOfChest(Block block){
@@ -828,18 +803,12 @@ public class UtilMethods {
     //returns if Minecraft version 1.17 or above
     public static boolean isMCVersion17Plus(){
         //LIGHT only available in MC 1.17+
-        try {
-            if(Material.LIGHT != null)
-                return true;
-        } catch (NoSuchFieldError e) {
-            return false;
-        }
-        return false;
+        return CompatibilityUtil.hasLightBlock();
     }
 
     //returns if Minecraft version 1.14 or above
     public static boolean isMCVersion14Plus(){
-        //LIGHT only available in MC 1.17+
+        //BARREL only available in MC 1.14+
         try {
             if(Material.BARREL != null)
                 return true;

@@ -99,7 +99,7 @@
 
     <build>
         <directory>../target</directory>
-        <finalName>Shop-${project.version}</finalName>
+        <finalName>Shop-${project.version}${build.suffix}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

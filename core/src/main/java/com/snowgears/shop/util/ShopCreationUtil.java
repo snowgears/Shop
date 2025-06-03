@@ -13,7 +13,6 @@ import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.block.*;
 import org.bukkit.block.data.Directional;
-import org.bukkit.block.data.type.Light;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -198,10 +197,26 @@ public class ShopCreationUtil {
             if (UtilMethods.isMCVersion17Plus() && plugin.getDisplayLightLevel() > 0) {
                 Block displayBlock = shop.getChestLocation().getBlock().getRelative(BlockFace.UP);
                 if (UtilMethods.materialIsNonIntrusive(displayBlock.getType())) {
-                    displayBlock.setType(Material.LIGHT);
-                    Light data = (Light) displayBlock.getBlockData();
-                    data.setLevel(plugin.getDisplayLightLevel());
-                    displayBlock.setBlockData(data);
+                    // Use CompatibilityUtil to check for LIGHT material and block data availability
+                    if (CompatibilityUtil.hasLightMaterial() && CompatibilityUtil.hasLightBlock()) {
+                        try {
+                            // Use reflection to avoid import issues in legacy builds
+                            if (CompatibilityUtil.hasLightMaterial()) {
+                                displayBlock.setType(Material.valueOf("LIGHT"));
+                                // Use reflection to set light level
+                                Object blockData = displayBlock.getBlockData();
+                                Class<?> lightClass = Class.forName("org.bukkit.block.data.type.Light");
+                                if (lightClass.isInstance(blockData)) {
+                                    java.lang.reflect.Method setLevelMethod = lightClass.getMethod("setLevel", int.class);
+                                    setLevelMethod.invoke(blockData, plugin.getDisplayLightLevel());
+                                    displayBlock.setBlockData((org.bukkit.block.data.BlockData) blockData);
+                                }
+                            }
+                        } catch (Exception lightException) {
+                            // Silently handle any compatibility issues with Light blocks
+                            Shop.getPlugin().getLogger().debug("Light block not supported on this version: " + lightException.getMessage());
+                        }
+                    }
                 }
             }
 
