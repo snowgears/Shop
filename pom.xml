@@ -6,26 +6,6 @@
     <packaging>pom</packaging>
     <version>${revision}</version>
 
-    <modules>
-        <module>core</module>
-        <module>dist</module>
-        <module>v1_20_R4</module>
-        <module>v1_20_R3</module>
-        <module>v1_20_R2</module>
-        <!-- <module>v1_20_R1</module> -->
-        <module>v1_19_R3</module>
-        <module>v1_19_R2</module>
-        <module>v1_19_R1</module>
-        <module>v1_18_R2</module>
-        <module>v1_18_R1</module>
-        <module>v1_17_R1</module>
-        <module>v1_16_R3</module>
-        <module>v1_16_R2</module>
-        <module>v1_16_R1</module>
-        <module>v1_15_R1</module>
-        <module>v1_14_R1</module>
-    </modules>
-
     <properties>
         <revision>1.10.1</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -37,6 +17,25 @@
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
+            <modules>
+                <module>core</module>
+                <module>dist</module>
+                <module>v1_20_R4</module>
+                <module>v1_20_R3</module>
+                <module>v1_20_R2</module>
+                <!-- <module>v1_20_R1</module> -->
+                <module>v1_19_R3</module>
+                <module>v1_19_R2</module>
+                <module>v1_19_R1</module>
+                <module>v1_18_R2</module>
+                <module>v1_18_R1</module>
+                <module>v1_17_R1</module>
+                <module>v1_16_R3</module>
+                <module>v1_16_R2</module>
+                <module>v1_16_R1</module>
+                <module>v1_15_R1</module>
+                <module>v1_14_R1</module>
+            </modules>
             <properties>
                 <maven.compiler.source>17</maven.compiler.source>
                 <maven.compiler.target>17</maven.compiler.target>
@@ -71,6 +70,16 @@
 
         <profile>
             <id>legacy</id>
+            <modules>
+                <module>core</module>
+                <module>dist</module>
+                <!-- Only Java 8-compatible NMS versions (Minecraft 1.14-1.16) -->
+                <module>v1_16_R3</module>
+                <module>v1_16_R2</module>
+                <module>v1_16_R1</module>
+                <module>v1_15_R1</module>
+                <module>v1_14_R1</module>
+            </modules>
             <properties>
                 <maven.compiler.source>8</maven.compiler.source>
                 <maven.compiler.target>8</maven.compiler.target>

@@ -565,18 +565,11 @@ public class ShopMessage {
             BaseComponent msg;
             String legacyText = UtilMethods.removeColorsIfOnlyWhite(message.toLegacyText());
             
-            if (CompatibilityUtil.hasTextComponentFromLegacy()) {
-                // Modern approach using TextComponent.fromLegacy() via reflection
-                try {
-                    java.lang.reflect.Method fromLegacyMethod = 
-                        Class.forName("net.md_5.bungee.api.chat.TextComponent").getMethod("fromLegacy", String.class);
-                    msg = (BaseComponent) fromLegacyMethod.invoke(null, legacyText);
-                } catch (Exception reflectionError) {
-                    // Fallback to legacy approach
-                    msg = new TextComponent(legacyText);
-                }
+            // Use the universally available TextComponent.fromLegacyText() method - no reflection needed
+            BaseComponent[] components = TextComponent.fromLegacyText(legacyText);
+            if (components.length > 0) {
+                msg = components[0];
             } else {
-                // Legacy approach - create TextComponent directly
                 msg = new TextComponent(legacyText);
             }
             
@@ -597,18 +590,11 @@ public class ShopMessage {
             BaseComponent hoverText;
             String transactionLore = context.getOfflineTransactions().getTransactionsLore();
             
-            if (CompatibilityUtil.hasTextComponentFromLegacy()) {
-                // Modern approach using TextComponent.fromLegacy() via reflection
-                try {
-                    java.lang.reflect.Method fromLegacyMethod = 
-                        Class.forName("net.md_5.bungee.api.chat.TextComponent").getMethod("fromLegacy", String.class);
-                    hoverText = (BaseComponent) fromLegacyMethod.invoke(null, transactionLore);
-                } catch (Exception reflectionError) {
-                    // Fallback to legacy approach
-                    hoverText = new TextComponent(transactionLore);
-                }
+            // Use the universally available TextComponent.fromLegacyText() method - no reflection needed
+            BaseComponent[] components = TextComponent.fromLegacyText(transactionLore);
+            if (components.length > 0) {
+                hoverText = components[0];
             } else {
-                // Legacy approach - create TextComponent directly
                 hoverText = new TextComponent(transactionLore);
             }
             

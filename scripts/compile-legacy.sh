@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 
 # Create unique backup directory using process ID
 BACKUP_DIR="/tmp/shop-legacy-backup-$$"
-CORE_SRC_DIR="core/src/main/java"
+CORE_SRC_DIR="core/src/"
 
 echo -e "${BLUE}=== Safe Legacy Compilation Wrapper ===${NC}"
 echo -e "${BLUE}This script manages file movement and ensures restoration${NC}"
@@ -23,13 +23,15 @@ echo ""
 # Files that need to be moved during legacy compilation
 # These files have legacy-specific versions in core/src/legacy/java
 PROBLEMATIC_FILES=(
-    "com/snowgears/shop/display/DisplayDisabled.java"
-    "com/snowgears/shop/hook/PlotSquaredHookListener.java"
-    "com/snowgears/shop/hook/BluemapHookListener.java"
-    "com/snowgears/shop/util/NMSBullshitHandler.java"
-    "com/snowgears/shop/hook/BentoBoxHookListener.java"
-    "com/snowgears/shop/display/Display.java"
-    "com/snowgears/shop/listener/CreativeSelectionListener.java"
+    "main/java/com/snowgears/shop/hook/PlotSquaredHookListener.java"
+    "main/java/com/snowgears/shop/hook/BluemapHookListener.java"
+    "main/java/com/snowgears/shop/util/NMSBullshitHandler.java"
+    "main/java/com/snowgears/shop/hook/BentoBoxHookListener.java"
+    "main/java/com/snowgears/shop/display/Display.java"
+    "main/java/com/snowgears/shop/listener/CreativeSelectionListener.java"
+    "test/java/com/snowgears/shop/util/PriceNegotiatorTest.java"
+    "test/java/com/snowgears/shop/util/UtilMethodsTest.java"
+    "test/java/com/snowgears/shop/util/ShopMessageTest.java"
 )
 
 # Function to move files to backup
@@ -112,7 +114,7 @@ echo -e "${BLUE}[BUILD] Starting Maven legacy compilation...${NC}"
 echo ""
 
 # Step 2: Run Maven compilation (without AntRun file management)
-mvn clean compile -P legacy -pl core
+mvn clean compile package -T 2C -P legacy
 
 echo ""
 echo -e "${GREEN}✅ Compilation completed successfully!${NC}" 

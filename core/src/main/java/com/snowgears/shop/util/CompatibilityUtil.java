@@ -26,7 +26,6 @@ public class CompatibilityUtil {
     private static final boolean HAS_POTION_BASE_TYPE = hasMethod("org.bukkit.inventory.meta.PotionMeta", "getBasePotionType");
     private static final boolean HAS_GLOWING_TEXT = hasMethod("org.bukkit.block.Sign", "setGlowingText", boolean.class);
     private static final boolean HAS_OWNER_PROFILE = hasMethod("org.bukkit.inventory.meta.SkullMeta", "getOwnerProfile");
-    private static final boolean HAS_TEXT_COMPONENT_FROM_LEGACY = hasMethod("net.md_5.bungee.api.chat.TextComponent", "fromLegacy", String.class);
     private static final boolean HAS_CUSTOM_CHAT_COMPLETIONS = hasMethod("org.bukkit.entity.Player", "setCustomChatCompletions", java.util.List.class);
     private static final boolean HAS_GET_AS_COMPONENT_STRING = hasMethod("org.bukkit.inventory.meta.ItemMeta", "getAsComponentString");
     private static final boolean HAS_CREATE_ITEM_STACK_FROM_STRING = hasMethod("org.bukkit.inventory.ItemFactory", "createItemStack", String.class);
@@ -207,13 +206,6 @@ public class CompatibilityUtil {
      */
     public static boolean hasOwnerProfile() {
         return HAS_OWNER_PROFILE;
-    }
-    
-    /**
-     * @return true if TextComponent.fromLegacy() method is available
-     */
-    public static boolean hasTextComponentFromLegacy() {
-        return HAS_TEXT_COMPONENT_FROM_LEGACY;
     }
     
     /**

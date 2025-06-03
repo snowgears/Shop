@@ -2,7 +2,6 @@ package com.snowgears.shop.display;
 
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.util.ArmorStandData;
-import net.minecraft.core.Direction;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
@@ -46,11 +45,12 @@ public class DisplayDisabled extends AbstractDisplay {
 
     @Override
     public String getItemNameNMS(ItemStack item) {
-        Shop.getPlugin().getLogger().debug("Display is disabled, getItemNameNMS not called, returning empty string");
-        if (item.getItemMeta().hasDisplayName()) {
+        Shop.getPlugin().getLogger().debug("Display is disabled, getItemNameNMS not called, returning basic item name");
+        if (item.getItemMeta() != null && item.getItemMeta().hasDisplayName()) {
             return item.getItemMeta().getDisplayName();
         } else {
-            return item.getItemMeta().getItemName();
+            // Legacy-safe way to get item name that works across all versions
+            return item.getType().name().toLowerCase().replace("_", " ");
         }
     }
 }
