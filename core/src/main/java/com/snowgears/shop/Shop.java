@@ -544,7 +544,6 @@ public class Shop extends JavaPlugin {
 
         guiHandler = new ShopGuiHandler(plugin);
         shopHandler = new ShopHandler(plugin);
-        enableGUI = false;
         if(enableGUI){
             guiHandler.loadIconsAndTitles();
         }
