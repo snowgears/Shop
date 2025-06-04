@@ -57,6 +57,9 @@ public class CompatibilityUtil {
     private static final boolean IS_1_16_PLUS = isMinecraftVersionAtLeast("1.16");
     private static final boolean IS_1_14_PLUS = isMinecraftVersionAtLeast("1.14");
     
+    // InventoryView compatibility detection - use feature detection instead of version checking
+    private static final boolean NEEDS_INVENTORY_VIEW_REFLECTION = detectInventoryViewReflectionNeed();
+    
     // Bukkit ItemMeta interface availability
     private static final boolean HAS_DAMAGEABLE_INTERFACE = hasClass("org.bukkit.inventory.meta.Damageable");
     private static final boolean HAS_REPAIRABLE_INTERFACE = hasClass("org.bukkit.inventory.meta.Repairable");
@@ -149,6 +152,25 @@ public class CompatibilityUtil {
         }
     }
     
+    /**
+     * Detect if we need to use reflection for InventoryView access.
+     * Uses feature detection instead of version checking for better compatibility.
+     */
+    private static boolean detectInventoryViewReflectionNeed() {
+        // Test if InventoryView.getTitle() can be called directly without issues
+        try {
+            Class<?> inventoryViewClass = Class.forName("org.bukkit.inventory.InventoryView");
+            java.lang.reflect.Method getTitleMethod = inventoryViewClass.getMethod("getTitle");
+            
+            // Additional check: try to see if the method is accessible
+            getTitleMethod.setAccessible(true);
+            
+            return false; // Direct access should work
+        } catch (Exception e) {
+            return true; // Need reflection fallback
+        }
+    }
+    
     // =================================
     // Public API Methods
     // =================================
@@ -177,6 +199,11 @@ public class CompatibilityUtil {
     public static boolean hasRepairableInterface() { return HAS_REPAIRABLE_INTERFACE; }
     public static boolean hasBlockData() { return HAS_BLOCK_DATA; }
     public static String getMinecraftVersion() { return MC_VERSION; }
+    
+    /**
+     * Check if we need to use reflection for InventoryView access
+     */
+    public static boolean needsInventoryViewReflection() { return NEEDS_INVENTORY_VIEW_REFLECTION; }
     
     /**
      * Creates a NamespacedKey safely with fallback for older versions.
@@ -506,6 +533,7 @@ public class CompatibilityUtil {
         if (Shop.getPlugin() != null) {
             Shop.getPlugin().getShopLogger().info("=== Legacy Compatibility Detection Results ===");
             Shop.getPlugin().getShopLogger().info("Minecraft Version: " + MC_VERSION);
+            Shop.getPlugin().getShopLogger().info("Needs InventoryView Reflection: " + NEEDS_INVENTORY_VIEW_REFLECTION);
             Shop.getPlugin().getShopLogger().info("NamespacedKey: " + HAS_NAMESPACED_KEY);
             Shop.getPlugin().getShopLogger().info("BlockData: " + HAS_BLOCK_DATA);
             Shop.getPlugin().getShopLogger().info("PersistentDataContainer: " + HAS_PERSISTENT_DATA_CONTAINER);

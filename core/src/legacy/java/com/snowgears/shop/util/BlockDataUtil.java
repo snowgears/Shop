@@ -41,11 +41,32 @@ public class BlockDataUtil {
             return null;
         }
         
+        // First try BlockData API with reflection (available in MC 1.14.4)
+        if (CompatibilityUtil.HAS_BLOCK_DATA) {
+            try {
+                Object blockData = block.getBlockData();
+                if (blockData != null) {
+                    Class<?> wallSignClass = Class.forName("org.bukkit.block.data.type.WallSign");
+                    if (wallSignClass.isInstance(blockData)) {
+                        Object wallSign = wallSignClass.cast(blockData);
+                        return (BlockFace) wallSignClass.getMethod("getFacing").invoke(wallSign);
+                    }
+                }
+            } catch (Exception e) {
+                if (Shop.getPlugin() != null) {
+                    Shop.getPlugin().getShopLogger().debug("Failed to get BlockData sign facing: " + e.getMessage());
+                }
+                // Fall through to legacy approach
+            }
+        }
+        
+        // Legacy approach using MaterialData
         try {
             MaterialData materialData = block.getState().getData();
             if (materialData instanceof Sign) {
                 Sign signData = (Sign) materialData;
-                return signData.getAttachedFace().getOppositeFace();
+                // Fixed: use getFacing() instead of getAttachedFace().getOppositeFace()
+                return signData.getFacing();
             }
         } catch (Exception e) {
             if (Shop.getPlugin() != null) {
