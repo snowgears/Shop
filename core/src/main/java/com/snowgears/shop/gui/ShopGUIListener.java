@@ -14,7 +14,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.material.MaterialData;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -184,7 +185,7 @@ public class ShopGUIListener implements Listener {
                         //ItemStack playerIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.LIST_PLAYER, null, null); //for some reason this is returning null
                         //ItemStack adminPlayerIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.LIST_PLAYER_ADMIN, null, null);
 
-                        String playerUUIDString = CompatibilityUtil.getPersistentDataString(clicked.getItemMeta().getPersistentDataContainer(), plugin.getPlayerUUIDNameSpacedKey(), "");
+                        String playerUUIDString = CompatibilityUtil.getItemData(clicked, "playerUUID", "");
                         UUID uuid;
                         try {
                             uuid = UUID.fromString(playerUUIDString);
@@ -199,44 +200,49 @@ public class ShopGUIListener implements Listener {
                     }
                     else if(window instanceof ListPlayerShopsWindow || window instanceof ListSearchResultsWindow || window instanceof ListShopsWindow){
 
-                        String signLocation = CompatibilityUtil.getPersistentDataString(clicked.getItemMeta().getPersistentDataContainer(), plugin.getSignLocationNameSpacedKey(), "");
-                        if(signLocation != null){
-                            Location loc = UtilMethods.getLocation(signLocation);
-                            AbstractShop shop = plugin.getShopHandler().getShop(loc);
+                        if(clicked.getItemMeta().hasLore() && clicked.getItemMeta().getLore().size() > 0)
+                        {
+                            //gets the location from the itemstack lore (this is how the teleportation works)
+                            String signLocation = CompatibilityUtil.getItemData(clicked, "signLocation", "");
+                            if(!signLocation.isEmpty())
+                            {
+                                Location loc = UtilMethods.getLocation(signLocation);
+                                AbstractShop shop = plugin.getShopHandler().getShop(loc);
 
-                            if(shop != null){
-                                if(Shop.getPlugin().usePerms()){
-                                    if(player.hasPermission("shop.operator") || player.hasPermission("shop.gui.teleport")){
-                                        if(!player.isOp()){
-                                            if(plugin.getTeleportCost() > 0) {
-                                                if (EconomyUtils.hasSufficientFunds(player, player.getInventory(), plugin.getTeleportCost())) {
-                                                    EconomyUtils.removeFunds(player, player.getInventory(), plugin.getTeleportCost());
-                                                } else {
-                                                    ShopMessage.sendMessage("interactionIssue", "teleportInsufficientFunds", player, shop);
-                                                    plugin.getGuiHandler().closeWindow(player);
-                                                    return;
+                                if(shop != null){
+                                    if(Shop.getPlugin().usePerms()){
+                                        if(player.hasPermission("shop.operator") || player.hasPermission("shop.gui.teleport")){
+                                            if(!player.isOp()){
+                                                if(plugin.getTeleportCost() > 0) {
+                                                    if (EconomyUtils.hasSufficientFunds(player, player.getInventory(), plugin.getTeleportCost())) {
+                                                        EconomyUtils.removeFunds(player, player.getInventory(), plugin.getTeleportCost());
+                                                    } else {
+                                                        ShopMessage.sendMessage("interactionIssue", "teleportInsufficientFunds", player, shop);
+                                                        plugin.getGuiHandler().closeWindow(player);
+                                                        return;
+                                                    }
+                                                }
+                                                if(plugin.getTeleportCooldown() > 0){
+                                                    int secondsRemaining = plugin.getShopListener().getTeleportCooldownRemaining(player);
+                                                    if(secondsRemaining > 0){
+                                                        ShopMessage.sendMessage("interactionIssue", "teleportInsufficientCooldown", player, shop);
+                                                        plugin.getGuiHandler().closeWindow(player);
+                                                        return;
+                                                    }
                                                 }
                                             }
-                                            if(plugin.getTeleportCooldown() > 0){
-                                                int secondsRemaining = plugin.getShopListener().getTeleportCooldownRemaining(player);
-                                                if(secondsRemaining > 0){
-                                                    ShopMessage.sendMessage("interactionIssue", "teleportInsufficientCooldown", player, shop);
-                                                    plugin.getGuiHandler().closeWindow(player);
-                                                    return;
-                                                }
-                                            }
+                                            shop.teleportPlayer(player);
+                                            plugin.getGuiHandler().closeWindow(player);
                                         }
-                                        shop.teleportPlayer(player);
-                                        plugin.getGuiHandler().closeWindow(player);
                                     }
-                                }
-                                else{
-                                    if(player.isOp()){
-                                        shop.teleportPlayer(player);
-                                        plugin.getGuiHandler().closeWindow(player);
+                                    else{
+                                        if(player.isOp()){
+                                            shop.teleportPlayer(player);
+                                            plugin.getGuiHandler().closeWindow(player);
+                                        }
                                     }
+                                    return;
                                 }
-                                return;
                             }
                         }
 

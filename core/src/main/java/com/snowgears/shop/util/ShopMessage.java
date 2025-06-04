@@ -7,7 +7,6 @@ import com.snowgears.shop.shop.AbstractShop;
 import com.snowgears.shop.shop.ComboShop;
 import com.snowgears.shop.shop.ShopType;
 import net.md_5.bungee.api.chat.*;
-import net.md_5.bungee.api.chat.hover.content.Item;
 
 import org.bukkit.Bukkit;
 import net.md_5.bungee.api.ChatColor;

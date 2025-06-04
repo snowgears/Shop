@@ -275,46 +275,106 @@ public class UtilMethods {
     // -1 - RIGHT SIDE
     // 0 - EXACT CENTER
     public static int calculateSideFromClickedSign(Player player, Block signBlock){
-        if(!(signBlock.getBlockData() instanceof WallSign))
-            return 0;
-        WallSign s = (WallSign)signBlock.getBlockData();
-        BlockFace attachedFace = s.getFacing().getOppositeFace();
-        Location chest = signBlock.getRelative(attachedFace).getLocation().add(0.5,0.5,0.5);
-        Location head = player.getLocation().add(0, player.getEyeHeight(), 0);
+        Object blockData = CompatibilityUtil.getBlockData(signBlock);
+        if(CompatibilityUtil.HAS_BLOCK_DATA && blockData != null) {
+            // Modern approach: Use WallSign interface (MC 1.13+)
+            try {
+                Class<?> wallSignClass = Class.forName("org.bukkit.block.data.type.WallSign");
+                if(wallSignClass.isInstance(blockData)) {
+                    Object wallSign = wallSignClass.cast(blockData);
+                    Object facing = wallSignClass.getMethod("getFacing").invoke(wallSign);
+                    BlockFace attachedFace = (BlockFace) facing.getClass().getMethod("getOppositeFace").invoke(facing);
+                    
+                    Location chest = signBlock.getRelative(attachedFace).getLocation().add(0.5,0.5,0.5);
+                    Location head = player.getLocation().add(0, player.getEyeHeight(), 0);
 
-        Vector direction = head.subtract(chest).toVector().normalize();
-        Vector look = player.getLocation().getDirection().normalize();
+                    Vector direction = head.subtract(chest).toVector().normalize();
+                    Vector look = player.getLocation().getDirection().normalize();
 
-        Vector cp = direction.crossProduct(look);
+                    Vector cp = direction.crossProduct(look);
 
-        double d = 0;
-        switch(attachedFace){
-            case NORTH:
-                d = cp.getZ();
-                break;
-            case SOUTH:
-                d = cp.getZ() * -1;
-                break;
-            case EAST:
-                d = cp.getX() * -1;
-                break;
-            case WEST:
-                d = cp.getX();
-                break;
-            default:
-                break;
+                    double d = 0;
+                    switch(attachedFace){
+                        case NORTH:
+                            d = cp.getZ();
+                            break;
+                        case SOUTH:
+                            d = cp.getZ() * -1;
+                            break;
+                        case EAST:
+                            d = cp.getX() * -1;
+                            break;
+                        case WEST:
+                            d = cp.getX();
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if(player.getLocation().getPitch() < 0)
+                        d = -d;
+
+                    if(d > 0)
+                        return 1;
+                    else if(d < 0)
+                        return -1;
+                    else
+                        return 0;
+                }
+            } catch (Exception e) {
+                // Fallback to legacy approach
+            }
         }
+        
+        // Legacy approach: Use MaterialData (MC ≤1.12.2)
+        // For legacy versions, we'll use a simpler approach since WallSign interface doesn't exist
+        if(signBlock.getType().toString().contains("WALL_SIGN")) {
+            // Try to determine facing from block data
+            org.bukkit.material.MaterialData materialData = (org.bukkit.material.MaterialData) blockData;
+            if(materialData instanceof org.bukkit.material.Sign) {
+                org.bukkit.material.Sign signData = (org.bukkit.material.Sign) materialData;
+                BlockFace attachedFace = signData.getAttachedFace();
+                
+                Location chest = signBlock.getRelative(attachedFace).getLocation().add(0.5,0.5,0.5);
+                Location head = player.getLocation().add(0, player.getEyeHeight(), 0);
 
-        if(player.getLocation().getPitch() < 0)
-            d = -d;
-        //System.out.println("Side clicked: "+d);
+                Vector direction = head.subtract(chest).toVector().normalize();
+                Vector look = player.getLocation().getDirection().normalize();
 
-        if(d > 0)
-            return 1;
-        else if(d < 0)
-            return -1;
-        else
-            return 0;
+                Vector cp = direction.crossProduct(look);
+
+                double d = 0;
+                switch(attachedFace){
+                    case NORTH:
+                        d = cp.getZ();
+                        break;
+                    case SOUTH:
+                        d = cp.getZ() * -1;
+                        break;
+                    case EAST:
+                        d = cp.getX() * -1;
+                        break;
+                    case WEST:
+                        d = cp.getX();
+                        break;
+                    default:
+                        break;
+                }
+
+                if(player.getLocation().getPitch() < 0)
+                    d = -d;
+
+                if(d > 0)
+                    return 1;
+                else if(d < 0)
+                    return -1;
+                else
+                    return 0;
+            }
+        }
+        
+        // Default fallback
+        return 0;
     }
 
     public static String convertDurationToString(int duration) {
@@ -478,36 +538,51 @@ public class UtilMethods {
             // Add goat horn support using the appropriate handler
             displayHandler.addMusicInstrumentDisplayInfo(item, formattedMessage);
             
-            // Add support for displaying bee hive/nest information
+            // Add support for displaying bee hive/nest information (MC 1.15+ only)
             if(itemType.equals("BEE_NEST") || itemType.equals("BEEHIVE")) {
                 try {
-                    if(item.getItemMeta() instanceof org.bukkit.inventory.meta.BlockStateMeta) {
-                        org.bukkit.inventory.meta.BlockStateMeta blockStateMeta = (org.bukkit.inventory.meta.BlockStateMeta) item.getItemMeta();
-                        
-                        if(blockStateMeta.hasBlockState() && blockStateMeta.getBlockState() instanceof org.bukkit.block.Beehive) {
-                            org.bukkit.block.Beehive beehive = (org.bukkit.block.Beehive) blockStateMeta.getBlockState();
+                    // Check if Beehive class exists (MC 1.15+)
+                    if (CompatibilityUtil.hasClass("org.bukkit.block.Beehive")) {
+                        if(item.getItemMeta() instanceof org.bukkit.inventory.meta.BlockStateMeta) {
+                            org.bukkit.inventory.meta.BlockStateMeta blockStateMeta = (org.bukkit.inventory.meta.BlockStateMeta) item.getItemMeta();
                             
-                            int honeyLevel = 0;
-                            int beeCount = 0;
-                            
-                            // Get honey level (this is from BlockData)
-                            try {
-                                org.bukkit.block.data.type.Beehive beehiveData = (org.bukkit.block.data.type.Beehive) beehive.getBlockData();
-                                honeyLevel = beehiveData.getHoneyLevel();
-                            } catch (Exception e) { }
-                            // Get bee count (this is from the entity storage)
-                            try { beeCount = beehive.getEntityCount(); } catch (Exception e) {}
-                            
-                            // Format the message
-                            if(honeyLevel > 0 || beeCount > 0) {
-                                StringBuilder beeInfo = new StringBuilder(" [");
-                                if(honeyLevel > 0) {
-                                    beeInfo.append("Honey: ").append(honeyLevel).append("/5");
-                                    if(beeCount > 0) { beeInfo.append(", "); }
-                                }
-                                if(beeCount > 0) { beeInfo.append("Bees: ").append(beeCount); }
-                                beeInfo.append("]");
-                                formattedMessage.addExtra(beeInfo.toString());
+                            if(blockStateMeta.hasBlockState()) {
+                                try {
+                                    // Use reflection to safely access Beehive class
+                                    Class<?> beehiveClass = Class.forName("org.bukkit.block.Beehive");
+                                    if(beehiveClass.isInstance(blockStateMeta.getBlockState())) {
+                                        Object beehive = beehiveClass.cast(blockStateMeta.getBlockState());
+                                        
+                                        int honeyLevel = 0;
+                                        int beeCount = 0;
+                                        
+                                        // Get honey level using reflection for BlockData
+                                        try {
+                                            Class<?> beehiveDataClass = Class.forName("org.bukkit.block.data.type.Beehive");
+                                            Object blockData = beehive.getClass().getMethod("getBlockData").invoke(beehive);
+                                            if(beehiveDataClass.isInstance(blockData)) {
+                                                honeyLevel = (Integer) beehiveDataClass.getMethod("getHoneyLevel").invoke(blockData);
+                                            }
+                                        } catch (Exception e) { /* Silently handle */ }
+                                        
+                                        // Get bee count using reflection
+                                        try { 
+                                            beeCount = (Integer) beehiveClass.getMethod("getEntityCount").invoke(beehive);
+                                        } catch (Exception e) { /* Silently handle */ }
+                                        
+                                        // Format the message
+                                        if(honeyLevel > 0 || beeCount > 0) {
+                                            StringBuilder beeInfo = new StringBuilder(" [");
+                                            if(honeyLevel > 0) {
+                                                beeInfo.append("Honey: ").append(honeyLevel).append("/5");
+                                                if(beeCount > 0) { beeInfo.append(", "); }
+                                            }
+                                            if(beeCount > 0) { beeInfo.append("Bees: ").append(beeCount); }
+                                            beeInfo.append("]");
+                                            formattedMessage.addExtra(beeInfo.toString());
+                                        }
+                                    }
+                                } catch (Exception e) { /* Silently handle for backward compatibility */ }
                             }
                         }
                     }
@@ -761,27 +836,54 @@ public class UtilMethods {
             if(!m.isSolid())
                 nonIntrusiveMaterials.add(m);
         }
+        
+        // Add wall sign materials - these were added in MC 1.13+ (The Flattening)
         try{
             nonIntrusiveMaterials.add(Material.WARPED_WALL_SIGN);
+        } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
+        try{
             nonIntrusiveMaterials.add(Material.ACACIA_WALL_SIGN);
+        } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
+        try{
             nonIntrusiveMaterials.add(Material.BIRCH_WALL_SIGN);
+        } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
+        try{
             nonIntrusiveMaterials.add(Material.CRIMSON_WALL_SIGN);
+        } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
+        try{
             nonIntrusiveMaterials.add(Material.DARK_OAK_WALL_SIGN);
+        } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
+        try{
             nonIntrusiveMaterials.add(Material.JUNGLE_WALL_SIGN);
+        } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
+        try{
             nonIntrusiveMaterials.add(Material.OAK_WALL_SIGN);
+        } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
+        try{
             nonIntrusiveMaterials.add(Material.SPRUCE_WALL_SIGN);
-        } catch(NoSuchFieldError e){
+        } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
+        
+        // Fallback for legacy versions - add the old WALL_SIGN material
+        try{
             nonIntrusiveMaterials.add(Material.LEGACY_WALL_SIGN);
+        } catch(NoSuchFieldError e){ 
+            // Try the pre-legacy WALL_SIGN material for very old versions using valueOf
+            try{
+                nonIntrusiveMaterials.add(Material.valueOf("WALL_SIGN"));
+            } catch(IllegalArgumentException e2){ /* Material doesn't exist, skip */ }
         }
+        
         nonIntrusiveMaterials.remove(Material.WATER);
         nonIntrusiveMaterials.remove(Material.LAVA);
         nonIntrusiveMaterials.remove(Material.FIRE);
-        nonIntrusiveMaterials.remove(Material.END_PORTAL);
-        nonIntrusiveMaterials.remove(Material.NETHER_PORTAL);
-        nonIntrusiveMaterials.remove(Material.SKELETON_SKULL);
-        nonIntrusiveMaterials.remove(Material.WITHER_SKELETON_SKULL);
-        nonIntrusiveMaterials.remove(Material.PLAYER_HEAD);
-        nonIntrusiveMaterials.remove(Material.CREEPER_HEAD);
+        
+        // Remove dangerous materials that exist across versions
+        try { nonIntrusiveMaterials.remove(Material.END_PORTAL); } catch(NoSuchFieldError e) {}
+        try { nonIntrusiveMaterials.remove(Material.NETHER_PORTAL); } catch(NoSuchFieldError e) {}
+        try { nonIntrusiveMaterials.remove(Material.SKELETON_SKULL); } catch(NoSuchFieldError e) {}
+        try { nonIntrusiveMaterials.remove(Material.WITHER_SKELETON_SKULL); } catch(NoSuchFieldError e) {}
+        try { nonIntrusiveMaterials.remove(Material.PLAYER_HEAD); } catch(NoSuchFieldError e) {}
+        try { nonIntrusiveMaterials.remove(Material.CREEPER_HEAD); } catch(NoSuchFieldError e) {}
 
         // Use CompatibilityUtil to safely add LIGHT material if available
         if (CompatibilityUtil.hasLightMaterial()) {
@@ -794,9 +896,29 @@ public class UtilMethods {
     }
 
     public static BlockFace getDirectionOfChest(Block block){
-        if(block.getBlockData() instanceof Directional){
-            return ((Directional)block.getBlockData()).getFacing();
+        Object blockData = CompatibilityUtil.getBlockData(block);
+        if(CompatibilityUtil.HAS_BLOCK_DATA && blockData != null) {
+            // Modern approach: Use Directional interface (MC 1.13+)
+            try {
+                Class<?> directionalClass = Class.forName("org.bukkit.block.data.Directional");
+                if(directionalClass.isInstance(blockData)) {
+                    Object directional = directionalClass.cast(blockData);
+                    return (BlockFace) directionalClass.getMethod("getFacing").invoke(directional);
+                }
+            } catch (Exception e) {
+                // Fallback to legacy approach
+            }
         }
+        
+        // Legacy approach: Use MaterialData (MC ≤1.12.2)
+        if(blockData instanceof org.bukkit.material.MaterialData) {
+            org.bukkit.material.MaterialData materialData = (org.bukkit.material.MaterialData) blockData;
+            if(materialData instanceof org.bukkit.material.Directional) {
+                org.bukkit.material.Directional directional = (org.bukkit.material.Directional) materialData;
+                return directional.getFacing();
+            }
+        }
+        
         return null;
     }
 

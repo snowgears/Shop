@@ -22,8 +22,8 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.material.MaterialData;
+import org.bukkit.util.Vector;
 import com.snowgears.shop.util.CompatibilityUtil;
 
 import java.util.*;
@@ -257,7 +257,7 @@ public abstract class AbstractShop {
     public Object getSign(){
         try {
             if (CompatibilityUtil.isWallSignBlock(signLocation.getBlock())) {
-                return signLocation.getBlock().getBlockData();
+                return CompatibilityUtil.getBlockData(signLocation.getBlock());
             }
         } catch (Exception e) {
             // Legacy versions or invalid sign
@@ -519,21 +519,14 @@ public abstract class AbstractShop {
             lore.add(ShopMessage.format(loreLine, context).toLegacyText());
         }
 
-        ItemMeta iconMeta = guiIcon.getItemMeta();
-        iconMeta.setDisplayName(name);
-        iconMeta.setLore(lore);
+        ItemMeta itemMeta = guiIcon.getItemMeta();
+        itemMeta.setDisplayName(name);
+        itemMeta.setLore(lore);
 
-        if (CompatibilityUtil.hasPersistentDataContainer()) {
-            try {
-                Object container = iconMeta.getPersistentDataContainer();
-                CompatibilityUtil.setPersistentDataString(container, Shop.getPlugin().getSignLocationNameSpacedKey(), UtilMethods.getCleanLocation(this.getSignLocation(), true));
-            } catch (Exception e) {
-                // Legacy versions don't support PersistentDataContainer
-                Shop.getPlugin().getShopLogger().debug("PersistentDataContainer not available: " + e.getMessage());
-            }
-        }
+        // Store sign location in item data using the new helper method  
+        CompatibilityUtil.setItemData(guiIcon, "signLocation", UtilMethods.getCleanLocation(this.getSignLocation(), true));
 
-        guiIcon.setItemMeta(iconMeta);
+        guiIcon.setItemMeta(itemMeta);
     }
 
     public int getItemDurabilityPercent(){

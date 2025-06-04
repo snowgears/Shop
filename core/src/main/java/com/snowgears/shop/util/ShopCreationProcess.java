@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.tcoded.folialib.wrapper.task.WrappedTask;
+import com.snowgears.shop.util.CompatibilityUtil;
 
 public class ShopCreationProcess {
 
@@ -143,7 +144,7 @@ public class ShopCreationProcess {
             if(signBlock.getBlockData() instanceof WallSign) {
                 Directional wallSignData = (Directional) signBlock.getBlockData();
                 wallSignData.setFacing(clickedFace);
-                signBlock.setBlockData(wallSignData);
+                CompatibilityUtil.setBlockData(signBlock, wallSignData);
             }
 
             AbstractShop shop = Shop.getPlugin().getShopCreationUtil().createShop(Bukkit.getPlayer(playerUUID), clickedChest, signBlock, getPricePair(), getItemAmount(), isAdmin, shopType, clickedFace, true);

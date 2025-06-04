@@ -115,8 +115,6 @@ public class Shop extends JavaPlugin {
     private ItemListType itemListType;
     private List<String> worldBlackList;
     private HashMap<ShopClickType, ShopAction> clickTypeActionMap;
-    private Object signLocationNameSpacedKey;
-    private Object playerUUIDNameSpacedKey;
     private LogHandler logHandler;
     
     // Shop display optimization settings
@@ -260,8 +258,10 @@ public class Shop extends JavaPlugin {
         }
 
         reloadConfig();
-        signLocationNameSpacedKey = CompatibilityUtil.createNamespacedKey(this, "signLocation");
-        playerUUIDNameSpacedKey = CompatibilityUtil.createNamespacedKey(this, "playerUUID");
+
+        //Legacy versions don't support NamespacedKey/PersistentDataContainer
+        //signLocationNameSpacedKey = CompatibilityUtil.createNamespacedKey(this, "signLocation");
+        //playerUUIDNameSpacedKey = CompatibilityUtil.createNamespacedKey(this, "playerUUID");
         config = YamlConfiguration.loadConfiguration(configFile);
         // Load logger values again in case the log level was changed on a reload
         this.getShopLogger().setLogLevel(config.getString("logLevel"));
@@ -1201,14 +1201,6 @@ public class Shop extends JavaPlugin {
 
     public NBTAdapter getNBTAdapter() {
         return nbtAdapter;
-    }
-
-    public Object getSignLocationNameSpacedKey(){
-        return signLocationNameSpacedKey;
-    }
-
-    public Object getPlayerUUIDNameSpacedKey(){
-        return playerUUIDNameSpacedKey;
     }
 
     public LogHandler getLogHandler(){

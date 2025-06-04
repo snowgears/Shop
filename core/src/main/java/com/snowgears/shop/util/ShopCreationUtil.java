@@ -10,7 +10,6 @@ import com.snowgears.shop.shop.AbstractShop;
 import com.snowgears.shop.shop.ShopType;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.Tag;
 import org.bukkit.block.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -167,18 +166,18 @@ public class ShopCreationUtil {
             }
 
 
-            if (!CompatibilityUtil.isWallSignBlock(signBlock)) {
+            if (!BlockDataUtil.isWallSign(signBlock)) {
                 if (!signBlock.getType().toString().contains("_SIGN")) {
                     return null;
                 }
                 
-                // Convert regular sign to wall sign with proper facing
-                if (!CompatibilityUtil.convertToWallSign(signBlock, signDirection)) {
+                // Convert regular sign to wall sign with proper facing using clean BlockDataUtil
+                if (!BlockDataUtil.convertToWallSign(signBlock, signDirection)) {
                     // Fallback: try legacy approach
                     String wallSignString = signBlock.getType().toString().replaceAll("_SIGN", "_WALL_SIGN");
                     try {
                         signBlock.setType(Material.valueOf(wallSignString));
-                        CompatibilityUtil.setWallSignFacing(signBlock, signDirection);
+                        BlockDataUtil.setSignFacing(signBlock, signDirection);
                     } catch (IllegalArgumentException e) {
                         // Could not convert to wall sign
                         return null;
@@ -202,26 +201,8 @@ public class ShopCreationUtil {
             if (UtilMethods.isMCVersion17Plus() && plugin.getDisplayLightLevel() > 0) {
                 Block displayBlock = shop.getChestLocation().getBlock().getRelative(BlockFace.UP);
                 if (UtilMethods.materialIsNonIntrusive(displayBlock.getType())) {
-                    // Use CompatibilityUtil to check for LIGHT material and block data availability
-                    if (CompatibilityUtil.hasLightMaterial() && CompatibilityUtil.hasLightBlock()) {
-                        try {
-                            // Use reflection to avoid import issues in legacy builds
-                            if (CompatibilityUtil.hasLightMaterial()) {
-                                displayBlock.setType(Material.valueOf("LIGHT"));
-                                // Use reflection to set light level
-                                Object blockData = displayBlock.getBlockData();
-                                Class<?> lightClass = Class.forName("org.bukkit.block.data.type.Light");
-                                if (lightClass.isInstance(blockData)) {
-                                    java.lang.reflect.Method setLevelMethod = lightClass.getMethod("setLevel", int.class);
-                                    setLevelMethod.invoke(blockData, plugin.getDisplayLightLevel());
-                                    displayBlock.setBlockData((org.bukkit.block.data.BlockData) blockData);
-                                }
-                            }
-                        } catch (Exception lightException) {
-                            // Silently handle any compatibility issues with Light blocks
-                            Shop.getPlugin().getShopLogger().debug("Light block not supported on this version: " + lightException.getMessage());
-                        }
-                    }
+                    // Use clean BlockDataUtil method instead of complex reflection
+                    BlockDataUtil.setLightBlock(displayBlock, plugin.getDisplayLightLevel());
                 }
             }
 
@@ -335,7 +316,7 @@ public class ShopCreationUtil {
 
         try {
             //stop the edge case of shulker boxes being able to be used in shulker chests
-            if (Tag.SHULKER_BOXES.isTagged(item.getType())) {
+            if (BlockDataUtil.isShulkerBox(item.getType())) {
                 if (shop.getChestLocation().getBlock().getState() instanceof ShulkerBox) {
                     return false;
                 }

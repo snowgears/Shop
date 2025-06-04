@@ -56,7 +56,7 @@ public class MiscListener implements Listener {
 
         Block b = event.getBlockClicked();
 
-        if (b.getBlockData() instanceof WallSign) {
+        if (CompatibilityUtil.isWallSignBlock(b)) {
             AbstractShop shop = plugin.getShopHandler().getShop(b.getLocation());
             if (shop != null)
                 event.setCancelled(true);
@@ -229,7 +229,7 @@ public class MiscListener implements Listener {
         if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
             final Block clicked = event.getClickedBlock();
 
-            if (clicked.getBlockData() instanceof WallSign) {
+            if (CompatibilityUtil.isWallSignBlock(clicked)) {
 
                 if(!plugin.getAllowCreationMethodSign())
                     return;

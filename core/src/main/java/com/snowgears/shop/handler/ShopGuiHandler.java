@@ -17,8 +17,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.material.MaterialData;
 
 import java.io.File;
 import java.io.IOException;
@@ -135,8 +134,8 @@ public class ShopGuiHandler {
         itemMeta.setDisplayName(name);
         itemMeta.setLore(lore);
 
-        PersistentDataContainer container = itemMeta.getPersistentDataContainer();
-        CompatibilityUtil.setPersistentDataString(container, Shop.getPlugin().getPlayerUUIDNameSpacedKey(), playerUUID.toString());
+        // Store player UUID in item data using the new helper method
+        CompatibilityUtil.setItemData(playerHead, "playerUUID", playerUUID.toString());
 
         playerHead.setItemMeta(itemMeta);
 

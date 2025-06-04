@@ -10,3 +10,4 @@ SpigotBuildTools
 /test/results
 /test/supported_versions
 /test/*.jar
+/other-branches

@@ -12,6 +12,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 // TODO: Phase 2 - Add conditional import for ArmorMeta (Java 17+ only)
 // import org.bukkit.inventory.meta.ArmorMeta;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionType;
 import org.bukkit.ChatColor;
 
 import java.util.HashMap;
@@ -74,27 +75,18 @@ public class ItemNameUtil {
             }
         }
 
-        // Add custom potion formatting
+        // Add custom potion formatting using clean PotionUtil
         if(item.getItemMeta() != null && item.getItemMeta() instanceof PotionMeta){
             PotionMeta potionMeta = (PotionMeta) item.getItemMeta();
-            // Check if getBasePotionType() is available (modern versions only)
-            if (CompatibilityUtil.hasPotionBaseType()) {
-                try {
-                    // Use reflection to avoid compilation errors in legacy builds
-                    java.lang.reflect.Method getBasePotionTypeMethod = 
-                        potionMeta.getClass().getMethod("getBasePotionType");
-                    Object basePotionType = getBasePotionTypeMethod.invoke(potionMeta);
-                    if (basePotionType != null) {
-                        String formattedName = UtilMethods.capitalize(item.getType().name().replace("_", " ").toLowerCase());
-                        formattedName += " of ";
-                        formattedName += UtilMethods.capitalize(basePotionType.toString().replace("_", " ").toLowerCase());
-                        return new TextComponent(formattedName);
-                    }
-                } catch (Exception reflectionError) {
-                    // Silently ignore if method isn't available or reflection fails
-                }
+            
+            // Use our clean PotionUtil instead of reflection
+            PotionType basePotionType = PotionUtil.getBasePotionType(potionMeta);
+            if (basePotionType != null) {
+                String formattedName = UtilMethods.capitalize(item.getType().name().replace("_", " ").toLowerCase());
+                formattedName += " of ";
+                formattedName += PotionUtil.getFormattedPotionName(basePotionType);
+                return new TextComponent(formattedName);
             }
-            // Legacy versions don't support getBasePotionType(), skip custom potion formatting
         }
 
         // Check for Ominous Bottle (modern versions only)
@@ -119,19 +111,8 @@ public class ItemNameUtil {
     }
 
     public TextComponent getNameTranslatable(Material material){
-        // Check if getTranslationKey() is available (modern versions only)
-        if (CompatibilityUtil.hasGetTranslationKey()) {
-            try {
-                // Use reflection to avoid compilation errors in legacy builds
-                java.lang.reflect.Method getTranslationKeyMethod = 
-                    material.getClass().getMethod("getTranslationKey");
-                String translationKey = (String) getTranslationKeyMethod.invoke(material);
-                return new TextComponent(new TranslatableComponent(translationKey));
-            } catch (Exception reflectionError) {
-                // Fallback to legacy method if reflection fails
-            }
-        }
-        // Legacy fallback: use material name() method
-        return new TextComponent(new TranslatableComponent("block.minecraft." + material.name().toLowerCase()));
+        // Use our clean TranslationUtil instead of reflection
+        String translationKey = TranslationUtil.getMaterialTranslationKey(material);
+        return new TextComponent(new TranslatableComponent(translationKey));
     }
 }

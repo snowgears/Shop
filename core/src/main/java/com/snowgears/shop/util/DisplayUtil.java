@@ -12,9 +12,9 @@ import org.bukkit.entity.Item;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.material.MaterialData;
 import org.bukkit.util.EulerAngle;
+import org.bukkit.util.Vector;
 
 public class DisplayUtil {
 
@@ -488,17 +488,21 @@ public class DisplayUtil {
         boolean foundLegacy = isDisplayLegacy(entity);
         if(foundLegacy)
             return true;
-        if(UtilMethods.isMCVersion14Plus()) {
-            PersistentDataContainer persistentData = entity.getPersistentDataContainer();
-            if (persistentData != null) {
-                try {
-                    int dataDisplay = persistentData.get(new NamespacedKey(Shop.getPlugin(), "display"), PersistentDataType.INTEGER);
-                    return (dataDisplay == 1);
-                } catch (NullPointerException e) {
-                    return false;
+        
+        // Use CompatibilityUtil to check for persistent data in a version-safe way
+        if(UtilMethods.isMCVersion14Plus() && CompatibilityUtil.HAS_PERSISTENT_DATA_CONTAINER) {
+            try {
+                // Use reflection to safely access PersistentDataContainer
+                Object persistentData = entity.getClass().getMethod("getPersistentDataContainer").invoke(entity);
+                if (persistentData != null) {
+                    Object namespacedKey = CompatibilityUtil.createNamespacedKey(Shop.getPlugin(), "display");
+                    Object dataDisplay = persistentData.getClass().getMethod("get", Class.forName("org.bukkit.NamespacedKey"), Class.forName("org.bukkit.persistence.PersistentDataType")).invoke(persistentData, namespacedKey, Class.forName("org.bukkit.persistence.PersistentDataType").getField("INTEGER").get(null));
+                    return dataDisplay != null && ((Integer) dataDisplay) == 1;
                 }
+            } catch (Exception e) {
+                // Fallback to legacy method if reflection fails
+                return false;
             }
-            return false;
         }
         return false;
     }

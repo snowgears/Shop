@@ -29,6 +29,7 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.scheduler.BukkitRunnable;
 import java.util.*;
 import com.tcoded.folialib.wrapper.task.WrappedTask;
+import com.snowgears.shop.util.CompatibilityUtil;
 
 public class DisplayListener implements Listener {
 
@@ -45,7 +46,7 @@ public class DisplayListener implements Listener {
                     if (player != null) {
                         try {
                             Block block = player.getTargetBlockExact(8);
-                            if (block != null && block.getBlockData() instanceof WallSign) {
+                            if (block != null && CompatibilityUtil.isWallSignBlock(block)) {
                                 AbstractShop shopObj = plugin.getShopHandler().getShop(block.getLocation());
                                 if (shopObj != null) {
                                     shopObj.getDisplay().showDisplayTags(player);
