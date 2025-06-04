@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# Source SDKMAN if available
+if [[ -f "$HOME/.sdkman/bin/sdkman-init.sh" ]]; then
+    source "$HOME/.sdkman/bin/sdkman-init.sh"
+fi
+
 echo "========================================"
 echo "Building Shop Plugin - Dual Build System"
 echo "========================================"
@@ -9,6 +14,7 @@ export MAVEN_OPTS="-Xms2g -Xmx4g"
 echo ""
 echo "Building MODERN version (Java 17)..."
 echo "--------------------------------------"
+sdk use java 21.0.7-amzn
 mvn clean compile package -T 2C -P modern
 
 if [ $? -eq 0 ]; then
@@ -21,10 +27,12 @@ else
     exit 1
 fi
 
+sleep 5
+
 echo ""
 echo "Building LEGACY version (Java 8)..."
 echo "-------------------------------------"
-mvn clean compile package -T 2C -P legacy
+sdk use java 8.0.452-amzn && ./scripts/compile-legacy.sh
 
 if [ $? -eq 0 ]; then
     echo "✓ Legacy build completed successfully!"

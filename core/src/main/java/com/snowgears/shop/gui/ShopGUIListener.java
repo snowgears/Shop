@@ -30,6 +30,7 @@ import com.snowgears.shop.gui.ShopGuiWindow;
 import com.snowgears.shop.shop.AbstractShop;
 import com.snowgears.shop.util.CompatibilityUtil;
 import com.snowgears.shop.util.EconomyUtils;
+import com.snowgears.shop.util.InventoryUtil;
 import com.snowgears.shop.util.PlayerSettings;
 import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.util.UtilMethods;
@@ -43,18 +44,8 @@ public class ShopGUIListener implements Listener {
     }
 
     public String getInventoryViewTitle(InventoryClickEvent event) {
-        try {
-            Object view = event.getView();
-            Method getTitle = view.getClass().getMethod("getTitle");
-            getTitle.setAccessible(true);
-            return (String) getTitle.invoke(view);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+        // Use our clean InventoryUtil instead of complex reflection
+        return InventoryUtil.getInventoryViewTitle(event);
     }
 
     private ShopGuiHandler.GuiIcon getNextOptionIcon(ItemStack[] iconItems, ShopGuiHandler.GuiIcon[] icons, ShopGuiHandler.GuiIcon current) {

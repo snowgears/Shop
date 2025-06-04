@@ -25,6 +25,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.MaterialData;
 import org.bukkit.util.Vector;
 import com.snowgears.shop.util.CompatibilityUtil;
+import com.snowgears.shop.util.ComponentUtil;
+import com.snowgears.shop.util.SignUtil;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -422,29 +424,13 @@ public abstract class AbstractShop {
             // Detect if we set it to 0, and if so, remove it from the ItemMeta!
             if (item.getItemMeta() instanceof Damageable && ((Damageable) item.getItemMeta()).getDamage() == 0) {
                 
-                // Check if modern component string methods are available
-                if (CompatibilityUtil.hasGetAsComponentString() && CompatibilityUtil.hasCreateItemStackFromString()) {
-                    try {
-                        // Use reflection to avoid compile-time dependency on modern methods
-                        ItemMeta itemMeta = item.getItemMeta();
-                        java.lang.reflect.Method getAsComponentStringMethod = itemMeta.getClass().getMethod("getAsComponentString");
-                        String components = (String) getAsComponentStringMethod.invoke(itemMeta); // example: "[minecraft:damage=53]"
-
-                        // Remove it from the array
-                        components = components.replace(",minecraft:damage=0", ""); // Middle of an array
-                        components = components.replace("minecraft:damage=0,", ""); // Start of an array
-                        components = components.replace("minecraft:damage=0", ""); // Only object in array
-
-                        // Convert it back into an item using reflection
-                        String itemTypeKey = item.getType().getKey().toString(); // example: "minecraft:diamond_sword"
-                        String itemAsString = itemTypeKey + components; // results in: "minecraft:diamond_sword[minecraft:damage=53]"
-                        
-                        java.lang.reflect.Method createItemStackMethod = Bukkit.getItemFactory().getClass().getMethod("createItemStack", String.class);
-                        return (ItemStack) createItemStackMethod.invoke(Bukkit.getItemFactory(), itemAsString);
-                    } catch (Exception reflectionError) {
-                        Shop.getPlugin().getShopLogger().debug("Reflection failed for component string methods: " + reflectionError.getMessage());
-                        // Fall through to legacy approach
+                // Use our clean ComponentUtil instead of complex reflection
+                if (ComponentUtil.isComponentStringSupported()) {
+                    ItemStack processedItem = ComponentUtil.removeZeroDamageFromItem(item);
+                    if (processedItem != null) {
+                        return processedItem;
                     }
+                    // If ComponentUtil processing failed, fall through to legacy approach
                 }
                 
                 // Legacy fallback: create a new item without the damage
@@ -585,15 +571,8 @@ public abstract class AbstractShop {
             }
 
             if(isMCVersion17Plus()) {
-                if (CompatibilityUtil.hasGlowingText()) {
-                    try {
-                        // Use reflection to avoid compile-time dependency on modern methods
-                        java.lang.reflect.Method setGlowingTextMethod = signBlock.getClass().getMethod("setGlowingText", boolean.class);
-                        setGlowingTextMethod.invoke(signBlock, Shop.getPlugin().getGlowingSignText());
-                    } catch (Exception reflectionError) {
-                        Shop.getPlugin().getShopLogger().debug("Reflection failed for setGlowingText: " + reflectionError.getMessage());
-                    }
-                }
+                // Use our clean SignUtil instead of complex reflection
+                SignUtil.setGlowingText(signBlock, Shop.getPlugin().getGlowingSignText());
             }
 
             signBlock.update(true);

@@ -8,6 +8,7 @@ import com.snowgears.shop.hook.WorldGuardHook;
 import com.snowgears.shop.shop.AbstractShop;
 import com.snowgears.shop.shop.ShopType;
 import com.snowgears.shop.util.*;
+import com.snowgears.shop.util.ChatUtil;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -375,21 +376,8 @@ public class MiscListener implements Listener {
                 List<String> autocomplete = new ArrayList<>();
                 Arrays.asList(ShopType.values()).forEach((shopType -> autocomplete.add(shopType.toString().toLowerCase())));
                 
-                // Check if setCustomChatCompletions is available (modern versions only)
-                if (CompatibilityUtil.hasCustomChatCompletions()) {
-                    try {
-                        // Use reflection to avoid compilation errors in legacy builds
-                        java.lang.reflect.Method setChatCompletionsMethod = 
-                            player.getClass().getMethod("setCustomChatCompletions", java.util.List.class);
-                        setChatCompletionsMethod.invoke(player, autocomplete);
-                    } catch (Exception reflectionError) {
-                        // Silently ignore if method isn't available or reflection fails
-                        plugin.getShopLogger().debug("setCustomChatCompletions not available in legacy version");
-                    }
-                } else {
-                    // Legacy versions don't support custom chat completions
-                    plugin.getShopLogger().debug("setCustomChatCompletions not supported in legacy version, skipping");
-                }
+                // Use our clean ChatUtil instead of complex reflection
+                ChatUtil.setCustomChatCompletions(player, autocomplete);
                 if((!plugin.usePerms() && player.isOp()) || (plugin.usePerms() && player.hasPermission("shop.operator"))) {
                     ShopMessage.sendMessage("adminCreateHitChest", null, process, player);
                 }

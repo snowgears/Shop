@@ -275,106 +275,8 @@ public class UtilMethods {
     // -1 - RIGHT SIDE
     // 0 - EXACT CENTER
     public static int calculateSideFromClickedSign(Player player, Block signBlock){
-        Object blockData = CompatibilityUtil.getBlockData(signBlock);
-        if(CompatibilityUtil.HAS_BLOCK_DATA && blockData != null) {
-            // Modern approach: Use WallSign interface (MC 1.13+)
-            try {
-                Class<?> wallSignClass = Class.forName("org.bukkit.block.data.type.WallSign");
-                if(wallSignClass.isInstance(blockData)) {
-                    Object wallSign = wallSignClass.cast(blockData);
-                    Object facing = wallSignClass.getMethod("getFacing").invoke(wallSign);
-                    BlockFace attachedFace = (BlockFace) facing.getClass().getMethod("getOppositeFace").invoke(facing);
-                    
-                    Location chest = signBlock.getRelative(attachedFace).getLocation().add(0.5,0.5,0.5);
-                    Location head = player.getLocation().add(0, player.getEyeHeight(), 0);
-
-                    Vector direction = head.subtract(chest).toVector().normalize();
-                    Vector look = player.getLocation().getDirection().normalize();
-
-                    Vector cp = direction.crossProduct(look);
-
-                    double d = 0;
-                    switch(attachedFace){
-                        case NORTH:
-                            d = cp.getZ();
-                            break;
-                        case SOUTH:
-                            d = cp.getZ() * -1;
-                            break;
-                        case EAST:
-                            d = cp.getX() * -1;
-                            break;
-                        case WEST:
-                            d = cp.getX();
-                            break;
-                        default:
-                            break;
-                    }
-
-                    if(player.getLocation().getPitch() < 0)
-                        d = -d;
-
-                    if(d > 0)
-                        return 1;
-                    else if(d < 0)
-                        return -1;
-                    else
-                        return 0;
-                }
-            } catch (Exception e) {
-                // Fallback to legacy approach
-            }
-        }
-        
-        // Legacy approach: Use MaterialData (MC ≤1.12.2)
-        // For legacy versions, we'll use a simpler approach since WallSign interface doesn't exist
-        if(signBlock.getType().toString().contains("WALL_SIGN")) {
-            // Try to determine facing from block data
-            org.bukkit.material.MaterialData materialData = (org.bukkit.material.MaterialData) blockData;
-            if(materialData instanceof org.bukkit.material.Sign) {
-                org.bukkit.material.Sign signData = (org.bukkit.material.Sign) materialData;
-                BlockFace attachedFace = signData.getAttachedFace();
-                
-                Location chest = signBlock.getRelative(attachedFace).getLocation().add(0.5,0.5,0.5);
-                Location head = player.getLocation().add(0, player.getEyeHeight(), 0);
-
-                Vector direction = head.subtract(chest).toVector().normalize();
-                Vector look = player.getLocation().getDirection().normalize();
-
-                Vector cp = direction.crossProduct(look);
-
-                double d = 0;
-                switch(attachedFace){
-                    case NORTH:
-                        d = cp.getZ();
-                        break;
-                    case SOUTH:
-                        d = cp.getZ() * -1;
-                        break;
-                    case EAST:
-                        d = cp.getX() * -1;
-                        break;
-                    case WEST:
-                        d = cp.getX();
-                        break;
-                    default:
-                        break;
-                }
-
-                if(player.getLocation().getPitch() < 0)
-                    d = -d;
-
-                if(d > 0)
-                    return 1;
-                else if(d < 0)
-                    return -1;
-                else
-                    return 0;
-            }
-        }
-        
-        // Default fallback
-        return 0;
+        // Use our clean WallSignUtil instead of complex reflection
+        return WallSignUtil.calculateSideFromClickedSign(player, signBlock);
     }
 
     public static String convertDurationToString(int duration) {
@@ -540,53 +442,20 @@ public class UtilMethods {
             
             // Add support for displaying bee hive/nest information (MC 1.15+ only)
             if(itemType.equals("BEE_NEST") || itemType.equals("BEEHIVE")) {
-                try {
-                    // Check if Beehive class exists (MC 1.15+)
-                    if (CompatibilityUtil.hasClass("org.bukkit.block.Beehive")) {
-                        if(item.getItemMeta() instanceof org.bukkit.inventory.meta.BlockStateMeta) {
-                            org.bukkit.inventory.meta.BlockStateMeta blockStateMeta = (org.bukkit.inventory.meta.BlockStateMeta) item.getItemMeta();
-                            
-                            if(blockStateMeta.hasBlockState()) {
-                                try {
-                                    // Use reflection to safely access Beehive class
-                                    Class<?> beehiveClass = Class.forName("org.bukkit.block.Beehive");
-                                    if(beehiveClass.isInstance(blockStateMeta.getBlockState())) {
-                                        Object beehive = beehiveClass.cast(blockStateMeta.getBlockState());
-                                        
-                                        int honeyLevel = 0;
-                                        int beeCount = 0;
-                                        
-                                        // Get honey level using reflection for BlockData
-                                        try {
-                                            Class<?> beehiveDataClass = Class.forName("org.bukkit.block.data.type.Beehive");
-                                            Object blockData = beehive.getClass().getMethod("getBlockData").invoke(beehive);
-                                            if(beehiveDataClass.isInstance(blockData)) {
-                                                honeyLevel = (Integer) beehiveDataClass.getMethod("getHoneyLevel").invoke(blockData);
-                                            }
-                                        } catch (Exception e) { /* Silently handle */ }
-                                        
-                                        // Get bee count using reflection
-                                        try { 
-                                            beeCount = (Integer) beehiveClass.getMethod("getEntityCount").invoke(beehive);
-                                        } catch (Exception e) { /* Silently handle */ }
-                                        
-                                        // Format the message
-                                        if(honeyLevel > 0 || beeCount > 0) {
-                                            StringBuilder beeInfo = new StringBuilder(" [");
-                                            if(honeyLevel > 0) {
-                                                beeInfo.append("Honey: ").append(honeyLevel).append("/5");
-                                                if(beeCount > 0) { beeInfo.append(", "); }
-                                            }
-                                            if(beeCount > 0) { beeInfo.append("Bees: ").append(beeCount); }
-                                            beeInfo.append("]");
-                                            formattedMessage.addExtra(beeInfo.toString());
-                                        }
-                                    }
-                                } catch (Exception e) { /* Silently handle for backward compatibility */ }
+                if (BeehiveUtil.isBeehiveSupported()) {
+                    if(item.getItemMeta() instanceof org.bukkit.inventory.meta.BlockStateMeta) {
+                        org.bukkit.inventory.meta.BlockStateMeta blockStateMeta = (org.bukkit.inventory.meta.BlockStateMeta) item.getItemMeta();
+                        
+                        if(blockStateMeta.hasBlockState()) {
+                            // Use our clean BeehiveUtil instead of complex reflection
+                            Object blockState = blockStateMeta.getBlockState();
+                            String beehiveInfo = BeehiveUtil.formatBeehiveInfo(blockState);
+                            if (!beehiveInfo.isEmpty()) {
+                                formattedMessage.addExtra(beehiveInfo);
                             }
                         }
                     }
-                } catch (Exception e) { /* Silently handle any exceptions for backward compatibility */ }
+                }
             }
         }
 
@@ -642,19 +511,8 @@ public class UtilMethods {
         for (int i = 0; i < numEffects; i++) {
             PotionEffect effect = effects.get(i);
             
-            // Use CompatibilityUtil check for translation key support
-            if (CompatibilityUtil.hasGetTranslationKey()) {
-                try {
-                    String translationKey = (String) effect.getType().getClass().getMethod("getTranslationKey").invoke(effect.getType());
-                    formattedEffects.addExtra(new TranslatableComponent(translationKey));
-                } catch (Exception e) {
-                    // Fallback to effect type name
-                    formattedEffects.addExtra(effect.getType().getName());
-                }
-            } else {
-                // Fallback to effect type name for older versions
-                formattedEffects.addExtra(effect.getType().getName());
-            }
+            // Use our clean EffectUtil instead of complex reflection
+            formattedEffects.addExtra(EffectUtil.getEffectDisplayName(effect.getType()));
             
             // Show level for all potions, not just those with amplifier > 0
             // For potions with amplifier 0, we don't add any suffix (it's the base level)
@@ -663,20 +521,8 @@ public class UtilMethods {
             }
             
             // Only add duration for non-instant effects
-            // Use CompatibilityUtil checks for instant effect types
-            boolean isInstantEffect = false;
-            if (CompatibilityUtil.hasInstantHealth() && CompatibilityUtil.hasInstantDamage()) {
-                try {
-                    Object instantHealth = org.bukkit.potion.PotionEffectType.class.getField("INSTANT_HEALTH").get(null);
-                    Object instantDamage = org.bukkit.potion.PotionEffectType.class.getField("INSTANT_DAMAGE").get(null);
-                    isInstantEffect = effect.getType().equals(instantHealth) || effect.getType().equals(instantDamage);
-                } catch (Exception e) {
-                    // Fallback - assume not instant if we can't check
-                    isInstantEffect = false;
-                }
-            }
-            
-            if(effect.getDuration() > 0 && !isInstantEffect) {
+            // Use our clean EffectUtil for instant effect checking
+            if(effect.getDuration() > 0 && !EffectUtil.isInstantEffect(effect)) {
                 formattedEffects.addExtra(formatTickTime(effect.getDuration()));
             }
             
@@ -896,24 +742,17 @@ public class UtilMethods {
     }
 
     public static BlockFace getDirectionOfChest(Block block){
-        Object blockData = CompatibilityUtil.getBlockData(block);
-        if(CompatibilityUtil.HAS_BLOCK_DATA && blockData != null) {
-            // Modern approach: Use Directional interface (MC 1.13+)
-            try {
-                Class<?> directionalClass = Class.forName("org.bukkit.block.data.Directional");
-                if(directionalClass.isInstance(blockData)) {
-                    Object directional = directionalClass.cast(blockData);
-                    return (BlockFace) directionalClass.getMethod("getFacing").invoke(directional);
-                }
-            } catch (Exception e) {
-                // Fallback to legacy approach
-            }
+        // Use our clean DirectionalUtil instead of complex reflection
+        BlockFace direction = DirectionalUtil.getDirectionOfBlock(block);
+        if (direction != null) {
+            return direction;
         }
         
-        // Legacy approach: Use MaterialData (MC ≤1.12.2)
-        if(blockData instanceof org.bukkit.material.MaterialData) {
+        // Legacy fallback using MaterialData if DirectionalUtil can't handle it
+        Object blockData = CompatibilityUtil.getBlockData(block);
+        if (blockData instanceof org.bukkit.material.MaterialData) {
             org.bukkit.material.MaterialData materialData = (org.bukkit.material.MaterialData) blockData;
-            if(materialData instanceof org.bukkit.material.Directional) {
+            if (materialData instanceof org.bukkit.material.Directional) {
                 org.bukkit.material.Directional directional = (org.bukkit.material.Directional) materialData;
                 return directional.getFacing();
             }

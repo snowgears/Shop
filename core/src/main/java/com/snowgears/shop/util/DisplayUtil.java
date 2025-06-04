@@ -489,21 +489,12 @@ public class DisplayUtil {
         if(foundLegacy)
             return true;
         
-        // Use CompatibilityUtil to check for persistent data in a version-safe way
-        if(UtilMethods.isMCVersion14Plus() && CompatibilityUtil.HAS_PERSISTENT_DATA_CONTAINER) {
-            try {
-                // Use reflection to safely access PersistentDataContainer
-                Object persistentData = entity.getClass().getMethod("getPersistentDataContainer").invoke(entity);
-                if (persistentData != null) {
-                    Object namespacedKey = CompatibilityUtil.createNamespacedKey(Shop.getPlugin(), "display");
-                    Object dataDisplay = persistentData.getClass().getMethod("get", Class.forName("org.bukkit.NamespacedKey"), Class.forName("org.bukkit.persistence.PersistentDataType")).invoke(persistentData, namespacedKey, Class.forName("org.bukkit.persistence.PersistentDataType").getField("INTEGER").get(null));
-                    return dataDisplay != null && ((Integer) dataDisplay) == 1;
-                }
-            } catch (Exception e) {
-                // Fallback to legacy method if reflection fails
-                return false;
-            }
+        // Use our clean PersistentDataUtil instead of complex reflection
+        if(UtilMethods.isMCVersion14Plus() && PersistentDataUtil.isPersistentDataSupported()) {
+            Integer displayValue = PersistentDataUtil.getIntegerData(entity, Shop.getPlugin(), "display");
+            return displayValue != null && displayValue == 1;
         }
+        
         return false;
     }
 
