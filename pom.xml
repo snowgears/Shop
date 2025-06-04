@@ -88,7 +88,7 @@
                 <spigot.version>1.16.5-R0.1-SNAPSHOT</spigot.version>
                 <hikaricp.version>3.4.5</hikaricp.version>
                 <h2.version>1.4.200</h2.version>
-                <junit.version>4.13.2</junit.version>
+                <junit.version>5.11.0</junit.version>
                 <mariadb.version>2.7.5</mariadb.version>
                 <nbt-api.version>2.12.4</nbt-api.version>
                 <jetbrains-annotations.version>20.1.0</jetbrains-annotations.version>
