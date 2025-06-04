@@ -27,12 +27,13 @@ else
     exit 1
 fi
 
-sleep 5
+cp target/Shop-*.jar test
 
 echo ""
 echo "Building LEGACY version (Java 8)..."
 echo "-------------------------------------"
-sdk use java 8.0.452-amzn && ./scripts/compile-legacy.sh
+sdk use java 8.0.452-amzn
+mvn clean compile package -T 2C -P legacy
 
 if [ $? -eq 0 ]; then
     echo "✓ Legacy build completed successfully!"
@@ -44,10 +45,13 @@ else
     exit 1
 fi
 
+
+cp target/Shop-*-legacy.jar test
+
 echo ""
 echo "========================================"
 echo "Both builds completed successfully!"
 echo "========================================"
 echo "Available artifacts:"
-ls -la target/Shop-*.jar
+ls -la test/Shop-*.jar
 echo "========================================"
