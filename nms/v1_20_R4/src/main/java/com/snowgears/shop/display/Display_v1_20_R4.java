@@ -281,10 +281,4 @@ public class Display_v1_20_R4 extends AbstractDisplay {
                 return net.minecraft.world.entity.EquipmentSlot.HEAD;
         }
     }
-
-    @Override
-    public String getItemNameNMS(ItemStack item) {
-        net.minecraft.world.item.ItemStack nmsStack = CraftItemStack.asNMSCopy(item);
-        return nmsStack.getItem().getName(nmsStack).getString();
-    }
 }

@@ -239,10 +239,4 @@ public class Display extends AbstractDisplay {
                 return net.minecraft.world.entity.EquipmentSlot.HEAD;
         }
     }
-
-    @Override
-    public String getItemNameNMS(ItemStack item) {
-        net.minecraft.world.item.ItemStack itemStack = nmsHelper.getMCItemStack(item);
-        return itemStack.getItem().getName(itemStack).getString();
-    }
 }

@@ -412,7 +412,7 @@ public class UtilMethods {
         TextComponent formattedMessage = new TextComponent(getItemName(item));
         
         // Use our clean hybrid pattern for version-specific functionality
-        ItemDisplayHandler displayHandler = ItemDisplayFactory.getInstance();
+        ModernItemDisplayHandler displayHandler = new ModernItemDisplayHandler();
         
         // Add enchantments using the appropriate handler
         displayHandler.addEnchantmentDisplayInfo(item, formattedMessage);

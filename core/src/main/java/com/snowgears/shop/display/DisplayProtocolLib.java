@@ -90,7 +90,4 @@ public class DisplayProtocolLib extends AbstractDisplay {
         this.displayTagEntityIDs.remove(player.getUniqueId());
         if(!onlyDisplayTags) { this.entityIDs.remove(player.getUniqueId()); }
     }
-
-    @Override
-    public String getItemNameNMS(ItemStack item) { return "unsupported"; }
 }

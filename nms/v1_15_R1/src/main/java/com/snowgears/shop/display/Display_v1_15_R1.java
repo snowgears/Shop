@@ -163,10 +163,4 @@ public class Display_v1_15_R1 extends AbstractDisplay {
                 displayTagEntityIDs.remove(player.getUniqueId());
         }
     }
-
-    @Override
-    public String getItemNameNMS(ItemStack item) {
-        net.minecraft.server.v1_15_R1.ItemStack nmsStack = CraftItemStack.asNMSCopy(item);
-        return nmsStack.getItem().f(nmsStack);
-    }
 }

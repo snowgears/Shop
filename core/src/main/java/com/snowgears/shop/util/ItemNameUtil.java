@@ -9,8 +9,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-// TODO: Phase 2 - Add conditional import for ArmorMeta (Java 17+ only)
-// import org.bukkit.inventory.meta.ArmorMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionType;
 import org.bukkit.ChatColor;

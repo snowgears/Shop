@@ -111,10 +111,10 @@ public class ShopMessage {
             } catch (Exception e) {
                 // Log the exception
                 Bukkit.getLogger().warning("Error replacing placeholder " + placeholder + ": " + e.getMessage());
-                // e.printStackTrace();
+                e.printStackTrace();
             } catch (Error e) {
                 Bukkit.getLogger().warning("Error replacing placeholder " + placeholder + ": " + e.getMessage());
-                // e.printStackTrace();
+                e.printStackTrace();
             }
         }
         // If placeholder not found, remove the placeholder and just return an empty string

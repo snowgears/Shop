@@ -42,15 +42,4 @@ public class DisplayDisabled extends AbstractDisplay {
     public void removeDisplayEntities(Player player, boolean onlyDisplayTags) {
         Shop.getPlugin().getShopLogger().debug("Display is disabled, removeDisplayEntities not called");
     }
-
-    @Override
-    public String getItemNameNMS(ItemStack item) {
-        Shop.getPlugin().getShopLogger().debug("Display is disabled, getItemNameNMS not called, returning basic item name");
-        if (item.getItemMeta() != null && item.getItemMeta().hasDisplayName()) {
-            return item.getItemMeta().getDisplayName();
-        } else {
-            // Legacy-safe way to get item name that works across all versions
-            return item.getType().name().toLowerCase().replace("_", " ");
-        }
-    }
 }

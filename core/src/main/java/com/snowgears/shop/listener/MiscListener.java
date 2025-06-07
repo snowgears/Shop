@@ -78,7 +78,7 @@ public class MiscListener implements Listener {
         BlockFace signDirection = null;
         Block chest = null;
         if (!MCVersion.atLeast("1.13")) {
-            throw new UnsupportedOperationException("Sign creation is not supported in legacy versions");
+            throw new UnsupportedOperationException("Sign creation is not supported in legacy versions, til i fix this stupid shit");
         }
         if(b.getBlockData() instanceof WallSign) {
             signDirection = ((WallSign) b.getBlockData()).getFacing();
@@ -545,13 +545,17 @@ public class MiscListener implements Listener {
         Block b = event.getBlock();
         Player player = event.getPlayer();
 
-        if (b.getBlockData() instanceof WallSign) {
+        if (b.getType().name().contains("WALL_SIGN")) {
             AbstractShop shop = plugin.getShopHandler().getShop(b.getLocation());
             if (shop == null)
                 return;
             // Disable dropping sign if its fake
             if(shop.isFakeSign()){
-                event.setDropItems(false);
+                try {
+                    event.setDropItems(false);
+                } catch (NoSuchMethodError error) {
+                    // Ignore, sry u can get free signs supr slowly in old versions
+                }
             }
             if (!shop.isInitialized()) {
                 event.setCancelled(true);

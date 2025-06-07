@@ -8,14 +8,18 @@ public class MaterialUtil {
     public static Material of(String type) { return getMaterial(type); }
     
     public static Material getMaterial(String type) {
-        // Check if we should be using legacy materials
-        // Pre-flattening
-        if (!MCVersion.atLeast("1.13")) {
-            if (type.equals("PLAYER_HEAD")) return Material.valueOf("SKULL_ITEM");
-            if (type.contains("WALL_SIGN")) return Material.valueOf("WALL_SIGN");
-        }
+        try {
+            // Check if we should be using legacy materials
+            // Pre-flattening
+            if (!MCVersion.atLeast("1.13")) {
+                if (type.equals("PLAYER_HEAD")) return Material.valueOf("SKULL_ITEM");
+                if (type.contains("WALL_SIGN")) return Material.valueOf("WALL_SIGN");
+            }
 
-        return Material.valueOf(type.toUpperCase());
+            return Material.valueOf(type.toUpperCase());
+        } catch (Error | Exception e) {
+            return null;
+        }
     }
 
 
