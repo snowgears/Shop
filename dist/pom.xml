@@ -14,18 +14,47 @@
 
     <artifactId>shop-dist</artifactId>
 
-    <profiles>
-        <profile>
-            <id>modern</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
     <dependencies>
         <dependency>
             <groupId>com.snowgears.shop</groupId>
             <artifactId>shop-core</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.snowgears.shop</groupId>
+            <artifactId>shop-v1_8_R3</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.snowgears.shop</groupId>
+            <artifactId>shop-v1_9_R2</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.snowgears.shop</groupId>
+            <artifactId>shop-v1_10_R1</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.snowgears.shop</groupId>
+            <artifactId>shop-v1_11_R1</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.snowgears.shop</groupId>
+            <artifactId>shop-v1_12_R1</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <!-- <dependency>
+            <groupId>com.snowgears.shop</groupId>
+            <artifactId>shop-v1_13_R1</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.snowgears.shop</groupId>
+            <artifactId>shop-v1_13_R2</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency> -->
         <dependency>
             <groupId>com.snowgears.shop</groupId>
             <artifactId>shop-v1_14_R1</artifactId>
@@ -102,45 +131,6 @@
             <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
-        </profile>
-
-        <profile>
-            <id>legacy</id>
-            <dependencies>
-                <dependency>
-                    <groupId>com.snowgears.shop</groupId>
-                    <artifactId>shop-core</artifactId>
-                    <version>${project.parent.version}</version>
-                </dependency>
-                <!-- Only Java 8-compatible NMS versions (Minecraft 1.14-1.16) -->
-                <dependency>
-                    <groupId>com.snowgears.shop</groupId>
-                    <artifactId>shop-v1_14_R1</artifactId>
-                    <version>${project.parent.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>com.snowgears.shop</groupId>
-                    <artifactId>shop-v1_15_R1</artifactId>
-                    <version>${project.parent.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>com.snowgears.shop</groupId>
-                    <artifactId>shop-v1_16_R1</artifactId>
-                    <version>${project.parent.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>com.snowgears.shop</groupId>
-                    <artifactId>shop-v1_16_R2</artifactId>
-                    <version>${project.parent.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>com.snowgears.shop</groupId>
-                    <artifactId>shop-v1_16_R3</artifactId>
-                    <version>${project.parent.version}</version>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
 
     <build>
         <directory>../target</directory>
