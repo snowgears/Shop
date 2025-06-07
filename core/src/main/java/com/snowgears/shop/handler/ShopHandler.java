@@ -130,7 +130,7 @@ public class ShopHandler {
             // We are on a newer version that does not relocate CB classes, load the default display package
             try {
                 Shop.getPlugin().getShopLogger().info("Using item display handler - com.snowgears.shop.display.Display");
-                final Class<?> clazz = Class.forName("com.snowgears.shop.display.Display");
+                final Class<?> clazz = Class.forName("com.snowgears.shop.display.DisplayProtocolLib");
                 if (AbstractDisplay.class.isAssignableFrom(clazz)) {
                     this.displayClass = clazz;
                     return true;
