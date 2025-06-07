@@ -111,8 +111,6 @@ public class ItemNameUtil {
     }
 
     public TextComponent getNameTranslatable(Material material){
-        // Use our clean TranslationUtil instead of reflection
-        String translationKey = TranslationUtil.getMaterialTranslationKey(material);
-        return new TextComponent(new TranslatableComponent(translationKey));
+        return  MaterialUtil.getTranslatableComponent(material);
     }
 }

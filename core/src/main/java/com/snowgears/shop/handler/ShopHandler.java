@@ -107,6 +107,20 @@ public class ShopHandler {
     private boolean initDisplayClass(){
         String packageName = plugin.getServer().getClass().getPackage().getName();
 
+        try {
+            Shop.getPlugin().getShopLogger().info("Using item display handler - com.snowgears.shop.display.DisplayProtocolLib");
+            final Class<?> clazz = Class.forName("com.snowgears.shop.display.DisplayProtocolLib");
+            if (AbstractDisplay.class.isAssignableFrom(clazz)) {
+                this.displayClass = clazz;
+                return true;
+            }
+        } catch (final Error | Exception e) {
+            Shop.getPlugin().getShopLogger().severe("Error while loading 'com.snowgears.shop.display.DisplayProtocolLib'. " + e.getMessage());
+            e.printStackTrace();
+            disableDisplayClass();
+            return false;
+        }
+
         // Check if we are on a Paper 1.20.6+ server, or if we are running Spigot v1.20.6 or later :)
         // Now that our new Display class purely uses Class loading to get the appropriate class, we don't
         // need to load a specific revision version class (unless we are old)
@@ -135,12 +149,7 @@ public class ShopHandler {
                     this.displayClass = clazz;
                     return true;
                 }
-            } catch (final Exception e) {
-                Shop.getPlugin().getShopLogger().severe("Error while loading 'com.snowgears.shop.display.Display'. " + e.getMessage());
-                e.printStackTrace();
-                disableDisplayClass();
-                return false;
-            } catch (Error e) {
+            } catch (final Error | Exception e) {
                 Shop.getPlugin().getShopLogger().severe("Error while loading 'com.snowgears.shop.display.Display'. " + e.getMessage());
                 e.printStackTrace();
                 disableDisplayClass();

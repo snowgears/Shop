@@ -298,7 +298,12 @@ public class ShopGuiHandler {
 
             ItemStack icon = null;
             if(type != null) {
-                icon = new ItemStack(Material.valueOf(type.toUpperCase()));
+                try {
+                    icon = new ItemStack(Material.valueOf(type.toUpperCase()));
+                } catch (Exception e) {
+                    plugin.getShopLogger().warning("Issue loading icon from guiConfig.yml: " + iconEnum.toString() + " with type: " + type);
+                    // Leave icon null
+                }
             }
             else if(childKey.equals("set_gamble")){
                 icon = plugin.getGambleDisplayItem().clone();

@@ -7,6 +7,7 @@ import org.bukkit.inventory.meta.ArmorMeta;
 import org.bukkit.inventory.meta.OminousBottleMeta;
 import org.bukkit.inventory.meta.MusicInstrumentMeta;
 import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.inventory.meta.trim.ArmorTrim;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.enchantments.Enchantment;
 
@@ -24,7 +25,7 @@ public class ModernItemDisplayHandler implements ItemDisplayHandler {
         if (item.getItemMeta() instanceof ArmorMeta) {
             ArmorMeta armorMeta = (ArmorMeta) item.getItemMeta();
             if (armorMeta.hasTrim()) {
-                var trim = armorMeta.getTrim();
+                ArmorTrim trim = armorMeta.getTrim();
                 String materialName = UtilMethods.translate(trim.getMaterial().getTranslationKey()).replace(" Material", "");
                 String patternName = UtilMethods.translate(trim.getPattern().getTranslationKey()).replace(" Armor Trim", "");
                 component.addExtra(" [" + patternName + " (" + materialName + ")]");

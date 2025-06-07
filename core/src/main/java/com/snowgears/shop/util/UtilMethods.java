@@ -503,37 +503,6 @@ public class UtilMethods {
         return new TextComponent(ChatColor.stripColor(formattedMessage.toLegacyText()));
     }
 
-    private static TextComponent getPotionEffects(List<PotionEffect> effects){
-        TextComponent formattedEffects = new TextComponent("");
-        int numEffects = effects.size();
-        if (numEffects == 0) return formattedEffects;
-        formattedEffects.addExtra(" (");
-        for (int i = 0; i < numEffects; i++) {
-            PotionEffect effect = effects.get(i);
-            
-            // Use our clean EffectUtil instead of complex reflection
-            formattedEffects.addExtra(EffectUtil.getEffectDisplayName(effect.getType()));
-            
-            // Show level for all potions, not just those with amplifier > 0
-            // For potions with amplifier 0, we don't add any suffix (it's the base level)
-            if(effect.getAmplifier() > 0) {
-                formattedEffects.addExtra(formatRomanNumerals(effect.getAmplifier() + 1)); // +1 because amplifier is 0-based
-            }
-            
-            // Only add duration for non-instant effects
-            // Use our clean EffectUtil for instant effect checking
-            if(effect.getDuration() > 0 && !EffectUtil.isInstantEffect(effect)) {
-                formattedEffects.addExtra(formatTickTime(effect.getDuration()));
-            }
-            
-            // if we have more than one effect, add a comma, dont add a comma after the last effect
-            if(i < numEffects - 1)
-                formattedEffects.addExtra(", ");
-        }
-        formattedEffects.addExtra(")");
-        return formattedEffects;
-    }
-
     /**
      * Formats a firework effect into a readable string
      * @param effect The firework effect to format
@@ -764,19 +733,12 @@ public class UtilMethods {
     //returns if Minecraft version 1.17 or above
     public static boolean isMCVersion17Plus(){
         //LIGHT only available in MC 1.17+
-        return CompatibilityUtil.hasLightBlock();
+        return MCVersion.atLeast("1.17");
     }
 
     //returns if Minecraft version 1.14 or above
     public static boolean isMCVersion14Plus(){
-        //BARREL only available in MC 1.14+
-        try {
-            if(Material.BARREL != null)
-                return true;
-        } catch (NoSuchFieldError e) {
-            return false;
-        }
-        return false;
+        return MCVersion.atLeast("1.14");
     }
 
     //this takes a dirty (pre-cleaned) string and finds how much to multiply the final by
