@@ -1,17 +1,13 @@
 package com.snowgears.shop.listener;
 
 import com.snowgears.shop.Shop;
-import com.snowgears.shop.display.AbstractDisplay;
 import com.snowgears.shop.event.PlayerDestroyShopEvent;
 import com.snowgears.shop.event.PlayerResizeShopEvent;
 import com.snowgears.shop.hook.WorldGuardHook;
 import com.snowgears.shop.shop.AbstractShop;
 import com.snowgears.shop.shop.ShopType;
 import com.snowgears.shop.util.*;
-import com.snowgears.shop.util.ChatUtil;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -379,8 +375,9 @@ public class MiscListener implements Listener {
                 List<String> autocomplete = new ArrayList<>();
                 Arrays.asList(ShopType.values()).forEach((shopType -> autocomplete.add(shopType.toString().toLowerCase())));
                 
-                // Use our clean ChatUtil instead of complex reflection
-                ChatUtil.setCustomChatCompletions(player, autocomplete);
+                if (MCVersion.atLeast("1.17")) {
+                    player.setCustomChatCompletions(autocomplete);
+                }
                 if((!plugin.usePerms() && player.isOp()) || (plugin.usePerms() && player.hasPermission("shop.operator"))) {
                     ShopMessage.sendMessage("adminCreateHitChest", null, process, player);
                 }
