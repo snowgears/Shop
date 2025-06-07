@@ -1,6 +1,5 @@
 package com.snowgears.shop.display;
 
-
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.util.ArmorStandData;
 import com.snowgears.shop.util.NMSBullshitHandler;

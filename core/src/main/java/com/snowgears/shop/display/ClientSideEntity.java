@@ -39,8 +39,12 @@ public class ClientSideEntity {
         // EntityType.ITEM corresponds to entity ID 35 in Minecraft 1.21.5 (protocol 770)
         // Note: Was DROPPED_ITEM in older versions, now unified as ITEM
         // https://wiki.vg/Protocol#Entity_Type
-        this.entityType = EntityType.ITEM;
+        EntityType itemEntityType = EntityType.valueOf("ITEM");
+        if (itemEntityType == null) {
+            itemEntityType = EntityType.valueOf("DROPPED_ITEM");
+        }
 
+        this.entityType = itemEntityType;
         this.entityId = getNextEntityId();
         this.location = location;
         this.itemStack = itemStack;
@@ -100,12 +104,12 @@ public class ClientSideEntity {
     }
 
     public static ClientSideEntity createItemFrame(Location location, ItemStack itemStack, BlockFace facing, boolean isGlowing) {
-        EntityType entityType = isGlowing ? EntityType.GLOW_ITEM_FRAME : EntityType.ITEM_FRAME;
+        EntityType entityType = isGlowing ? EntityType.valueOf("GLOW_ITEM_FRAME") : EntityType.valueOf("ITEM_FRAME");
         return new ClientSideEntity(entityType, location, itemStack, facing);
     }
 
     public static ClientSideEntity createArmorStand(Location location, ArmorStandData armorStandData, String text) {
-        return new ClientSideEntity(EntityType.ARMOR_STAND, location, null, null, armorStandData, text);
+        return new ClientSideEntity(EntityType.valueOf("ARMOR_STAND"), location, null, null, armorStandData, text);
     }
 
     /**
@@ -125,7 +129,7 @@ public class ClientSideEntity {
             throw new UnsupportedOperationException("TEXT_DISPLAY EntityType not available. Requires Minecraft 1.19.4+", e);
         }
         
-        return new ClientSideEntity(EntityType.TEXT_DISPLAY, location, text, options != null ? options : new TextDisplayOptions(), yaw);
+        return new ClientSideEntity(EntityType.valueOf("TEXT_DISPLAY"), location, text, options != null ? options : new TextDisplayOptions(), yaw);
     }
 
     /**
@@ -190,7 +194,7 @@ public class ClientSideEntity {
      * @param entityIds The IDs of the entities to destroy.
      */
     public static void destroyEntities(Player player, ArrayList<Integer> entityIds) {
-        var destroyPacket = new PacketContainer(PacketType.Play.Server.ENTITY_DESTROY);
+        PacketContainer destroyPacket = new PacketContainer(PacketType.Play.Server.ENTITY_DESTROY);
         destroyPacket.getIntLists().write(0, entityIds);
         ProtocolLibrary.getProtocolManager().sendServerPacket(player, destroyPacket);
     }
@@ -215,16 +219,16 @@ public class ClientSideEntity {
     public void spawn(Player player) {
         // Create and send all required packets in correct order
         try {
-            var spawnPacket = createSpawnEntityPacket();
-            var metadataPacket = createEntityMetadataPacket();
+            PacketContainer spawnPacket = createSpawnEntityPacket();
+            PacketContainer metadataPacket = createEntityMetadataPacket();
 
             // Send spawn and metadata packets
             ProtocolLibrary.getProtocolManager().sendServerPacket(player, spawnPacket);
             ProtocolLibrary.getProtocolManager().sendServerPacket(player, metadataPacket);
             
             // Send equipment packet for armor stands with items
-            if (entityType == EntityType.ARMOR_STAND && armorStandData != null && armorStandData.getEquipment() != null) {
-                var equipmentPacket = createEquipmentPacket();
+            if (entityType == EntityType.valueOf("ARMOR_STAND") && armorStandData != null && armorStandData.getEquipment() != null) {
+                PacketContainer equipmentPacket = createEquipmentPacket();
                 ProtocolLibrary.getProtocolManager().sendServerPacket(player, equipmentPacket);
             }
             
@@ -241,7 +245,7 @@ public class ClientSideEntity {
     private PacketContainer createSpawnEntityPacket() {
         // Create SPAWN_ENTITY packet (0x01) - used to spawn a new entity on the client
         // Protocol Reference: https://wiki.vg/Protocol#Spawn_Entity
-        var spawn = new PacketContainer(PacketType.Play.Server.SPAWN_ENTITY);
+        PacketContainer spawn = new PacketContainer(PacketType.Play.Server.SPAWN_ENTITY);
 
         // === INTEGER FIELDS ===
         // ProtocolLib maps packet integers in order: [Entity ID, Velocity X, Velocity Y, Velocity Z]
@@ -275,10 +279,10 @@ public class ClientSideEntity {
         // ProtocolLib maps packet bytes in order: [Pitch, Yaw, Head Yaw]
         // All rotation values are in protocol units: 256 units = 360 degrees, so 1 unit ≈ 1.40625°
         byte yawByte = 0;
-        if (entityType == EntityType.ARMOR_STAND && armorStandData != null) {
+        if (entityType == EntityType.valueOf("ARMOR_STAND") && armorStandData != null) {
             // Convert yaw from degrees to protocol units: yaw * 256 / 360
             yawByte = (byte) ((int) (armorStandData.getYaw() * 256.0F / 360.0F));
-        } else if (entityType == EntityType.TEXT_DISPLAY) {
+        } else if (entityType == EntityType.valueOf("TEXT_DISPLAY")) {
             // Convert yaw from degrees to protocol units for Text Display
             yawByte = (byte) ((int) (this.yaw * 256.0F / 360.0F));
         }
@@ -306,7 +310,7 @@ public class ClientSideEntity {
         // === ENTITY METADATA PACKET ===
         // Create ENTITY_METADATA packet (0x58) - used to send entity-specific data to the client
         // Protocol Reference: https://wiki.vg/Protocol#Set_Entity_Metadata
-        var meta = new PacketContainer(PacketType.Play.Server.ENTITY_METADATA);
+        PacketContainer meta = new PacketContainer(PacketType.Play.Server.ENTITY_METADATA);
 
         // === INTEGER FIELDS ===
         // Index 0: Entity ID (VarInt in protocol) - Links this metadata to the spawned entity
@@ -317,20 +321,20 @@ public class ClientSideEntity {
         // Each entry contains: Index (Unsigned Byte), Type (VarInt), Value (varies by type)
         List<WrappedDataValue> metadataValues = new ArrayList<>();
 
-        if (this.entityType == EntityType.ITEM) {
+        if (this.entityType == EntityType.valueOf("ITEM") || this.entityType == EntityType.valueOf("DROPPED_ITEM")) {
             // Index 5: No Gravity (Boolean) - Prevents the item from falling
             metadataValues.add(new WrappedDataValue(5, WrappedDataWatcher.Registry.get(Boolean.class), true));
         }
 
-        if (this.entityType == EntityType.ARMOR_STAND && this.armorStandData != null) {
+        if (this.entityType == EntityType.valueOf("ARMOR_STAND") && this.armorStandData != null) {
             metadataValues.addAll(createArmorStandMetadata());
         }
 
-        if (this.entityType == EntityType.TEXT_DISPLAY && this.displayText != null && this.textDisplayOptions != null) {
+        if (this.entityType == EntityType.valueOf("TEXT_DISPLAY") && this.displayText != null && this.textDisplayOptions != null) {
             metadataValues.addAll(createTextDisplayMetadata());
         }
 
-        if (this.itemStack != null && (this.entityType == EntityType.ITEM || this.entityType.toString().contains("ITEM_FRAME"))) {
+        if (this.itemStack != null && (this.entityType.toString().contains("ITEM"))) { // "ITEM", "DROPPED_ITEM", "ITEM_FRAME", "GLOW_ITEM_FRAME"
             metadataValues.add(
                 // === ITEM ENTITY METADATA ===
                 // Official Entity Metadata Reference: https://wiki.vg/Entity_metadata#Item_Entity
@@ -490,7 +494,7 @@ public class ClientSideEntity {
      * Creates equipment packet for armor stands to display items
      */
     private PacketContainer createEquipmentPacket() {
-        var equipment = new PacketContainer(PacketType.Play.Server.ENTITY_EQUIPMENT);
+        PacketContainer equipment = new PacketContainer(PacketType.Play.Server.ENTITY_EQUIPMENT);
         
         // Set entity ID
         equipment.getIntegers().write(0, entityId);
