@@ -293,6 +293,7 @@ public abstract class AbstractDisplay {
         ArmorStandData caseStandData = new ArmorStandData();
         caseStandData.setSmall(false);
         caseStandData.setLocation(location);
+        caseStandData.setYaw(DisplayUtil.blockfaceToYaw(this.getShop().getFacing()));
 
         spawnArmorStandPacket(player, caseStandData, text);
     }

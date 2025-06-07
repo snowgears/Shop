@@ -32,6 +32,17 @@ public class DisplayProtocolLib extends AbstractDisplay {
 
     @Override
     protected void spawnArmorStandPacket(Player player, ArmorStandData armorStandData, String text) {
+        if (text != null && ChatColor.stripColor(text).length() > 0) {
+            ClientSideEntity textDisplay = ClientSideEntity.createTextDisplay(
+                armorStandData.getLocation(), 
+                text,
+                (float) armorStandData.getYaw()
+            );
+            textDisplay.spawn(player);
+            this.addDisplayTag(player, textDisplay.getEntityId());
+            return;
+        }
+
         ClientSideEntity armorStand = ClientSideEntity.createArmorStand(
             armorStandData.getLocation(), 
             armorStandData, 
