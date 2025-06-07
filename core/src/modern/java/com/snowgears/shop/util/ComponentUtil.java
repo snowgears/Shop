@@ -39,7 +39,7 @@ public class ComponentUtil {
             // Create ItemStack from string using modern API
             return Bukkit.getItemFactory().createItemStack(itemAsString);
             
-        } catch (Exception e) {
+        } catch (Error | Exception e) {
             // If modern methods fail, return original item
             return item;
         }

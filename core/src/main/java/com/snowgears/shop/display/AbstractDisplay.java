@@ -290,12 +290,18 @@ public abstract class AbstractDisplay {
 
     public void createTagEntity(Player player, String text, Location location){
         Shop.getPlugin().getShopLogger().debug("Spawning hologram for player " + player.getName() + " at " + location.getBlockX() + "/" + location.getBlockY() + "/" + location.getBlockZ() + ": " + text, true);
-        ArmorStandData caseStandData = new ArmorStandData();
-        caseStandData.setSmall(false);
-        caseStandData.setLocation(location);
-        caseStandData.setYaw(DisplayUtil.blockfaceToYaw(this.getShop().getFacing()));
+        try {
+            ArmorStandData caseStandData = new ArmorStandData();
+            caseStandData.setSmall(false);
+            caseStandData.setLocation(location);
+            caseStandData.setYaw(DisplayUtil.blockfaceToYaw(this.getShop().getFacing()));
 
-        spawnArmorStandPacket(player, caseStandData, text);
+            spawnArmorStandPacket(player, caseStandData, text);
+        } catch (Error | Exception e) {
+            Shop.getPlugin().getShopLogger().warning("Error while creating tag entity, sending player the tag as text");
+            e.printStackTrace();
+            player.sendMessage(text);
+        }
     }
 
     public void addRemoveDisplayTask(Player player) {

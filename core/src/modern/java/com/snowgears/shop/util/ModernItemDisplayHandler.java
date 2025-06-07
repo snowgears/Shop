@@ -60,7 +60,11 @@ public class ModernItemDisplayHandler implements ItemDisplayHandler {
             int i = 0;
             for (Map.Entry<Enchantment, Integer> entry : enchantsMap.entrySet()) {
                 // Use modern translation key API
-                component.addExtra(new TranslatableComponent(entry.getKey().getTranslationKey()));
+                try {
+                    component.addExtra(new TranslatableComponent(entry.getKey().getTranslationKey()));
+                } catch (Error |Exception e) {
+                    component.addExtra(entry.getKey().toString());
+                }
                 component.addExtra(UtilMethods.formatRomanNumerals(entry.getValue()));
                 i++;
                 if (i != enchantsMap.size()) {
@@ -83,6 +87,8 @@ public class ModernItemDisplayHandler implements ItemDisplayHandler {
     
     @Override
     public void addMusicInstrumentDisplayInfo(ItemStack item, TextComponent component) {
+        if (MaterialUtil.of("GOAT_HORN") == null) return;
+
         if (item.getType().name().equals("GOAT_HORN") && item.getItemMeta() instanceof MusicInstrumentMeta) {
             MusicInstrumentMeta instrumentMeta = (MusicInstrumentMeta) item.getItemMeta();
             if (instrumentMeta.getInstrument() != null) {

@@ -138,7 +138,8 @@ public abstract class AbstractShop {
     public boolean load() {
         if (signLocation != null) {
             try {
-                facing = CompatibilityUtil.getWallSignFacing(signLocation.getBlock());
+                final org.bukkit.material.Sign sign = (org.bukkit.material.Sign) signLocation.getBlock().getState().getData();
+                facing = sign.getFacing();
                 if (facing != null) {
                     chestLocation = signLocation.getBlock().getRelative(facing.getOppositeFace()).getLocation();
                 } else {
@@ -258,7 +259,7 @@ public abstract class AbstractShop {
 
     public Object getSign(){
         try {
-            if (CompatibilityUtil.isWallSignBlock(signLocation.getBlock())) {
+            if (signLocation.getBlock().getType().toString().contains("WALL_SIGN")) {
                 return CompatibilityUtil.getBlockData(signLocation.getBlock());
             }
         } catch (Exception e) {
@@ -570,9 +571,8 @@ public abstract class AbstractShop {
                 signBlock.setLine(3, lines[3]);
             }
 
-            if(isMCVersion17Plus()) {
-                // Use our clean SignUtil instead of complex reflection
-                SignUtil.setGlowingText(signBlock, Shop.getPlugin().getGlowingSignText());
+            if(MCVersion.atLeast("1.17")) {
+                signBlock.setGlowingText(Shop.getPlugin().getGlowingSignText());
             }
 
             signBlock.update(true);
@@ -594,7 +594,7 @@ public abstract class AbstractShop {
         }
 
         Block b = this.getSignLocation().getBlock();
-        if (CompatibilityUtil.isWallSignBlock(b)) {
+        if (b.getType().toString().contains("WALL_SIGN")) {
             Sign signBlock = (Sign) b.getState();
             signBlock.setLine(0, "");
             signBlock.setLine(1, "");

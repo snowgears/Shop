@@ -25,20 +25,25 @@ public class MCVersion {
      * @return true if the current version meets or exceeds the required version
      */
     public static boolean atLeast(String requiredVersion) {
+        System.out.println("Checking if at least " + requiredVersion);
         ensureInitialized();
         
         if (currentVersionParts == null) {
             // Fallback if version parsing failed
+            System.out.println("Version parsing failed");
             return false;
         }
         
         int[] requiredParts = parseVersionString(requiredVersion);
         if (requiredParts == null) {
             // Invalid required version format
+            System.out.println("Invalid required version format");
             return false;
         }
         
-        return compareVersions(currentVersionParts, requiredParts) >= 0;
+        boolean result = compareVersions(currentVersionParts, requiredParts) >= 0;
+        System.out.println("Result: " + result);
+        return result;
     }
     
     /**

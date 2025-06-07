@@ -8,6 +8,7 @@ import com.snowgears.shop.util.ConfigUpdater;
 import com.snowgears.shop.util.PlayerSettings;
 import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.util.UtilMethods;
+import com.snowgears.shop.util.MCVersion;
 import org.bukkit.Bukkit;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Material;
@@ -23,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+import com.snowgears.shop.util.MaterialUtil;
 
 public class ShopGuiHandler {
 
@@ -98,12 +100,17 @@ public class ShopGuiHandler {
                 itemMeta = playerHead.getItemMeta();
             }
             else{
-                playerHead = new ItemStack(Material.PLAYER_HEAD);
+                playerHead = new ItemStack(MaterialUtil.of("PLAYER_HEAD"));
                 itemMeta = playerHead.getItemMeta();
 
                 //System.out.println("[Shop] player was not null. Adding owning player to icon skin");
                 if (offlinePlayer != null && offlinePlayer.getName() != null)
+                try {
                     ((SkullMeta)itemMeta).setOwningPlayer(offlinePlayer);
+                } catch (NoSuchMethodError e) {
+                    // Compatibility for 1.8.8
+                    ((SkullMeta)itemMeta).setOwner(offlinePlayer.getName());
+                }
             }
 
         }
@@ -244,7 +251,11 @@ public class ShopGuiHandler {
         File configFile = new File(plugin.getDataFolder(), "guiConfig.yml");
         if (!configFile.exists()) {
             configFile.getParentFile().mkdirs();
-            UtilMethods.copy(plugin.getResource("guiConfig.yml"), configFile);
+            if (MCVersion.atLeast("1.13")) {
+                UtilMethods.copy(plugin.getResource("guiConfig.yml"), configFile);
+            } else {
+                UtilMethods.copy(plugin.getResource("guiConfig.pre-1.13.yml"), configFile);
+            }
         }
 
         try {
@@ -310,14 +321,14 @@ public class ShopGuiHandler {
             }
             else if(parentKey.equals("list")){
                 if(childKey.equals("player")) {
-                    icon = new ItemStack(Material.PLAYER_HEAD, 1, (short) 3);
+                    icon = new ItemStack(MaterialUtil.of("PLAYER_HEAD"), 1, (short) 3);
                 }
             }
             else if(childKey.equals("shop_icon")){
                 icon = new ItemStack(Material.DIRT); // just a placeholder. will replace with the item shop is selling later
             }
             else if(childKey.equals("player_icon")){
-                icon = new ItemStack(Material.PLAYER_HEAD); // just a placeholder. will replace with the player head of shop later
+                icon = new ItemStack(MaterialUtil.of("PLAYER_HEAD")); // just a placeholder. will replace with the player head of shop later
             }
 
             if(icon != null) {

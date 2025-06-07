@@ -102,7 +102,7 @@ public class ShopListener implements Listener {
 
         //player clicked the sign of a shop
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK) {
-            if (CompatibilityUtil.isWallSignBlock(event.getClickedBlock())) {
+            if (event.getClickedBlock().getType().toString().contains("WALL_SIGN")) {
                 AbstractShop shop = plugin.getShopHandler().getShop(event.getClickedBlock().getLocation());
                 if (shop == null || !shop.isInitialized())
                     return;
@@ -153,7 +153,8 @@ public class ShopListener implements Listener {
                     return;
                 }
 
-                if((!plugin.getShopHandler().isChest(shop.getChestLocation().getBlock())) || !CompatibilityUtil.isWallSignBlock(shop.getSignLocation().getBlock())){
+                if((!plugin.getShopHandler().isChest(shop.getChestLocation().getBlock())) 
+                    || !shop.getSignLocation().getBlock().getType().toString().contains("WALL_SIGN")){
                     plugin.getShopLogger().warning("Deleting Shop because chest does not exist, or sign is not exist! " + shop);
                     shop.delete();
                     return;
@@ -171,7 +172,8 @@ public class ShopListener implements Listener {
                 //player is sneaking and clicks a chest of a shop
                 if(player.isSneaking()){
                     //don't execute the action and cancel event if player is holding a sign (may be trying to place directly onto chest)
-                    if(!Tag.SIGNS.isTagged(player.getInventory().getItemInMainHand().getType())) {
+                    Material mainhandItem = player.getInventory().getItemInMainHand().getType();
+                    if(mainhandItem.toString().contains("SIGN")) {
 
                         boolean actionPerformed = shop.executeClickAction(event, ShopClickType.SHIFT_RIGHT_CLICK_CHEST);
 
@@ -249,7 +251,7 @@ public class ShopListener implements Listener {
         while (blockIterator.hasNext()) {
 
             Block block = blockIterator.next();
-            if (Tag.WALL_SIGNS.isTagged(block.getType())) {
+            if (block.getType().toString().contains("SIGN")) {
                 shop = plugin.getShopHandler().getShop(block.getLocation());
             } else if (plugin.getShopHandler().isChest(block)) {
                 shop = plugin.getShopHandler().getShopByChest(block);

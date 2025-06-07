@@ -29,29 +29,29 @@ fi
 
 cp target/Shop-*.jar test
 
-echo ""
-echo "Building LEGACY version (Java 8)..."
-echo "-------------------------------------"
-sdk use java 8.0.452-amzn
-mvn clean compile package -T 2C -P legacy
+# echo ""
+# echo "Building LEGACY version (Java 8)..."
+# echo "-------------------------------------"
+# sdk use java 8.0.452-amzn
+# mvn clean compile package -T 2C -P legacy
 
-if [ $? -eq 0 ]; then
-    echo "✓ Legacy build completed successfully!"
-    if [ -f "target/Shop-*-legacy.jar" ]; then
-        echo "✓ Legacy artifact: $(ls target/Shop-*-legacy.jar)"
-    fi
-else
-    echo "✗ Legacy build failed!"
-    exit 1
-fi
+# if [ $? -eq 0 ]; then
+#     echo "✓ Legacy build completed successfully!"
+#     if [ -f "target/Shop-*-legacy.jar" ]; then
+#         echo "✓ Legacy artifact: $(ls target/Shop-*-legacy.jar)"
+#     fi
+# else
+#     echo "✗ Legacy build failed!"
+#     exit 1
+# fi
 
 
-cp target/Shop-*-legacy.jar test
+# cp target/Shop-*-legacy.jar test
 
-echo ""
-echo "========================================"
-echo "Both builds completed successfully!"
-echo "========================================"
-echo "Available artifacts:"
-ls -la test/Shop-*.jar
-echo "========================================"
+# echo ""
+# echo "========================================"
+# echo "Both builds completed successfully!"
+# echo "========================================"
+# echo "Available artifacts:"
+# ls -la test/Shop-*.jar
+# echo "========================================"

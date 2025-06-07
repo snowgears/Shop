@@ -57,7 +57,7 @@ public class MiscListener implements Listener {
 
         Block b = event.getBlockClicked();
 
-        if (CompatibilityUtil.isWallSignBlock(b)) {
+        if (b.getType().toString().contains("WALL_SIGN")) {
             AbstractShop shop = plugin.getShopHandler().getShop(b.getLocation());
             if (shop != null)
                 event.setCancelled(true);
@@ -81,6 +81,9 @@ public class MiscListener implements Listener {
 
         BlockFace signDirection = null;
         Block chest = null;
+        if (!MCVersion.atLeast("1.13")) {
+            throw new UnsupportedOperationException("Sign creation is not supported in legacy versions");
+        }
         if(b.getBlockData() instanceof WallSign) {
             signDirection = ((WallSign) b.getBlockData()).getFacing();
             chest = b.getRelative(signDirection.getOppositeFace());
@@ -230,7 +233,7 @@ public class MiscListener implements Listener {
         if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
             final Block clicked = event.getClickedBlock();
 
-            if (CompatibilityUtil.isWallSignBlock(clicked)) {
+            if (clicked.getType().toString().contains("WALL_SIGN")) {
 
                 if(!plugin.getAllowCreationMethodSign())
                     return;

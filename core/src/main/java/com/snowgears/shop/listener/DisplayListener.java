@@ -30,6 +30,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.*;
 import com.tcoded.folialib.wrapper.task.WrappedTask;
 import com.snowgears.shop.util.CompatibilityUtil;
+import com.snowgears.shop.util.MCVersion;
 
 public class DisplayListener implements Listener {
 
@@ -45,8 +46,14 @@ public class DisplayListener implements Listener {
                 for (Player player : plugin.getServer().getOnlinePlayers()) {
                     if (player != null) {
                         try {
-                            Block block = player.getTargetBlockExact(8);
-                            if (block != null && CompatibilityUtil.isWallSignBlock(block)) {
+                            Block block;
+                            if (MCVersion.atLeast("1.13")) {
+                                block = player.getTargetBlockExact(8);
+                            } else {
+                                // transparent should be `null` so that only air is transparent
+                                block = player.getTargetBlock(null, 8);
+                            }
+                            if (block != null && block.getType().toString().contains("WALL_SIGN")) {
                                 AbstractShop shopObj = plugin.getShopHandler().getShop(block.getLocation());
                                 if (shopObj != null) {
                                     shopObj.getDisplay().showDisplayTags(player);

@@ -286,12 +286,20 @@ public class Shop extends JavaPlugin {
 //            UtilMethods.copy(getResource("prices.tsv"), pricesFile);
 //        }
 
+    // try {
         shopListener = new ShopListener(this);
+    // } catch (Error | Exception e) {
+    //     getShopLogger().severe("Error initializing ShopListener, TransactionHandler, MiscListener, CreativeSelectionListener, DisplayListener, ShopGUIListener");
+    //     getShopLogger().severe(e.getMessage());
+    //     getShopLogger().severe(Arrays.toString(e.getStackTrace()));
+    //     e.printStackTrace();
+    // }
         transactionHandler = new TransactionHandler(this);
         miscListener = new MiscListener(this);
         creativeSelectionListener = new CreativeSelectionListener(this);
         displayListener = new DisplayListener(this);
         guiListener = new ShopGUIListener(this);
+        
 
         //TODO set all config defaults here
         //config.setDefaults();

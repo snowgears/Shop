@@ -251,7 +251,11 @@ public class ShopMessage {
         // if(!ChatColor.stripColor(fancyMessage.toLegacyText()).trim().isEmpty())
         plugin.getShopLogger().debug("Sent msg to player " + player.getName() + ": " + fancyMessage.toLegacyText(), true);
         try {
-            player.spigot().sendMessage(fancyMessage);
+            if (MCVersion.atLeast("1.13")) {
+                player.spigot().sendMessage(fancyMessage);
+            } else {
+                player.sendMessage(fancyMessage.toLegacyText());
+            }
             return;
         } catch (JsonParseException e) {
             plugin.getNBTAdapter().handleException("Possible NBTAPI error while sending message to player, Item Hover events will now be disabled! Details: " + e.getMessage());
@@ -544,7 +548,7 @@ public class ShopMessage {
             // ItemTag tag = ItemTag.ofNbt(nbt);
             // Item itemContent = new Item(itemId, item.getAmount(), tag);
             // return new HoverEvent(HoverEvent.Action.SHOW_ITEM, itemContent);
-        } catch (Exception e) {
+        } catch (Error | Exception e) {
             return null;
         }
     }

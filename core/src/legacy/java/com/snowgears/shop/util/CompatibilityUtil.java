@@ -324,7 +324,7 @@ public class CompatibilityUtil {
     public static void setItemData(ItemStack item, String key, String value) {
         if (item == null || item.getItemMeta() == null) return;
         
-        if (HAS_PERSISTENT_DATA_CONTAINER && HAS_NAMESPACED_KEY) {
+        if (MCVersion.atLeast("1.13")) {
             // Modern approach: Use PersistentDataContainer with reflection
             setModernItemData(item, key, value);
         } else {

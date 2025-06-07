@@ -308,10 +308,8 @@ public class ShopHandler {
                 Block shopChest = block.getRelative(face);
                 for(BlockFace newFace : faces){
                     Block signBlock = shopChest.getRelative(newFace);
-                    if(CompatibilityUtil.isWallSignBlock(signBlock)){
-                        AbstractShop shop = getShop(signBlock.getLocation());
-                        if(shop != null)
-                            return shop;
+                    if(signBlock.getType().toString().contains("WALL_SIGN") ) {
+                        return getShop(signBlock.getLocation());
                     }
                 }
             }

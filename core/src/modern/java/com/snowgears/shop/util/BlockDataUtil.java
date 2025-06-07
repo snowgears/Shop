@@ -27,8 +27,12 @@ public class BlockDataUtil {
             return false;
         }
         
-        BlockData blockData = block.getBlockData();
-        return blockData instanceof WallSign;
+        try {
+            BlockData blockData = block.getBlockData();
+            return blockData instanceof WallSign;
+        } catch (Error | Exception e) {
+            return block.getType().toString().contains("WALL_SIGN");
+        }
     }
     
     /**

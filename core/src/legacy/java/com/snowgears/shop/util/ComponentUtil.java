@@ -43,7 +43,7 @@ public class ComponentUtil {
                 java.lang.reflect.Method createItemStackMethod = Bukkit.getItemFactory().getClass().getMethod("createItemStack", String.class);
                 return (ItemStack) createItemStackMethod.invoke(Bukkit.getItemFactory(), itemAsString);
                 
-            } catch (Exception e) {
+            } catch (Error | Exception e) {
                 // If reflection fails, return original item
                 return item;
             }

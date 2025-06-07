@@ -30,7 +30,6 @@ import com.snowgears.shop.gui.ShopGuiWindow;
 import com.snowgears.shop.shop.AbstractShop;
 import com.snowgears.shop.util.CompatibilityUtil;
 import com.snowgears.shop.util.EconomyUtils;
-import com.snowgears.shop.util.InventoryUtil;
 import com.snowgears.shop.util.PlayerSettings;
 import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.util.UtilMethods;
@@ -43,9 +42,23 @@ public class ShopGUIListener implements Listener {
         plugin = instance;
     }
 
+    /**
+    * In API versions 1.20.6 and earlier, InventoryView is a class.
+    * In versions 1.21 and later, it is an interface.
+    * This method uses reflection to get the top Inventory object from the
+    * InventoryView associated with an InventoryEvent, to avoid runtime errors.
+    * @param event The generic InventoryEvent with an InventoryView to inspect.
+    * @return The top Inventory object from the event's InventoryView.
+    */
     public String getInventoryViewTitle(InventoryClickEvent event) {
-        // Use our clean InventoryUtil instead of complex reflection
-        return InventoryUtil.getInventoryViewTitle(event);
+        try {
+            Object view = event.getView();
+            Method getTitle = view.getClass().getMethod("getTitle");
+            getTitle.setAccessible(true);
+            return (String) getTitle.invoke(view);
+        } catch (Error | Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private ShopGuiHandler.GuiIcon getNextOptionIcon(ItemStack[] iconItems, ShopGuiHandler.GuiIcon[] icons, ShopGuiHandler.GuiIcon current) {

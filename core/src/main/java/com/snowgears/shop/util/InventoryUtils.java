@@ -11,6 +11,11 @@ import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.Repairable;
+import org.bukkit.event.inventory.InventoryEvent;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
+
 
 import java.util.*;
 
@@ -107,8 +112,8 @@ public class InventoryUtils {
 
     public static Inventory getVirtualInventory(Inventory inventory) {
         // Check a cloned inventory instead of manipulating the original inventory
-        Inventory clonedInv = Bukkit.createInventory(null, inventory.getStorageContents().length);
-        clonedInv.setContents(inventory.getStorageContents());
+        Inventory clonedInv = Bukkit.createInventory(null, inventory.getContents().length);
+        clonedInv.setContents(inventory.getContents());
 
         return clonedInv;
     }
@@ -117,7 +122,7 @@ public class InventoryUtils {
     public static int getAmount(Inventory inventory, ItemStack itemStack){
         if(inventory == null)
             return 0;
-        ItemStack[] contents = inventory.getStorageContents();
+        ItemStack[] contents = inventory.getContents();
         int amount = 0;
         for (int i = 0; i < contents.length; i++) {
             ItemStack is = contents[i];
@@ -234,11 +239,13 @@ public class InventoryUtils {
 
 
         //fix NBT attributes for cached older items to be compatible with Spigot serializer updates
-        if (i1Meta != null && i2Meta != null && i1Meta.hasAttributeModifiers() && i2Meta.hasAttributeModifiers()) {
-            i1Meta.setAttributeModifiers(i1Meta.getAttributeModifiers());
-            i2Meta.setAttributeModifiers(i2Meta.getAttributeModifiers());
-            itemStack1.setItemMeta(i1Meta);
-            itemStack2.setItemMeta(i2Meta);
+        if (MCVersion.atLeast("1.13")) {
+            if (i1Meta != null && i2Meta != null && i1Meta.hasAttributeModifiers() && i2Meta.hasAttributeModifiers()) {
+                i1Meta.setAttributeModifiers(i1Meta.getAttributeModifiers());
+                i2Meta.setAttributeModifiers(i2Meta.getAttributeModifiers());
+                itemStack1.setItemMeta(i1Meta);
+                itemStack2.setItemMeta(i2Meta);
+            }
         }
 
         return itemStack1.isSimilar(itemStack2);

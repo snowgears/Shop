@@ -154,7 +154,11 @@ public class ShopCreationUtil {
 
         //removed all the direction checking code. just make sure its a container
         //make sure that the sign is in front of the chest, unless it is a shulker box
-        if (chestBlock.getState() instanceof Container || (plugin.useEnderChests() && chestBlock.getType() == Material.ENDER_CHEST)) {
+        if (chestBlock.getType().toString().contains("CHEST") 
+            || (plugin.useEnderChests() && chestBlock.getType().toString().contains("ENDER_CHEST"))
+            || chestBlock.getType().toString().contains("BARREL")
+            || chestBlock.getType().toString().contains("SHULKER_BOX")
+        ) {
             //System.out.println("Chest of shop was a container.");
             existingShop = plugin.getShopHandler().getShopByChest(chestBlock);
             if (existingShop != null) {
@@ -165,27 +169,7 @@ public class ShopCreationUtil {
                 }
             }
 
-
-            if (!BlockDataUtil.isWallSign(signBlock)) {
-                if (!signBlock.getType().toString().contains("_SIGN")) {
-                    return null;
-                }
-                
-                // Convert regular sign to wall sign with proper facing using clean BlockDataUtil
-                if (!BlockDataUtil.convertToWallSign(signBlock, signDirection)) {
-                    // Fallback: try legacy approach
-                    String wallSignString = signBlock.getType().toString().replaceAll("_SIGN", "_WALL_SIGN");
-                    try {
-                        signBlock.setType(Material.valueOf(wallSignString));
-                        BlockDataUtil.setSignFacing(signBlock, signDirection);
-                    } catch (IllegalArgumentException e) {
-                        // Could not convert to wall sign
-                        return null;
-                    }
-                }
-            }
-            Sign signBlockState = (Sign) signBlock.getState();
-            signBlockState.update();
+            SignUtil.setFacing(signBlock, signDirection);
 
             shop.setAdmin(isAdmin);
             shop.load();
@@ -316,8 +300,8 @@ public class ShopCreationUtil {
 
         try {
             //stop the edge case of shulker boxes being able to be used in shulker chests
-            if (BlockDataUtil.isShulkerBox(item.getType())) {
-                if (shop.getChestLocation().getBlock().getState() instanceof ShulkerBox) {
+            if (item.getType().toString().contains("SHULKER_BOX")) {
+                if (shop.getChestLocation().getBlock().getType().toString().contains("SHULKER_BOX")) {
                     return false;
                 }
             }

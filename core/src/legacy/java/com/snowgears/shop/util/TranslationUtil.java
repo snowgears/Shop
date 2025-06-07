@@ -10,48 +10,6 @@ import org.bukkit.enchantments.Enchantment;
 public class TranslationUtil {
     
     /**
-     * Gets the translation key for a material using reflection fallback.
-     * 
-     * @param material The material to get the translation key for
-     * @return The translation key string (or legacy equivalent)
-     */
-    public static String getMaterialTranslationKey(Material material) {
-        if (material == null) {
-            return "";
-        }
-        
-        // Try modern API using reflection
-        try {
-            java.lang.reflect.Method getTranslationKeyMethod = material.getClass().getMethod("getTranslationKey");
-            return (String) getTranslationKeyMethod.invoke(material);
-        } catch (Exception e) {
-            // Fallback to legacy naming scheme
-            return "block.minecraft." + material.name().toLowerCase();
-        }
-    }
-    
-    /**
-     * Gets the translation key for an enchantment using reflection fallback.
-     * 
-     * @param enchantment The enchantment to get the translation key for
-     * @return The translation key string (or legacy equivalent)
-     */
-    public static String getEnchantmentTranslationKey(Enchantment enchantment) {
-        if (enchantment == null) {
-            return "";
-        }
-        
-        // Try modern API using reflection
-        try {
-            java.lang.reflect.Method getTranslationKeyMethod = enchantment.getClass().getMethod("getTranslationKey");
-            return (String) getTranslationKeyMethod.invoke(enchantment);
-        } catch (Exception e) {
-            // Fallback to legacy name
-            return enchantment.getName();
-        }
-    }
-    
-    /**
      * Translates a translation key to the actual display text.
      * 
      * @param translationKey The translation key to translate

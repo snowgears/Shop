@@ -271,6 +271,11 @@ public class CompatibilityUtil {
      * Sets item data using PersistentDataContainer (modern approach).
      */
     public static void setItemData(ItemStack item, String key, String value) {
+        if (!MCVersion.atLeast("1.13")) {
+            setLegacyItemData(item, key, value);
+            return;
+        }
+
         if (item == null || item.getItemMeta() == null) return;
         
         ItemMeta meta = item.getItemMeta();
@@ -285,6 +290,10 @@ public class CompatibilityUtil {
      * Gets item data using PersistentDataContainer (modern approach).
      */
     public static String getItemData(ItemStack item, String key, String defaultValue) {
+        if (!MCVersion.atLeast("1.13")) {
+            return getLegacyItemData(item, key, defaultValue);
+        }
+
         if (item == null || item.getItemMeta() == null) return defaultValue;
         
         ItemMeta meta = item.getItemMeta();
@@ -299,6 +308,11 @@ public class CompatibilityUtil {
      * Removes item data using PersistentDataContainer (modern approach).
      */
     public static void removeItemData(ItemStack item, String key) {
+        if (!MCVersion.atLeast("1.13")) {
+            removeLegacyItemData(item, key);
+            return;
+        }
+
         if (item == null || item.getItemMeta() == null) return;
         
         ItemMeta meta = item.getItemMeta();
@@ -307,6 +321,52 @@ public class CompatibilityUtil {
             meta.getPersistentDataContainer().remove(namespacedKey);
             item.setItemMeta(meta);
         }
+    }
+
+
+    
+    // Legacy implementation using lore-based storage
+    private static void setLegacyItemData(ItemStack item, String key, String value) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return;
+        
+        List<String> lore = meta.hasLore() ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
+        
+        // Remove existing data for this key
+        lore.removeIf(line -> line.contains("§7§k§r" + key + ":"));
+        
+        // Add new data (using invisible formatting to minimize visual impact)
+        lore.add("§7§k§r" + key + ":" + value + "§r");
+        
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+    }
+    
+    private static String getLegacyItemData(ItemStack item, String key, String defaultValue) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null || !meta.hasLore()) return defaultValue;
+        
+        String searchPrefix = "§7§k§r" + key + ":";
+        for (String line : meta.getLore()) {
+            if (line.contains(searchPrefix)) {
+                int startIndex = line.indexOf(searchPrefix) + searchPrefix.length();
+                int endIndex = line.indexOf("§r", startIndex);
+                if (endIndex == -1) endIndex = line.length();
+                return line.substring(startIndex, endIndex);
+            }
+        }
+        return defaultValue;
+    }
+    
+    private static void removeLegacyItemData(ItemStack item, String key) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null || !meta.hasLore()) return;
+        
+        List<String> lore = new ArrayList<>(meta.getLore());
+        lore.removeIf(line -> line.contains("§7§k§r" + key + ":"));
+        
+        meta.setLore(lore);
+        item.setItemMeta(meta);
     }
     
     // =================================

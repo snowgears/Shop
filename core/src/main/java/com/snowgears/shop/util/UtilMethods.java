@@ -697,7 +697,7 @@ public class UtilMethods {
         try { nonIntrusiveMaterials.remove(Material.NETHER_PORTAL); } catch(NoSuchFieldError e) {}
         try { nonIntrusiveMaterials.remove(Material.SKELETON_SKULL); } catch(NoSuchFieldError e) {}
         try { nonIntrusiveMaterials.remove(Material.WITHER_SKELETON_SKULL); } catch(NoSuchFieldError e) {}
-        try { nonIntrusiveMaterials.remove(Material.PLAYER_HEAD); } catch(NoSuchFieldError e) {}
+        try { nonIntrusiveMaterials.remove(MaterialUtil.of("PLAYER_HEAD")); } catch(NoSuchFieldError e) {}
         try { nonIntrusiveMaterials.remove(Material.CREEPER_HEAD); } catch(NoSuchFieldError e) {}
 
         // Use CompatibilityUtil to safely add LIGHT material if available

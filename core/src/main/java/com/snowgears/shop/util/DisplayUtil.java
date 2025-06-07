@@ -141,7 +141,7 @@ public class DisplayUtil {
         if(isHeldBlock(type)){
             return EquipmentSlot.HAND;
         }
-        else if(sType.contains("_HELMET") || type == Material.PLAYER_HEAD || type.isBlock()){
+        else if(sType.contains("_HELMET") || type == MaterialUtil.of("PLAYER_HEAD") || type.isBlock()){
             return EquipmentSlot.HEAD;
         }
         else if(sType.contains("_CHESTPLATE") || type == Material.ELYTRA){
@@ -424,7 +424,7 @@ public class DisplayUtil {
 
     public static boolean isArmor(Material material){
         String sMaterial = material.toString().toUpperCase();
-        if(material == Material.PLAYER_HEAD){
+        if(material == MaterialUtil.of("PLAYER_HEAD")){
             return true;
         }
         else if(sMaterial.contains("_BOOTS") || sMaterial.contains("_CHESTPLATE") || sMaterial.contains("_LEGGINGS") || sMaterial.contains("HELMET")){

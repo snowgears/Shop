@@ -3,6 +3,7 @@ package com.snowgears.shop.display;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.util.ArmorStandData;
 import com.snowgears.shop.util.NMSBullshitHandler;
+import com.snowgears.shop.util.MCVersion;
 
 import java.util.ArrayList;
 import org.bukkit.Location;
@@ -24,14 +25,18 @@ public class DisplayProtocolLib extends AbstractDisplay {
 
     @Override
     protected void spawnItemPacket(Player player, ItemStack is, Location location) {
-        ClientSideEntity itemDisplay = new ClientSideEntity(location, is);
-        itemDisplay.spawn(player);
-        this.addEntityID(player, itemDisplay.getEntityId());
+        try {
+            ClientSideEntity itemDisplay = new ClientSideEntity(location, is);
+            itemDisplay.spawn(player);
+            this.addEntityID(player, itemDisplay.getEntityId());
+        } catch (Exception e) {
+            Shop.getPlugin().getShopLogger().warning("Error while spawning item packet: " + e.getMessage());
+        }
     }
 
     @Override
     protected void spawnArmorStandPacket(Player player, ArmorStandData armorStandData, String text) {
-        if (text != null && ChatColor.stripColor(text).length() > 0) {
+        if (MCVersion.atLeast("1.19.4")) {
             ClientSideEntity textDisplay = ClientSideEntity.createTextDisplay(
                 armorStandData.getLocation(), 
                 text,
@@ -54,7 +59,7 @@ public class DisplayProtocolLib extends AbstractDisplay {
             this.addDisplayTag(player, armorStand.getEntityId());
         } else {
             this.addEntityID(player, armorStand.getEntityId());
-        }
+        }   
     }
 
     @Override
