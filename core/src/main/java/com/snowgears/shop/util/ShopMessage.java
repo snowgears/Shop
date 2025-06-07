@@ -251,17 +251,12 @@ public class ShopMessage {
         // if(!ChatColor.stripColor(fancyMessage.toLegacyText()).trim().isEmpty())
         plugin.getShopLogger().debug("Sent msg to player " + player.getName() + ": " + fancyMessage.toLegacyText(), true);
         try {
-            if (MCVersion.atLeast("1.13")) {
-                player.spigot().sendMessage(fancyMessage);
-            } else {
-                player.sendMessage(fancyMessage.toLegacyText());
-            }
+            if (!MCVersion.atLeast("1.13")) { player.sendMessage(fancyMessage.toLegacyText()); return; }
+            player.spigot().sendMessage(fancyMessage);
             return;
         } catch (JsonParseException e) {
             plugin.getNBTAdapter().handleException("Possible NBTAPI error while sending message to player, Item Hover events will now be disabled! Details: " + e.getMessage());
-        } catch (Exception e) {
-            plugin.getShopLogger().warning("Error sending message to player: " + e.getMessage());
-        } catch (Error e) {
+        } catch (Error | Exception e) {
             plugin.getShopLogger().warning("Error sending message to player: " + e.getMessage());
         }
 
