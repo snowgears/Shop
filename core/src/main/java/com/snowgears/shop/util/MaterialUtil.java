@@ -24,7 +24,7 @@ public class MaterialUtil {
 
 
     public static TextComponent getTranslatableComponent(Material material) {
-        if (MCVersion.atLeast("1.16")) {
+        if (TranslationUtil.isSupported()) {
             return new TextComponent(new TranslatableComponent(material.getTranslationKey()));
         } else {
             return new TextComponent(material.name());

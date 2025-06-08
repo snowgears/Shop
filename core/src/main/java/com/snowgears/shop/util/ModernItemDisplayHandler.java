@@ -40,9 +40,11 @@ public class ModernItemDisplayHandler {
             PotionMeta potionMeta = (PotionMeta) item.getItemMeta();
             
             // Use modern base potion type API
-            if (potionMeta.hasBasePotionType()) {
-                List<PotionEffect> effects = potionMeta.getBasePotionType().getPotionEffects();
-                component.addExtra(getPotionEffectsComponent(effects));
+            if (MCVersion.atLeast("1.21")) {
+                if (potionMeta.hasBasePotionType()) {
+                    List<PotionEffect> effects = potionMeta.getBasePotionType().getPotionEffects();
+                    component.addExtra(getPotionEffectsComponent(effects));
+                }
             }
             
             // Add custom effects
@@ -94,7 +96,11 @@ public class ModernItemDisplayHandler {
             for (Map.Entry<Enchantment, Integer> entry : enchantsMap.entrySet()) {
                 Enchantment enchantment = entry.getKey();
                 Integer level = entry.getValue();
-                component.addExtra(new TranslatableComponent(enchantment.getTranslationKey()));
+                if (TranslationUtil.isSupported()) {
+                    component.addExtra(new TranslatableComponent(enchantment.getTranslationKey()));
+                } else {
+                    component.addExtra(enchantment.getName());
+                }
                 
                 component.addExtra(UtilMethods.formatRomanNumerals(level));
                 i++;
@@ -118,7 +124,7 @@ public class ModernItemDisplayHandler {
     }
     
     public void addMusicInstrumentDisplayInfo(ItemStack item, TextComponent component) {
-        if (MaterialUtil.of("GOAT_HORN") == null) return;
+        if (!MCVersion.atLeast("1.19")) return;
 
         if (item.getType().name().equals("GOAT_HORN") && item.getItemMeta() instanceof MusicInstrumentMeta) {
             MusicInstrumentMeta instrumentMeta = (MusicInstrumentMeta) item.getItemMeta();
@@ -142,7 +148,7 @@ public class ModernItemDisplayHandler {
             PotionEffect effect = effects.get(i);
             
             // Use modern translation key API
-            if (MCVersion.atLeast("1.16")) {
+            if (TranslationUtil.isSupported()) {
                 formattedEffects.addExtra(new TranslatableComponent(effect.getType().getTranslationKey()));
             } else {
                 formattedEffects.addExtra(effect.getType().getName());
@@ -153,12 +159,17 @@ public class ModernItemDisplayHandler {
             }
             
             // Add duration for non-instant effects
-            boolean isInstantEffect = effect.getType().equals(org.bukkit.potion.PotionEffectType.INSTANT_HEALTH) ||
-                                    effect.getType().equals(org.bukkit.potion.PotionEffectType.INSTANT_DAMAGE);
+            boolean isInstantEffect = false;
+            if (MCVersion.atLeast("1.21")) {
+                isInstantEffect = effect.getType().equals(org.bukkit.potion.PotionEffectType.getByName("INSTANT_HEALTH")) || effect.getType().equals(org.bukkit.potion.PotionEffectType.getByName("INSTANT_DAMAGE"));
+            } else {
+                isInstantEffect = effect.getType().equals(org.bukkit.potion.PotionEffectType.getByName("HEAL")) || effect.getType().equals(org.bukkit.potion.PotionEffectType.getByName("HARM"));
+            }
             
             if (effect.getDuration() > 0 && !isInstantEffect) {
                 formattedEffects.addExtra(UtilMethods.formatTickTime(effect.getDuration()));
             }
+            
             
             if (i < numEffects - 1) {
                 formattedEffects.addExtra(", ");

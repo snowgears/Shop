@@ -17,11 +17,15 @@ public class SignUtil {
             blockstate.update();
             return;
         }
+    }
 
-        // if (MCVersion.atLeast("1.13")) {
-        //     Directional wallSignData = (Directional) signBlock.getBlockData();
-        //     wallSignData.setFacing(clickedFace);
-        //     signBlock.setBlockData(wallSignData);
-        // }
+    public static BlockFace getFacing(Block signBlock) {
+        org.bukkit.material.Sign sign = (org.bukkit.material.Sign) signBlock.getState().getData();
+        return sign.getFacing();
+    }
+
+    public static BlockFace getAttachedFace(Block signBlock) {
+        org.bukkit.material.Sign sign = (org.bukkit.material.Sign) signBlock.getState().getData();
+        return sign.getAttachedFace();
     }
 }

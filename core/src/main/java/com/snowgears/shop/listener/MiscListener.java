@@ -80,11 +80,11 @@ public class MiscListener implements Listener {
         if (!MCVersion.atLeast("1.13")) {
             throw new UnsupportedOperationException("Sign creation is not supported in legacy versions, til i fix this stupid shit");
         }
-        if(b.getBlockData() instanceof WallSign) {
-            signDirection = ((WallSign) b.getBlockData()).getFacing();
+        if(b.getType().toString().contains("WALL_SIGN")) {
+            signDirection = SignUtil.getFacing(b);
             chest = b.getRelative(signDirection.getOppositeFace());
         }
-        else if(b.getBlockData() instanceof Rotatable){ //regular sign post
+        else if(b.getType().toString().contains("SIGN_POST") && b.getBlockData() instanceof Rotatable){ //regular sign post
             signDirection = ((Rotatable) b.getBlockData()).getRotation();
             //adjust the sign direction to cordinal direction if its not already one
             if( signDirection.toString().indexOf('_') != -1) {
@@ -170,7 +170,7 @@ public class MiscListener implements Listener {
                     //the shop has still not been initialized with an item from a player
                     if (!shop.isInitialized()) {
                         plugin.getShopHandler().removeShop(shop);
-                        if (b.getBlockData() instanceof WallSign) {
+                        if (b.getType().toString().contains("WALL_SIGN")) {
                             String[] lines = ShopMessage.getTimeoutSignLines(shop);
                             Sign sign = (Sign) b.getState();
                             sign.setLine(0, lines[0]);
@@ -606,7 +606,11 @@ public class MiscListener implements Listener {
                 plugin.getLogHandler().logAction(player, shop, ShopActionType.DESTROY);
 
                 if(shop.isFakeSign()){
-                    event.setDropItems(false);
+                    try {
+                        event.setDropItems(false);
+                    } catch (NoSuchMethodError error) {
+                        // Ignore, sry u can get free signs supr slowly in old versions
+                    }
                 }
 
                 if((!shop.isAdmin()) && plugin.returnCreationCost() && plugin.getCreationCost() > 0) {
@@ -646,7 +650,11 @@ public class MiscListener implements Listener {
                     plugin.getLogHandler().logAction(player, shop, ShopActionType.DESTROY);
 
                     if(shop.isFakeSign()){
-                        event.setDropItems(false);
+                        try {
+                            event.setDropItems(false);
+                        } catch (NoSuchMethodError error) {
+                            // Ignore, sry u can get free signs supr slowly in old versions
+                        }
                     }
 
                     ShopMessage.sendMessage(shop.getType().toString(), "opDestroy", player, shop);

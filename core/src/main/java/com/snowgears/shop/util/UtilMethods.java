@@ -654,37 +654,37 @@ public class UtilMethods {
         
         // Add wall sign materials - these were added in MC 1.13+ (The Flattening)
         try{
-            nonIntrusiveMaterials.add(Material.WARPED_WALL_SIGN);
+            nonIntrusiveMaterials.add(MaterialUtil.of("WARPED_WALL_SIGN"));
         } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
         try{
-            nonIntrusiveMaterials.add(Material.ACACIA_WALL_SIGN);
+            nonIntrusiveMaterials.add(MaterialUtil.of("ACACIA_WALL_SIGN"));
         } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
         try{
-            nonIntrusiveMaterials.add(Material.BIRCH_WALL_SIGN);
+            nonIntrusiveMaterials.add(MaterialUtil.of("BIRCH_WALL_SIGN"));
         } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
         try{
-            nonIntrusiveMaterials.add(Material.CRIMSON_WALL_SIGN);
+            nonIntrusiveMaterials.add(MaterialUtil.of("CRIMSON_WALL_SIGN"));
         } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
         try{
-            nonIntrusiveMaterials.add(Material.DARK_OAK_WALL_SIGN);
+            nonIntrusiveMaterials.add(MaterialUtil.of("DARK_OAK_WALL_SIGN"));
         } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
         try{
-            nonIntrusiveMaterials.add(Material.JUNGLE_WALL_SIGN);
+            nonIntrusiveMaterials.add(MaterialUtil.of("JUNGLE_WALL_SIGN"));
         } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
         try{
-            nonIntrusiveMaterials.add(Material.OAK_WALL_SIGN);
+            nonIntrusiveMaterials.add(MaterialUtil.of("OAK_WALL_SIGN"));
         } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
         try{
-            nonIntrusiveMaterials.add(Material.SPRUCE_WALL_SIGN);
+            nonIntrusiveMaterials.add(MaterialUtil.of("SPRUCE_WALL_SIGN"));
         } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
         
         // Fallback for legacy versions - add the old WALL_SIGN material
         try{
-            nonIntrusiveMaterials.add(Material.LEGACY_WALL_SIGN);
+            nonIntrusiveMaterials.add(MaterialUtil.of("LEGACY_WALL_SIGN"));
         } catch(NoSuchFieldError e){ 
             // Try the pre-legacy WALL_SIGN material for very old versions using valueOf
             try{
-                nonIntrusiveMaterials.add(Material.valueOf("WALL_SIGN"));
+                nonIntrusiveMaterials.add(MaterialUtil.of("WALL_SIGN"));
             } catch(IllegalArgumentException e2){ /* Material doesn't exist, skip */ }
         }
         
@@ -693,21 +693,15 @@ public class UtilMethods {
         nonIntrusiveMaterials.remove(Material.FIRE);
         
         // Remove dangerous materials that exist across versions
-        try { nonIntrusiveMaterials.remove(Material.END_PORTAL); } catch(NoSuchFieldError e) {}
-        try { nonIntrusiveMaterials.remove(Material.NETHER_PORTAL); } catch(NoSuchFieldError e) {}
-        try { nonIntrusiveMaterials.remove(Material.SKELETON_SKULL); } catch(NoSuchFieldError e) {}
-        try { nonIntrusiveMaterials.remove(Material.WITHER_SKELETON_SKULL); } catch(NoSuchFieldError e) {}
+        try { nonIntrusiveMaterials.remove(MaterialUtil.of("END_PORTAL")); } catch(NoSuchFieldError e) {}
+        try { nonIntrusiveMaterials.remove(MaterialUtil.of("NETHER_PORTAL")); } catch(NoSuchFieldError e) {}
+        try { nonIntrusiveMaterials.remove(MaterialUtil.of("SKELETON_SKULL")); } catch(NoSuchFieldError e) {}
+        try { nonIntrusiveMaterials.remove(MaterialUtil.of("WITHER_SKELETON_SKULL")); } catch(NoSuchFieldError e) {}
         try { nonIntrusiveMaterials.remove(MaterialUtil.of("PLAYER_HEAD")); } catch(NoSuchFieldError e) {}
-        try { nonIntrusiveMaterials.remove(Material.CREEPER_HEAD); } catch(NoSuchFieldError e) {}
-
-        // Use CompatibilityUtil to safely add LIGHT material if available
-        if (CompatibilityUtil.hasLightMaterial()) {
-            try {
-                nonIntrusiveMaterials.add(Material.valueOf("LIGHT"));
-            } catch (Exception e) {
-                // Silently ignore if LIGHT material isn't available
-            }
-        }
+        try { nonIntrusiveMaterials.remove(MaterialUtil.of("CREEPER_HEAD")); } catch(NoSuchFieldError e) {}
+        
+        // Add LIGHT material if available
+        try { nonIntrusiveMaterials.add(MaterialUtil.of("LIGHT")); } catch(NoSuchFieldError e) {}
     }
 
     public static BlockFace getDirectionOfChest(Block block){

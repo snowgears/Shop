@@ -40,12 +40,17 @@ public class ItemNameUtil {
         if(item.getItemMeta() != null && item.getItemMeta() instanceof SkullMeta){
             SkullMeta skullMeta = (SkullMeta) item.getItemMeta();
             if (skullMeta != null) {
-                // Use the forwards-compatible getOwningPlayer() method - no reflection needed
-                if (skullMeta.getOwningPlayer() != null && skullMeta.getOwningPlayer().getName() != null) {
-                    return new TextComponent(skullMeta.getOwningPlayer().getName() + "'s Head");
-                } else {
-                    return new TextComponent("Player Head");
+                try {
+                    if (skullMeta.getOwningPlayer() != null && skullMeta.getOwningPlayer().getName() != null) {
+                        return new TextComponent(skullMeta.getOwningPlayer().getName() + "'s Head");
+                    }
+                } catch (NoSuchMethodError error) {
+                    if (skullMeta.hasOwner() && skullMeta.getOwner() != null) {
+                        return new TextComponent(skullMeta.getOwner() + "'s Head");
+                    }
                 }
+                
+                return new TextComponent("Player Head");
             }
         }
 

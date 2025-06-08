@@ -126,7 +126,15 @@ public class ShopMessage {
     // Returns null if no color is found.
     public static ChatColor getColor(String color) {
         ChatColor newColor = null;
-        if (color.matches(HEX_CODE_REGEX)) { newColor = ChatColor.of(color); }
+        if (color.matches(HEX_CODE_REGEX)) { 
+            // Not sure when ChatColor.of was introduced, but it's available in 1.17+
+            // valueOf is still available in 1.21+
+            if (MCVersion.atLeast("1.17")) {
+                newColor = ChatColor.of(color);
+            } else {
+                newColor = ChatColor.valueOf(color);
+            }
+        }
         else if (color.matches(COLOR_CODE_REGEX)) {
             newColor = ChatColor.getByChar(color.charAt(1));
         }

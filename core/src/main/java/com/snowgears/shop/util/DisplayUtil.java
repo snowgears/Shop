@@ -61,11 +61,13 @@ public class DisplayUtil {
                 break;
             case HAND:
                 stand = (ArmorStand) blockLocation.getWorld().spawnEntity(standLocation, EntityType.ARMOR_STAND);
-                stand.getEquipment().setItemInMainHand(itemStack);
+                stand.getEquipment().setItemInHand(itemStack);
+                // .setItem() is available in 1.15+, .setItemInHand() is still available in 1.21+
+                // stand.getEquipment().setItem(EquipmentSlot.HAND, itemStack);
                 stand.setRightArmPose(getArmAngle(itemStack));
 
                 try{
-                    if(itemStack.getType() == Material.SHIELD)
+                    if(itemStack.getType() == MaterialUtil.of("SHIELD"))
                         stand.setSmall(true);
                 } catch (NoSuchFieldError e) {}
 
@@ -94,14 +96,14 @@ public class DisplayUtil {
             case LEGS:
             case FEET:
                 armorStandData.setSmall(true);
-                if (itemStack.getType() == Material.ELYTRA)
+                if (itemStack.getType() == MaterialUtil.of("ELYTRA"))
                     standLocation.setY(standLocation.getY() + 0.7);
                 break;
             case HAND:
                 armorStandData.setRightArmPose(getArmAngle(itemStack));
                 standLocation.setY(standLocation.getY() + 0.7);
                 try{
-                    if(itemStack.getType() == Material.SHIELD)
+                    if(itemStack.getType() == MaterialUtil.of("SHIELD"))
                         armorStandData.setSmall(true);
                 } catch (NoSuchFieldError e) {}
 
@@ -119,7 +121,7 @@ public class DisplayUtil {
 
         boolean isShield = false;
         try{
-            if(itemStack.getType() == Material.SHIELD)
+            if(itemStack.getType() == MaterialUtil.of("SHIELD"))
                 isShield = true;
         } catch (NoSuchFieldError e) {}
 
@@ -144,7 +146,7 @@ public class DisplayUtil {
         else if(sType.contains("_HELMET") || type == MaterialUtil.of("PLAYER_HEAD") || type.isBlock()){
             return EquipmentSlot.HEAD;
         }
-        else if(sType.contains("_CHESTPLATE") || type == Material.ELYTRA){
+        else if(sType.contains("_CHESTPLATE") || type == MaterialUtil.of("ELYTRA")){
             return EquipmentSlot.CHEST;
         }
         else if(sType.contains("_LEGGINGS")){
@@ -165,7 +167,7 @@ public class DisplayUtil {
                 break;
             case CHEST:
                 standLocation = blockLocation.clone().add(0.5, 0.4, 0.5);
-                if(material == Material.ELYTRA){
+                if(material == MaterialUtil.of("ELYTRA")){
                     switch (facing){
                         case NORTH:
                             standLocation = blockLocation.clone().add(0.5, -0.1, 0.2);
@@ -196,22 +198,22 @@ public class DisplayUtil {
                     switch (facing){
                         case NORTH:
                             standLocation = blockLocation.clone().add(0.7, -1.3, 0.6);
-                            if(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)
+                            if(material == Material.FISHING_ROD || material == MaterialUtil.of("CARROT_ON_A_STICK"))
                                 standLocation = standLocation.add(rodOffset, 0, 0);
                             break;
                         case EAST:
                             standLocation = blockLocation.clone().add(0.425, -1.3, 0.7);
-                            if(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)
+                            if(material == Material.FISHING_ROD || material == MaterialUtil.of("CARROT_ON_A_STICK"))
                                 standLocation = standLocation.add(0, 0, rodOffset);
                             break;
                         case SOUTH:
                             standLocation = blockLocation.clone().add(0.3, -1.3, 0.42);
-                            if(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)
+                            if(material == Material.FISHING_ROD || material == MaterialUtil.of("CARROT_ON_A_STICK"))
                                 standLocation = standLocation.add(-rodOffset, 0, 0);
                             break;
                         case WEST:
                             standLocation = blockLocation.clone().add(0.6, -1.3, 0.3);
-                            if(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)
+                            if(material == Material.FISHING_ROD || material == MaterialUtil.of("CARROT_ON_A_STICK"))
                                 standLocation = standLocation.add(0, 0, -rodOffset);
                             break;
                     }
@@ -232,7 +234,7 @@ public class DisplayUtil {
                             break;
                     }
                 }
-                else if(UtilMethods.isMCVersion14Plus() && material == Material.CROSSBOW){
+                else if(MCVersion.atLeast("1.14") && material == MaterialUtil.of("CROSSBOW")){
                     switch (facing){
                         case NORTH:
                             standLocation = blockLocation.clone().add(0.25, -1.6, 0.44);
@@ -282,7 +284,7 @@ public class DisplayUtil {
                     }
                 }
                 try {
-                    if (material == Material.SHIELD) {
+                    if (material == MaterialUtil.of("SHIELD")) {
                         standLocation.add(0, 1, 0);
                         switch (facing) {
                             case NORTH:
@@ -305,7 +307,7 @@ public class DisplayUtil {
 
         boolean isShield = false;
         try{
-            if(material == Material.SHIELD)
+            if(material == MaterialUtil.of("SHIELD"))
                 isShield = true;
         } catch (NoSuchFieldError e) {}
 
@@ -341,34 +343,30 @@ public class DisplayUtil {
 
         boolean isShield = false;
         try{
-            if(material == Material.SHIELD)
+            if(material == MaterialUtil.of("SHIELD"))
                 isShield = true;
         } catch (NoSuchFieldError e) {}
 
-        if(isTool(material) && !(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK)){
+        if(isTool(material) && !(material == Material.FISHING_ROD || material == MaterialUtil.of("CARROT_ON_A_STICK"))){
             return toolAngle;
         }
         else if(material == Material.BOW){
             return bowAngle;
         }
-        else if(UtilMethods.isMCVersion14Plus() && material == Material.CROSSBOW){
+        else if(MCVersion.atLeast("1.14") && material == MaterialUtil.of("CROSSBOW")){
             return crossBowAngle;
         }
-        else if(material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK){
+        else if(material == Material.FISHING_ROD || material == MaterialUtil.of("CARROT_ON_A_STICK")){
             return rodAngle;
         }
         else if(isShield){
             //shield angles are different in MC 1.10 and MC 1.11+
-            try{
-                if(Material.SHULKER_SHELL != Material.AIR){
-                    //server is on MC 1.11+
-                    return shieldAngle;
-                }
-            } catch (NoSuchFieldError e) {
+            if (MCVersion.atLeast("1.11")) {
+                return shieldAngle;
+            } else {
                 //server is below MC 1.10. (Use different shield angle)
                 return new EulerAngle(Math.toRadians(70), Math.toRadians(0), Math.toRadians(0));
             }
-            return shieldAngle;
         }
         return itemAngle;
     }
@@ -398,7 +396,13 @@ public class DisplayUtil {
 
     public static boolean isHeldNonItem(Material material){
         String sType = material.toString().toUpperCase();
-        if(isTool(material) || sType.contains("SWORD") || material == Material.BOW || material == Material.FISHING_ROD || material == Material.CARROT_ON_A_STICK || material == Material.CROSSBOW)
+        if(
+            isTool(material) 
+            || sType.contains("SWORD") 
+            || material == Material.BOW 
+            || material == Material.FISHING_ROD 
+            || material == MaterialUtil.of("CARROT_ON_A_STICK") 
+            || material == MaterialUtil.of("CROSSBOW"))
             return true;
         return false;
     }
@@ -409,7 +413,7 @@ public class DisplayUtil {
                 || sMaterial.contains("_PICKAXE") || sMaterial.contains("_SPADE") 
                 || sMaterial.contains("_SWORD") || sMaterial.contains("MACE")
                 || material == Material.BONE || material == Material.STICK  || material == Material.BLAZE_ROD
-                || material == Material.CARROT_ON_A_STICK || material == Material.FISHING_ROD);
+                || sMaterial.contains("CARROT_ON_A_STICK") || material == Material.FISHING_ROD);
     }
 
     public static boolean isChest(Material material){
@@ -419,7 +423,7 @@ public class DisplayUtil {
 
     public static boolean isFence(Material material){
         String sMaterial = material.toString().toUpperCase();
-        return (sMaterial.contains("FENCE") && (material != Material.IRON_BARS) && !sMaterial.contains("GATE"));
+        return (sMaterial.contains("FENCE") && (material != MaterialUtil.of("IRON_BARS")) && !sMaterial.contains("GATE"));
     }
 
     public static boolean isArmor(Material material){
@@ -437,31 +441,32 @@ public class DisplayUtil {
         if(material.isBlock()) {
             if(material.toString().contains("THIN_GLASS") || material.toString().contains("GLASS_PANE") || material.toString().contains("SAPLING"))
                 return true;
+            // Need to do some refactoring here to split apart the material versions and conditionally check the materials 
             switch (material) {
                 case LADDER:
                 case VINE:
-                case RAIL:
+                case RAIL: // not in 1.8
                 case POWERED_RAIL:
                 case ACTIVATOR_RAIL:
                 case DETECTOR_RAIL:
                 case TRIPWIRE_HOOK:
                 case LEVER:
                 case TORCH:
-                case COBWEB:
-                case TALL_GRASS:
+                case COBWEB: // not in 1.8
+                case TALL_GRASS: // not in 1.8
                 case DEAD_BUSH:
-                case POPPY:
-                case DANDELION:
+                case POPPY: // not in 1.8
+                case DANDELION: // not in 1.8
                 case BROWN_MUSHROOM:
                 case RED_MUSHROOM:
-                case REDSTONE_TORCH:
-                case IRON_BARS:
-                case LILY_PAD:
+                case REDSTONE_TORCH: // not in 1.8
+                case IRON_BARS: // not in 1.8
+                case LILY_PAD: // not in 1.8
                 case HOPPER:
                 case BARRIER:
-                case CHORUS_PLANT:
-                case STRUCTURE_VOID:
-                case END_ROD:
+                case CHORUS_PLANT: // not in 1.8
+                case STRUCTURE_VOID: // not in 1.8
+                case END_ROD: // not in 1.8
                     return true;
             }
         }

@@ -173,8 +173,10 @@ public class ShopListener implements Listener {
                 if(player.isSneaking()){
                     //don't execute the action and cancel event if player is holding a sign (may be trying to place directly onto chest)
                     Material mainhandItem;
-                    try { mainhandItem = player.getInventory().getItemInMainHand().getType(); } 
-                    catch (NoSuchMethodError error) { mainhandItem = Material.AIR; }
+                    try { 
+                        mainhandItem = player.getInventory().getItemInMainHand().getType(); 
+                        // in 1.8.8 it used to be `player.getItemInHand()`
+                    } catch (NoSuchMethodError error) { mainhandItem = Material.AIR; }
                     if(mainhandItem.toString().contains("SIGN")) {
 
                         boolean actionPerformed = shop.executeClickAction(event, ShopClickType.SHIFT_RIGHT_CLICK_CHEST);

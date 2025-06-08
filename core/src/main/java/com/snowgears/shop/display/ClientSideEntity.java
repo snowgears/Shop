@@ -503,7 +503,7 @@ public class ClientSideEntity {
         EquipmentSlot slot = armorStandData.getEquipmentSlot();
         EnumWrappers.ItemSlot itemSlot;
         if (slot == EquipmentSlot.HAND) { itemSlot = EnumWrappers.ItemSlot.MAINHAND; } 
-        else if (slot == EquipmentSlot.OFF_HAND) { itemSlot = EnumWrappers.ItemSlot.OFFHAND; } 
+        else if (slot == EquipmentSlot.valueOf("OFF_HAND")) { itemSlot = EnumWrappers.ItemSlot.OFFHAND; } 
         else { itemSlot = EnumWrappers.ItemSlot.valueOf(slot.name()); }
         
         // Create equipment slot list - mainhand slot (0) with the item

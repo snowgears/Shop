@@ -688,10 +688,12 @@ public abstract class AbstractShop {
     public void sendEffects(boolean success, Player player){
         try {
             if (success) {
-                if (Shop.getPlugin().playSounds()) player.playSound(this.getSignLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+                Sound successSound = MCVersion.atLeast("1.13") ? Sound.valueOf("ENTITY_EXPERIENCE_ORB_PICKUP") : Sound.valueOf("ORB_PICKUP");
+                if (Shop.getPlugin().playSounds()) player.playSound(this.getSignLocation(), successSound, 1.0F, 1.0F);
                 if (Shop.getPlugin().playEffects()) player.getWorld().playEffect(this.getChestLocation(), Effect.STEP_SOUND, Material.EMERALD_BLOCK);
             } else {
-                if (Shop.getPlugin().playSounds()) player.playSound(this.getSignLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0F, 1.0F);
+                Sound issueSound = MCVersion.atLeast("1.13") ? Sound.valueOf("ITEM_SHIELD_BLOCK") : Sound.valueOf("ANVIL_LAND");
+                if (Shop.getPlugin().playSounds()) player.playSound(this.getSignLocation(), issueSound, 1.0F, 1.0F);
                 if (Shop.getPlugin().playEffects()) player.getWorld().playEffect(this.getChestLocation(), Effect.STEP_SOUND, Material.REDSTONE_BLOCK);
             }
         } catch (Error e){
