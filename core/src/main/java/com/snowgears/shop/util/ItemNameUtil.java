@@ -9,12 +9,15 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.inventory.meta.OminousBottleMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionType;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.ChatColor;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 public class ItemNameUtil {
 
@@ -80,32 +83,37 @@ public class ItemNameUtil {
 
         // Add custom potion formatting using clean PotionUtil
         if(item.getItemMeta() != null && item.getItemMeta() instanceof PotionMeta){
-            PotionMeta potionMeta = (PotionMeta) item.getItemMeta();
+            String formattedName = UtilMethods.capitalize(item.getType().name().replace("_", " ").toLowerCase());
             
-            // Use our clean PotionUtil instead of reflection
-            PotionType basePotionType = PotionUtil.getBasePotionType(potionMeta);
-            if (basePotionType != null) {
-                String formattedName = UtilMethods.capitalize(item.getType().name().replace("_", " ").toLowerCase());
-                formattedName += " of ";
-                formattedName += PotionUtil.getFormattedPotionName(basePotionType);
-                return new TextComponent(formattedName);
+            // Add extra potion detail if we can
+            String potionType = null;
+            try { 
+                potionType = ((PotionMeta) item.getItemMeta()).getBasePotionType().toString(); 
+            } catch (Exception e) {}
+            // If we can't get the base potion type, try to get the first custom effect
+            if (potionType == null) {
+                // If we can't get the base potion type, try to get the first custom effect
+                List<PotionEffect> customEffects = ((PotionMeta) item.getItemMeta()).getCustomEffects();
+                if (!customEffects.isEmpty()) {
+                    potionType = customEffects.get(0).getType().toString();
+                }
             }
+            // If we have a potion type, add it to the name
+            if (potionType != null) {
+                formattedName += " of ";
+                // Convert LONG_STRENGTH to "Long Strength"
+                formattedName += UtilMethods.capitalize(potionType.replace("_", " ").toLowerCase());
+            }
+
+            return new TextComponent(formattedName);
         }
 
         // Check for Ominous Bottle (modern versions only)
-        if (CompatibilityUtil.hasOminousBottle()) {
-            try {
-                // Use reflection to avoid compilation errors in legacy builds
-                Class<?> ominousBottleMetaClass = Class.forName("org.bukkit.inventory.meta.OminousBottleMeta");
-                if (item.getItemMeta() != null && ominousBottleMetaClass.isInstance(item.getItemMeta())) {
-                    TextComponent name = getNameTranslatable(item.getType());
-                    name.setColor(net.md_5.bungee.api.ChatColor.YELLOW);
-                    return name;
-                }
-            } catch (Exception e) {
-                // Backwards compatibility - silently ignore if class not available
-            } catch (Error e) {
-                // Backwards compatibility - silently ignore if class not available
+        if (MCVersion.atLeast("1.21")) {
+            if (item.getItemMeta() != null && item.getItemMeta() instanceof OminousBottleMeta) {
+                TextComponent name = getNameTranslatable(item.getType());
+                name.setColor(net.md_5.bungee.api.ChatColor.YELLOW);
+                return name;
             }
         }
 
