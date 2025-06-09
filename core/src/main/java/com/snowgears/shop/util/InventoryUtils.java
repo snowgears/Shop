@@ -146,27 +146,16 @@ public class InventoryUtils {
 
         // Check if we are ignoring item durability, if so, reset the durability of both items and continue with later checks
         if (!Shop.getPlugin().checkItemDurability()) {
-            if (CompatibilityUtil.hasDamageableInterface()) {
-                // Modern approach using Damageable interface
-                try {
-                    ItemMeta meta1 = itemStack1.getItemMeta();
-                    ItemMeta meta2 = itemStack2.getItemMeta();
-                    
-                    if (meta1 instanceof Damageable && meta2 instanceof Damageable) {
-                        ((Damageable) meta1).setDamage(0);
-                        ((Damageable) meta2).setDamage(0);
-                        
-                        itemStack1.setItemMeta(meta1);
-                        itemStack2.setItemMeta(meta2);
-                    } else {
-                        // Fallback to legacy approach
-                        itemStack1.setDurability((short) 0);
-                        itemStack2.setDurability((short) 0);
-                    }
-                } catch (Exception e) {
-                    // Fallback to legacy approach
-                    itemStack1.setDurability((short) 0);
-                    itemStack2.setDurability((short) 0);
+            if (MCVersion.atLeast("1.13")) {
+                ItemMeta meta1 = itemStack1.getItemMeta();
+                ItemMeta meta2 = itemStack2.getItemMeta();
+                // Damageable exists 1.13+
+                if (meta1 instanceof Damageable && meta2 instanceof Damageable) {
+                    ((Damageable) meta1).setDamage(0);
+                    ((Damageable) meta2).setDamage(0);
+                
+                    itemStack1.setItemMeta(meta1);
+                    itemStack2.setItemMeta(meta2);
                 }
             } else {
                 // Legacy approach using direct ItemStack methods
@@ -177,28 +166,16 @@ public class InventoryUtils {
 
         // Check if we are ignoring item repair cost, if so, reset the repair cost of both items and continue with later checks
         if (Shop.getPlugin().ignoreItemRepairCost()) {
-            if (CompatibilityUtil.hasRepairableInterface()) {
-                // Modern approach using Repairable interface
-                try {
-                    ItemMeta meta1 = itemStack1.getItemMeta();
-                    ItemMeta meta2 = itemStack2.getItemMeta();
-                    
-                    if (meta1 instanceof Repairable && meta2 instanceof Repairable) {
-                        ((Repairable) meta1).setRepairCost(0);
-                        ((Repairable) meta2).setRepairCost(0);
-                        
-                        itemStack1.setItemMeta(meta1);
-                        itemStack2.setItemMeta(meta2);
-                    }
-                    // If not repairable, just continue without doing anything
-                } catch (Exception e) {
-                    // Legacy versions don't have repair cost, so skip this entirely
-                    Shop.getPlugin().getShopLogger().debug("Repair cost not supported in legacy version, skipping");
-                }
-            } else {
-                // Legacy versions don't have repair cost functionality, so skip this
-                Shop.getPlugin().getShopLogger().debug("Repair cost not supported in legacy version, skipping");
-            }
+            ItemMeta meta1 = itemStack1.getItemMeta();
+            ItemMeta meta2 = itemStack2.getItemMeta();
+            // Reparable exists going back to at least 1.8, maybe older
+            if (meta1 instanceof Repairable && meta2 instanceof Repairable) {
+                ((Repairable) meta1).setRepairCost(0);
+                ((Repairable) meta2).setRepairCost(0);
+                
+                itemStack1.setItemMeta(meta1);
+                itemStack2.setItemMeta(meta2);
+            }      
         }
 
         ItemMeta i1Meta = itemStack1.getItemMeta();

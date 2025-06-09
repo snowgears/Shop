@@ -45,6 +45,10 @@ public class UtilMethods {
 
     private static ArrayList<Material> nonIntrusiveMaterials = new ArrayList<Material>();
 
+    public static boolean isTranslationSupported() {
+        return MCVersion.atLeast("1.16");
+    }
+
     public static String trimForSign(String text) {
         final int MAX_SIGN_WIDTH = 80; // Maximum width allowed on a sign line
         int currentWidth = 0;

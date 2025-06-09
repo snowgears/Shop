@@ -96,7 +96,7 @@ public class ModernItemDisplayHandler {
             for (Map.Entry<Enchantment, Integer> entry : enchantsMap.entrySet()) {
                 Enchantment enchantment = entry.getKey();
                 Integer level = entry.getValue();
-                if (TranslationUtil.isSupported()) {
+                if (UtilMethods.isTranslationSupported()) {
                     component.addExtra(new TranslatableComponent(enchantment.getTranslationKey()));
                 } else {
                     component.addExtra(enchantment.getName());
@@ -148,7 +148,7 @@ public class ModernItemDisplayHandler {
             PotionEffect effect = effects.get(i);
             
             // Use modern translation key API
-            if (TranslationUtil.isSupported()) {
+            if (UtilMethods.isTranslationSupported()) {
                 formattedEffects.addExtra(new TranslatableComponent(effect.getType().getTranslationKey()));
             } else {
                 formattedEffects.addExtra(effect.getType().getName());

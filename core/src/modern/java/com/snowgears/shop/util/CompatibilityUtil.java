@@ -181,24 +181,8 @@ public class CompatibilityUtil {
     // Public API Methods
     // =================================
     
-    public static boolean hasArmorMeta() { return HAS_ARMOR_META; }
-    public static boolean hasOminousBottle() { return HAS_OMINOUS_BOTTLE; }
-    public static boolean hasMusicInstrumentMeta() { return HAS_MUSIC_INSTRUMENT_META; }
-    public static boolean hasLightBlock() { return HAS_LIGHT_BLOCK; }
-    public static boolean hasGlowItemFrame() { return HAS_GLOW_ITEM_FRAME; }
-    public static boolean hasGetTranslationKey() { return HAS_GET_TRANSLATION_KEY; }
-    public static boolean hasPotionBaseType() { return HAS_POTION_BASE_TYPE; }
-    public static boolean hasGlowingText() { return HAS_GLOWING_TEXT; }
-    public static boolean hasOwnerProfile() { return HAS_OWNER_PROFILE; }
-    public static boolean hasCustomChatCompletions() { return HAS_CUSTOM_CHAT_COMPLETIONS; }
+
     public static boolean hasItemEntityType() { return HAS_ITEM_ENTITY_TYPE; }
-    public static boolean hasInstantHealth() { return HAS_INSTANT_HEALTH; }
-    public static boolean hasInstantDamage() { return HAS_INSTANT_DAMAGE; }
-    public static boolean hasLightMaterial() { return HAS_LIGHT_MATERIAL; }
-    public static boolean isMinecraft17Plus() { return IS_1_17_PLUS; }
-    public static boolean isMinecraft16Plus() { return IS_1_16_PLUS; }
-    public static boolean isMinecraft14Plus() { return IS_1_14_PLUS; }
-    public static boolean hasGetAsComponentString() { return HAS_GET_AS_COMPONENT_STRING; }
     public static boolean hasCreateItemStackFromString() { return HAS_CREATE_ITEM_STACK_FROM_STRING; }
     public static boolean hasBlueMapAPI() { return HAS_BLUEMAP_API; }
     public static boolean hasDamageableInterface() { return HAS_DAMAGEABLE_INTERFACE; }

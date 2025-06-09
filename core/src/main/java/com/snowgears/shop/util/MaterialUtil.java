@@ -50,7 +50,7 @@ public class MaterialUtil {
     }
 
     public static TextComponent getTranslatableComponent(Material material) {
-        if (TranslationUtil.isSupported()) {
+        if (UtilMethods.isTranslationSupported()) {
             return new TextComponent(new TranslatableComponent(material.getTranslationKey()));
         } else {
             return new TextComponent(material.name());
