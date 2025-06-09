@@ -199,8 +199,6 @@ public class Display_v1_8_R3 extends AbstractDisplay {
         // Only used for 1.8 and below.
         // 1.9 can use ItemMeta.getLocalizedName()
         // 1.16 and above can use .getTranslationKey()
-        String nmsName = CraftItemStack.asNMSCopy(is).getName();
-        Shop.getPlugin().getShopLogger().info("NMS Item Name: " + nmsName);
-        return nmsName;
+        return CraftItemStack.asNMSCopy(is).getName();
     }
 }
