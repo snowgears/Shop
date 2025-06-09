@@ -80,7 +80,9 @@ public class Display_v1_11_R1 extends AbstractDisplay {
             float z = (float)Math.toDegrees(angle.getZ());
             armorStand.setRightArmPose(new Vector3f(x, y, z));
         }
-        armorStand.setPositionRotation(0.0D, 0.0D, 0.0D, 0.0F, 0.0F);
+        // Don't use setPositionRotation, this changes the actual x,y,z position of the armor stand
+        // which was causing armor stands to not appear in the correct location!!!
+        // armorStand.setPositionRotation(0.0D, 0.0D, 0.0D, 0.0F, 0.0F);
         armorStand.setHeadPose(new Vector3f(0.0F, 0.0F, 0.0F));
         armorStand.setMarker(true);
         armorStand.setNoGravity(true);
