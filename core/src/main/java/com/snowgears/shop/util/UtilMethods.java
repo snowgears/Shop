@@ -409,7 +409,7 @@ public class UtilMethods {
     }
 
     public static TextComponent getEnchantmentsComponent(ItemStack item){
-        TextComponent formattedMessage = new TextComponent(getItemName(item));
+        TextComponent formattedMessage = new TextComponent("");
         
         // Use our clean hybrid pattern for version-specific functionality
         ModernItemDisplayHandler displayHandler = new ModernItemDisplayHandler();
