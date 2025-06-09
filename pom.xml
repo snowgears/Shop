@@ -133,14 +133,22 @@
     <repositories>
         <repository>
             <id>local-m2-repo</id>
+            <url>file://${project.basedir}/SpigotBuildTools/maven/repository</url>
+        </repository>
+        <repository>
+            <id>local-m2-repo_subdir</id>
             <url>file://${project.basedir}/../SpigotBuildTools/maven/repository</url>
+        </repository>
+        <repository>
+            <id>local-m2-repo_subdir2</id>
+            <url>file://${project.basedir}/../../SpigotBuildTools/maven/repository</url>
         </repository>
     </repositories>
 
     <pluginRepositories>
         <pluginRepository>
             <id>local-m2-repo</id>
-            <url>file://${project.basedir}/../SpigotBuildTools/maven/repository</url>
+            <url>file://${project.basedir}/SpigotBuildTools/maven/repository</url>
         </pluginRepository>
     </pluginRepositories>
 

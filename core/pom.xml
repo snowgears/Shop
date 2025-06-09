@@ -201,7 +201,7 @@
                     <groupId>org.spigotmc</groupId>
                     <artifactId>spigot</artifactId>
                     <version>${spigot.version}</version>
-                    <classifier>remapped-mojang</classifier>
+                    <classifier>remapped-mojang</classifier> <!-- remapped-mojang is 1.17+ only available in local maven repo it seems-->
                     <scope>provided</scope>
                 </dependency>
                 <dependency>
