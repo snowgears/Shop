@@ -11,6 +11,7 @@ import com.snowgears.shop.util.ItemListType;
 import com.snowgears.shop.util.ShopLogger;
 import com.snowgears.shop.util.UtilMethods;
 import com.snowgears.shop.util.CompatibilityUtil;
+import com.snowgears.shop.util.SignUtil;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -247,47 +248,6 @@ public class ShopHandler {
             }
         } catch (NoClassDefFoundError e) {}
 
-// TODO not sure what this code was even doing here. might have been leftover
-
-//        if (this.isChest(shopChest)) {
-//            //BlockFace chestFacing = UtilMethods.getDirectionOfChest(shopChest);
-//
-//            ArrayList<Block> chestBlocks = new ArrayList<>();
-//            chestBlocks.add(shopChest);
-//
-//            InventoryHolder ih = null;
-//            if(shopChest.getState() instanceof Chest) {
-//                Chest chest = (Chest) shopChest.getState();
-//                ih = chest.getInventory().getHolder();
-//
-//                if (ih instanceof DoubleChest) {
-//                    DoubleChest dc = (DoubleChest) ih;
-//                    Chest leftChest = (Chest) dc.getLeftSide();
-//                    Chest rightChest = (Chest) dc.getRightSide();
-//                    if (chest.getLocation().equals(leftChest.getLocation()))
-//                        chestBlocks.add(rightChest.getBlock());
-//                    else
-//                        chestBlocks.add(leftChest.getBlock());
-//                }
-//            }
-//
-//            for (Block chestBlock : chestBlocks) {
-//                Block signBlock = chestBlock.getRelative(chestFacing);
-//                if (signBlock.getBlockData() instanceof WallSign) {
-//                    WallSign sign = (WallSign) signBlock.getBlockData();
-//                    //if (chestFacing == sign.getFacing()) {
-//                    AbstractShop shop = this.getShop(signBlock.getLocation());
-//                    if (shop != null)
-//                        return shop;
-//                    //}
-//                } else if(!(ih instanceof DoubleChest)){
-//                    AbstractShop shop = this.getShop(signBlock.getLocation());
-//                    //delete the shop if it doesn't have a sign
-//                    if (shop != null)
-//                        shop.delete();
-//                }
-//            }
-//        }
         return null;
     }
 
@@ -298,7 +258,7 @@ public class ShopHandler {
                 Block shopChest = block.getRelative(face);
                 for(BlockFace newFace : faces){
                     Block signBlock = shopChest.getRelative(newFace);
-                    if(signBlock.getType().toString().contains("WALL_SIGN") ) {
+                    if(SignUtil.isWallSign(signBlock)) {
                         return getShop(signBlock.getLocation());
                     }
                 }

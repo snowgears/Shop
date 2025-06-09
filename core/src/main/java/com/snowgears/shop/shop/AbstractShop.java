@@ -22,16 +22,10 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.material.MaterialData;
-import org.bukkit.util.Vector;
 import com.snowgears.shop.util.CompatibilityUtil;
-import com.snowgears.shop.util.ComponentUtil;
 import com.snowgears.shop.util.SignUtil;
 
 import java.util.*;
-import java.util.logging.Level;
-
-import static com.snowgears.shop.util.UtilMethods.isMCVersion17Plus;
 
 public abstract class AbstractShop {
 
@@ -138,8 +132,7 @@ public abstract class AbstractShop {
     public boolean load() {
         if (signLocation != null) {
             try {
-                final org.bukkit.material.Sign sign = (org.bukkit.material.Sign) signLocation.getBlock().getState().getData();
-                facing = sign.getFacing();
+                facing = SignUtil.getFacing(signLocation.getBlock());
                 if (facing != null) {
                     chestLocation = signLocation.getBlock().getRelative(facing.getOppositeFace()).getLocation();
                 } else {
@@ -151,6 +144,8 @@ public abstract class AbstractShop {
                 //if shop is made out of a container that is no longer enabled, delete it
                 if(chestLocation != null) {
                     if (!Shop.getPlugin().getShopHandler().isChest(chestLocation.getBlock())){
+                        Shop.getPlugin().getShopLogger().warning("Unable to load shop, this shop's container type (" + chestLocation.getBlock().getType() + ") is no longer enabled (config.yml enabledContainers): " + this);
+                        Shop.getPlugin().getShopLogger().warning("Deleting Shop with disabled container type!! (" + chestLocation.getBlock().getType() + "): " + this);
                         this.delete();
                         return false;
                     }
@@ -158,9 +153,9 @@ public abstract class AbstractShop {
                 this.updateStock();
                 Shop.getPlugin().getShopLogger().debug("Loaded shop: " + this);
                 return true;
-            } catch (Exception e) {
+            } catch (Error | Exception e) {
                 //this shop has no sign on it. return false
-                Shop.getPlugin().getShopLogger().warning("Failed to load shop, error with sign: " + this);
+                Shop.getPlugin().getShopLogger().warning("Failed to load shop, unexpected error when checking sign and/or container! " + this);
                 return false;
             }
         } else {
@@ -255,17 +250,6 @@ public abstract class AbstractShop {
 
     public Location getSignLocation() {
         return signLocation;
-    }
-
-    public Object getSign(){
-        try {
-            if (signLocation.getBlock().getType().toString().contains("WALL_SIGN")) {
-                return CompatibilityUtil.getBlockData(signLocation.getBlock());
-            }
-        } catch (Exception e) {
-            // Legacy versions or invalid sign
-        }
-        return null;
     }
 
     public Location getChestLocation() {
@@ -423,36 +407,21 @@ public abstract class AbstractShop {
             // In the past we used to explicitly set the durability of an item to be 0, this caused blocks/items to be saved
             // with extra NBT data that we don't actually want. For example, dirt shouldn't have a damage of 0.
             // Detect if we set it to 0, and if so, remove it from the ItemMeta!
-            if (item.getItemMeta() instanceof Damageable && ((Damageable) item.getItemMeta()).getDamage() == 0) {
-                
-                // Use our clean ComponentUtil instead of complex reflection
-                if (ComponentUtil.isComponentStringSupported()) {
-                    ItemStack processedItem = ComponentUtil.removeZeroDamageFromItem(item);
-                    if (processedItem != null) {
-                        return processedItem;
-                    }
-                    // If ComponentUtil processing failed, fall through to legacy approach
-                }
-                
-                // Legacy fallback: create a new item without the damage
-                ItemStack newItem = new ItemStack(item.getType(), item.getAmount());
-                ItemMeta newMeta = newItem.getItemMeta();
-                ItemMeta originalMeta = item.getItemMeta();
-                
-                // Copy over basic properties that exist in legacy versions
-                if (originalMeta.hasDisplayName()) {
-                    newMeta.setDisplayName(originalMeta.getDisplayName());
-                }
-                if (originalMeta.hasLore()) {
-                    newMeta.setLore(originalMeta.getLore());
-                }
-                if (originalMeta.hasEnchants()) {
-                    newMeta.getEnchants().forEach((enchantment, level) -> 
-                        newMeta.addEnchant(enchantment, level, true));
-                }
-                
-                newItem.setItemMeta(newMeta);
-                return newItem;
+            if (MCVersion.atLeast("1.21") 
+                && item.getItemMeta() instanceof Damageable 
+                && ((Damageable) item.getItemMeta()).getDamage() == 0
+            ) {
+                String components = item.getItemMeta().getAsComponentString(); // example: "[minecraft:damage=53]"
+
+                // Remove it from the array
+                components = components.replace(",minecraft:damage=0", ""); // Middle of an array
+                components = components.replace("minecraft:damage=0,", ""); // Start of an array
+                components = components.replace("minecraft:damage=0", ""); // Only object in array
+
+                // Convert it back into an item
+                String itemTypeKey = item.getType().getKey().toString(); // example: "minecraft:diamond_sword"
+                String itemAsString = itemTypeKey + components; // results in: "minecraft:diamond_sword[minecraft:damage=53]"
+                return Bukkit.getItemFactory().createItemStack(itemAsString);
             }
 
             // Default return original item
@@ -593,9 +562,10 @@ public abstract class AbstractShop {
             }
         }
 
-        Block b = this.getSignLocation().getBlock();
-        if (b.getType().toString().contains("WALL_SIGN")) {
-            Sign signBlock = (Sign) b.getState();
+        // Clear sign text on delete
+        Block block = this.getSignLocation().getBlock();
+        if (SignUtil.isWallSign(block)) {
+            Sign signBlock = (Sign) block.getState();
             signBlock.setLine(0, "");
             signBlock.setLine(1, "");
             signBlock.setLine(2, "");
@@ -605,7 +575,7 @@ public abstract class AbstractShop {
 
         //finally remove the shop from the shop handler
         Shop.getPlugin().getShopHandler().removeShop(this);
-        Shop.getPlugin().getShopLogger().debug("Deleted Shop " + this);
+        Shop.getPlugin().getShopLogger().helpful("Deleted Shop " + this);
     }
 
     public void teleportPlayer(Player player){

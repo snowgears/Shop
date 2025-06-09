@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Define variables
-IMAGE_NAME="spigot-buildtools"
+IMAGE_NAME="spigot-buildtools:dev"
 CONTAINER_NAME="spigot-builder"
-LOCAL_DIR="./SpigotBuildTools"
+LOCAL_DIR="./SpigotBuildTools-two"
 DOCKERHUB_IMAGE="ostlerdev/spigot-maven:latest"
 
 # Add a condition to check if the SpigotBuildTools directory already exists and has content

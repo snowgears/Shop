@@ -9,6 +9,7 @@ import com.snowgears.shop.util.DisplayUtil;
 import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.util.UtilMethods;
 import com.snowgears.shop.util.MCVersion;
+import com.snowgears.shop.util.SignUtil;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -404,7 +405,7 @@ public abstract class AbstractDisplay {
                 for(Entity e : this.getShop().getChestLocation().getWorld().getNearbyEntities(this.getItemDropLocation(false), 1, 1, 1)){
                     if(e.getType() == EntityType.ITEM_FRAME){
                         ItemFrame i = (ItemFrame)e;
-                        BlockFace signFacing = CompatibilityUtil.getWallSignFacing(getShop().getSignLocation().getBlock());
+                        BlockFace signFacing = SignUtil.getFacing(getShop().getSignLocation().getBlock());
                         if(signFacing != null && i.getAttachedFace() == signFacing.getOppositeFace()) {
                             skip = true;
                             break;

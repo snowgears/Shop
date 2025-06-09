@@ -102,7 +102,7 @@ public class ShopListener implements Listener {
 
         //player clicked the sign of a shop
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK) {
-            if (event.getClickedBlock().getType().toString().contains("WALL_SIGN")) {
+            if (SignUtil.isWallSign(event.getClickedBlock())) {
                 AbstractShop shop = plugin.getShopHandler().getShop(event.getClickedBlock().getLocation());
                 if (shop == null || !shop.isInitialized())
                     return;
@@ -154,8 +154,8 @@ public class ShopListener implements Listener {
                 }
 
                 if((!plugin.getShopHandler().isChest(shop.getChestLocation().getBlock())) 
-                    || !shop.getSignLocation().getBlock().getType().toString().contains("WALL_SIGN")){
-                    plugin.getShopLogger().warning("Deleting Shop because chest does not exist, or sign is not exist! " + shop);
+                    || !SignUtil.isWallSign(shop.getSignLocation().getBlock())){
+                    plugin.getShopLogger().warning("Deleting Shop because chest does not exist, and/or sign is not exist! " + shop);
                     shop.delete();
                     return;
                 }

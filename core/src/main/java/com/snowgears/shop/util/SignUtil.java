@@ -28,4 +28,8 @@ public class SignUtil {
         org.bukkit.material.Sign sign = (org.bukkit.material.Sign) signBlock.getState().getData();
         return sign.getAttachedFace();
     }
+
+    public static boolean isWallSign(Block signBlock) {
+        return signBlock.getType().toString().contains("WALL_SIGN");
+    }
 }

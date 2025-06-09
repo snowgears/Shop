@@ -32,6 +32,7 @@ import java.util.*;
 import com.tcoded.folialib.wrapper.task.WrappedTask;
 import com.snowgears.shop.util.CompatibilityUtil;
 import com.snowgears.shop.util.MCVersion;
+import com.snowgears.shop.util.SignUtil;
 
 public class DisplayListener implements Listener {
 
@@ -54,7 +55,7 @@ public class DisplayListener implements Listener {
                                 // transparent should be `null` so that only air is transparent
                                 block = player.getTargetBlock(null, 8);
                             }
-                            if (block != null && block.getType().toString().contains("WALL_SIGN")) {
+                            if (block != null && SignUtil.isWallSign(block)) {
                                 AbstractShop shopObj = plugin.getShopHandler().getShop(block.getLocation());
                                 if (shopObj != null) {
                                     shopObj.getDisplay().showDisplayTags(player);

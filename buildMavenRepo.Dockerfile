@@ -16,6 +16,8 @@ RUN java -jar BuildTools.jar --rev 1.8.8 && \
     java -jar BuildTools.jar --rev 1.10.2 && \
     java -jar BuildTools.jar --rev 1.11.2 && \
     java -jar BuildTools.jar --rev 1.12.2 && \
+    java -jar BuildTools.jar --rev 1.13 && \
+    java -jar BuildTools.jar --rev 1.13.2 && \
     rm -r /app/*
 
 # Stage 1: Build older versions with jdk13

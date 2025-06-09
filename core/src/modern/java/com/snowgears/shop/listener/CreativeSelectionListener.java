@@ -12,6 +12,7 @@ import com.snowgears.shop.util.PlayerData;
 import com.snowgears.shop.util.ShopActionType;
 import com.snowgears.shop.util.ShopCreationProcess;
 import com.snowgears.shop.util.ShopMessage;
+import com.snowgears.shop.util.SignUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -64,7 +65,7 @@ public class CreativeSelectionListener implements Listener {
         if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
             final Block clicked = event.getClickedBlock();
 
-            if (clicked.getType().toString().contains("WALL_SIGN")) {
+            if (SignUtil.isWallSign(clicked)) {
                 AbstractShop shop = plugin.getShopHandler().getShop(clicked.getLocation());
                 if (shop == null) {
                     return;

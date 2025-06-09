@@ -3,6 +3,8 @@ package com.snowgears.shop.util;
 import org.bukkit.Material;
 import net.md_5.bungee.api.chat.TranslatableComponent;
 import net.md_5.bungee.api.chat.TextComponent;
+import java.util.List;
+import java.util.ArrayList;
 
 public class MaterialUtil {
     public static Material of(String type) { return getMaterial(type); }
@@ -22,6 +24,30 @@ public class MaterialUtil {
         }
     }
 
+    public static List<Material> signTypes = getSignTypes();
+
+    public static List<Material> getSignTypes() {
+        List<Material> signTypes = new ArrayList<>();
+        Material[] materials = Material.values();
+        for (Material material : materials) {
+            if (material.name().contains("SIGN")) {
+                signTypes.add(material);
+            }
+        }
+        return signTypes;
+    }
+
+    public static List<Material> getWallSignTypes() {
+        List<Material> wallSignTypes = new ArrayList<>();
+
+        Material[] materials = Material.values();
+        for (Material material : materials) {
+            if (material.name().contains("WALL_SIGN")) {
+                wallSignTypes.add(material);
+            }
+        }
+        return wallSignTypes;
+    }
 
     public static TextComponent getTranslatableComponent(Material material) {
         if (TranslationUtil.isSupported()) {

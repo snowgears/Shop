@@ -15,6 +15,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.BlockStateMeta;
 // TODO: Phase 2 - Add conditional import for ArmorMeta (Java 17+ only)
 // import org.bukkit.inventory.meta.ArmorMeta;
 import org.bukkit.util.EulerAngle;
@@ -275,8 +276,45 @@ public class UtilMethods {
     // -1 - RIGHT SIDE
     // 0 - EXACT CENTER
     public static int calculateSideFromClickedSign(Player player, Block signBlock){
-        // Use our clean WallSignUtil instead of complex reflection
-        return WallSignUtil.calculateSideFromClickedSign(player, signBlock);
+        if(!SignUtil.isWallSign(signBlock))
+            return 0;
+        BlockFace attachedFace = SignUtil.getFacing(signBlock).getOppositeFace();
+        Location chest = signBlock.getRelative(attachedFace).getLocation().add(0.5,0.5,0.5);
+        Location head = player.getLocation().add(0, player.getEyeHeight(), 0);
+
+        Vector direction = head.subtract(chest).toVector().normalize();
+        Vector look = player.getLocation().getDirection().normalize();
+
+        Vector cp = direction.crossProduct(look);
+
+        double d = 0;
+        switch(attachedFace){
+            case NORTH:
+                d = cp.getZ();
+                break;
+            case SOUTH:
+                d = cp.getZ() * -1;
+                break;
+            case EAST:
+                d = cp.getX() * -1;
+                break;
+            case WEST:
+                d = cp.getX();
+                break;
+            default:
+                break;
+        }
+
+        if(player.getLocation().getPitch() < 0)
+            d = -d;
+        //System.out.println("Side clicked: "+d);
+
+        if(d > 0)
+            return 1;
+        else if(d < 0)
+            return -1;
+        else
+            return 0;
     }
 
     public static String convertDurationToString(int duration) {
@@ -456,21 +494,29 @@ public class UtilMethods {
             displayHandler.addMusicInstrumentDisplayInfo(item, formattedMessage);
             
             // Add support for displaying bee hive/nest information (MC 1.15+ only)
-            if(itemType.equals("BEE_NEST") || itemType.equals("BEEHIVE")) {
-                if (BeehiveUtil.isBeehiveSupported()) {
-                    if(item.getItemMeta() instanceof org.bukkit.inventory.meta.BlockStateMeta) {
-                        org.bukkit.inventory.meta.BlockStateMeta blockStateMeta = (org.bukkit.inventory.meta.BlockStateMeta) item.getItemMeta();
-                        
-                        if(blockStateMeta.hasBlockState()) {
-                            // Use our clean BeehiveUtil instead of complex reflection
-                            Object blockState = blockStateMeta.getBlockState();
-                            String beehiveInfo = BeehiveUtil.formatBeehiveInfo(blockState);
-                            if (!beehiveInfo.isEmpty()) {
-                                formattedMessage.addExtra(beehiveInfo);
-                            }
+            if(MCVersion.atLeast("1.15") && (itemType.equals("BEE_NEST") || itemType.equals("BEEHIVE"))) {
+                try {
+                    org.bukkit.block.Beehive beehive = (org.bukkit.block.Beehive) ((BlockStateMeta) item.getItemMeta()).getBlockState();
+                    int honeyLevel = 0;
+                    int beeCount = 0;
+
+                    // Get honey level (this is from BlockData)
+                    honeyLevel = ((org.bukkit.block.data.type.Beehive) beehive.getBlockData()).getHoneyLevel();
+                    // Get bee count (this is from the entity storage)
+                    beeCount = beehive.getEntityCount();
+
+                    // Format the message
+                    if(honeyLevel > 0 || beeCount > 0) {
+                        StringBuilder beeInfo = new StringBuilder(" [");
+                        if(honeyLevel > 0) {
+                            beeInfo.append("Honey: ").append(honeyLevel).append("/5");
+                            if(beeCount > 0) { beeInfo.append(", "); }
                         }
+                        if(beeCount > 0) { beeInfo.append("Bees: ").append(beeCount); }
+                        beeInfo.append("]");
+                        formattedMessage.addExtra(beeInfo.toString());
                     }
-                }
+                } catch (Exception e) {}
             }
         }
 
@@ -666,41 +712,21 @@ public class UtilMethods {
             if(!m.isSolid())
                 nonIntrusiveMaterials.add(m);
         }
+
+        // Legacy < 1.13 materials (pre-flattening)
+        if (!MCVersion.atLeast("1.13")) {
+            nonIntrusiveMaterials.add(MaterialUtil.of("WALL_SIGN"));
+            nonIntrusiveMaterials.remove(MaterialUtil.of("ENDER_PORTAL"));
+            nonIntrusiveMaterials.remove(MaterialUtil.of("PORTAL"));
+            nonIntrusiveMaterials.remove(MaterialUtil.of("SKULL"));
+        }
         
-        // Add wall sign materials - these were added in MC 1.13+ (The Flattening)
-        try{
-            nonIntrusiveMaterials.add(MaterialUtil.of("WARPED_WALL_SIGN"));
-        } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
-        try{
-            nonIntrusiveMaterials.add(MaterialUtil.of("ACACIA_WALL_SIGN"));
-        } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
-        try{
-            nonIntrusiveMaterials.add(MaterialUtil.of("BIRCH_WALL_SIGN"));
-        } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
-        try{
-            nonIntrusiveMaterials.add(MaterialUtil.of("CRIMSON_WALL_SIGN"));
-        } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
-        try{
-            nonIntrusiveMaterials.add(MaterialUtil.of("DARK_OAK_WALL_SIGN"));
-        } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
-        try{
-            nonIntrusiveMaterials.add(MaterialUtil.of("JUNGLE_WALL_SIGN"));
-        } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
-        try{
-            nonIntrusiveMaterials.add(MaterialUtil.of("OAK_WALL_SIGN"));
-        } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
-        try{
-            nonIntrusiveMaterials.add(MaterialUtil.of("SPRUCE_WALL_SIGN"));
-        } catch(NoSuchFieldError e){ /* Material doesn't exist in this version */ }
-        
-        // Fallback for legacy versions - add the old WALL_SIGN material
-        try{
-            nonIntrusiveMaterials.add(MaterialUtil.of("LEGACY_WALL_SIGN"));
-        } catch(NoSuchFieldError e){ 
-            // Try the pre-legacy WALL_SIGN material for very old versions using valueOf
-            try{
-                nonIntrusiveMaterials.add(MaterialUtil.of("WALL_SIGN"));
-            } catch(IllegalArgumentException e2){ /* Material doesn't exist, skip */ }
+        // Add new sign types (MC 1.14+)
+        if (MCVersion.atLeast("1.14")) {
+            // Get all sign types from MaterialUtil, then loop through them and add them to nonIntrusiveMaterials
+            for (Material signType : MaterialUtil.getWallSignTypes()) {
+                nonIntrusiveMaterials.add(signType);
+            }
         }
         
         nonIntrusiveMaterials.remove(Material.WATER);
@@ -717,26 +743,6 @@ public class UtilMethods {
         
         // Add LIGHT material if available
         try { nonIntrusiveMaterials.add(MaterialUtil.of("LIGHT")); } catch(NoSuchFieldError e) {}
-    }
-
-    public static BlockFace getDirectionOfChest(Block block){
-        // Use our clean DirectionalUtil instead of complex reflection
-        BlockFace direction = DirectionalUtil.getDirectionOfBlock(block);
-        if (direction != null) {
-            return direction;
-        }
-        
-        // Legacy fallback using MaterialData if DirectionalUtil can't handle it
-        Object blockData = CompatibilityUtil.getBlockData(block);
-        if (blockData instanceof org.bukkit.material.MaterialData) {
-            org.bukkit.material.MaterialData materialData = (org.bukkit.material.MaterialData) blockData;
-            if (materialData instanceof org.bukkit.material.Directional) {
-                org.bukkit.material.Directional directional = (org.bukkit.material.Directional) materialData;
-                return directional.getFacing();
-            }
-        }
-        
-        return null;
     }
 
     //returns if Minecraft version 1.17 or above

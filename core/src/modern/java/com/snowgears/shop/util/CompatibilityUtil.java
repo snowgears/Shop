@@ -222,52 +222,6 @@ public class CompatibilityUtil {
     }
     
     /**
-     * Gets an integer value from PersistentDataContainer using modern API.
-     */
-    public static int getPersistentDataInt(Object container, Object namespacedKey, int defaultValue) {
-        if (container instanceof PersistentDataContainer && namespacedKey instanceof NamespacedKey) {
-            PersistentDataContainer pdc = (PersistentDataContainer) container;
-            NamespacedKey key = (NamespacedKey) namespacedKey;
-            return pdc.getOrDefault(key, PersistentDataType.INTEGER, defaultValue);
-        }
-        return defaultValue;
-    }
-    
-    /**
-     * Sets an integer value in PersistentDataContainer using modern API.
-     */
-    public static void setPersistentDataInt(Object container, Object namespacedKey, int value) {
-        if (container instanceof PersistentDataContainer && namespacedKey instanceof NamespacedKey) {
-            PersistentDataContainer pdc = (PersistentDataContainer) container;
-            NamespacedKey key = (NamespacedKey) namespacedKey;
-            pdc.set(key, PersistentDataType.INTEGER, value);
-        }
-    }
-
-    /**
-     * Gets a string value from PersistentDataContainer using modern API.
-     */
-    public static String getPersistentDataString(Object container, Object namespacedKey, String defaultValue) {
-        if (container instanceof PersistentDataContainer && namespacedKey instanceof NamespacedKey) {
-            PersistentDataContainer pdc = (PersistentDataContainer) container;
-            NamespacedKey key = (NamespacedKey) namespacedKey;
-            return pdc.getOrDefault(key, PersistentDataType.STRING, defaultValue);
-        }
-        return defaultValue;
-    }
-    
-    /**
-     * Sets a string value in PersistentDataContainer using modern API.
-     */
-    public static void setPersistentDataString(Object container, Object namespacedKey, String value) {
-        if (container instanceof PersistentDataContainer && namespacedKey instanceof NamespacedKey) {
-            PersistentDataContainer pdc = (PersistentDataContainer) container;
-            NamespacedKey key = (NamespacedKey) namespacedKey;
-            pdc.set(key, PersistentDataType.STRING, value);
-        }
-    }
-    
-    /**
      * Sets item data using PersistentDataContainer (modern approach).
      */
     public static void setItemData(ItemStack item, String key, String value) {
@@ -304,27 +258,6 @@ public class CompatibilityUtil {
         return defaultValue;
     }
     
-    /**
-     * Removes item data using PersistentDataContainer (modern approach).
-     */
-    public static void removeItemData(ItemStack item, String key) {
-        if (!MCVersion.atLeast("1.13")) {
-            removeLegacyItemData(item, key);
-            return;
-        }
-
-        if (item == null || item.getItemMeta() == null) return;
-        
-        ItemMeta meta = item.getItemMeta();
-        NamespacedKey namespacedKey = createNamespacedKey(Shop.getPlugin(), key);
-        if (namespacedKey != null) {
-            meta.getPersistentDataContainer().remove(namespacedKey);
-            item.setItemMeta(meta);
-        }
-    }
-
-
-    
     // Legacy implementation using lore-based storage
     private static void setLegacyItemData(ItemStack item, String key, String value) {
         ItemMeta meta = item.getItemMeta();
@@ -356,102 +289,5 @@ public class CompatibilityUtil {
             }
         }
         return defaultValue;
-    }
-    
-    private static void removeLegacyItemData(ItemStack item, String key) {
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null || !meta.hasLore()) return;
-        
-        List<String> lore = new ArrayList<>(meta.getLore());
-        lore.removeIf(line -> line.contains("§7§k§r" + key + ":"));
-        
-        meta.setLore(lore);
-        item.setItemMeta(meta);
-    }
-    
-    // =================================
-    // BlockData Methods (delegate to BlockDataUtil)
-    // =================================
-    
-    /**
-     * Checks if a block is a wall sign.
-     * @deprecated Use BlockDataUtil.isWallSign() instead
-     */
-    @Deprecated
-    public static boolean isWallSignBlock(Block block) {
-        return BlockDataUtil.isWallSign(block);
-    }
-    
-    /**
-     * Gets the facing direction from a wall sign block.
-     * @deprecated Use BlockDataUtil.getSignFacing() instead
-     */
-    @Deprecated
-    public static BlockFace getWallSignFacing(Block block) {
-        return BlockDataUtil.getSignFacing(block);
-    }
-    
-    /**
-     * Sets the facing direction of a wall sign.
-     * @deprecated Use BlockDataUtil.setSignFacing() instead
-     */
-    @Deprecated
-    public static boolean setWallSignFacing(Block signBlock, BlockFace direction) {
-        return BlockDataUtil.setSignFacing(signBlock, direction);
-    }
-    
-    /**
-     * Converts a regular sign to a wall sign and sets its facing direction.
-     * @deprecated Use BlockDataUtil.convertToWallSign() instead
-     */
-    @Deprecated
-    public static boolean convertToWallSign(Block signBlock, BlockFace direction) {
-        return BlockDataUtil.convertToWallSign(signBlock, direction);
-    }
-    
-    /**
-     * Gets block data using version-appropriate methods.
-     * @deprecated Use BlockDataUtil.getBlockData() instead
-     */
-    @Deprecated
-    public static Object getBlockData(Block block) {
-        return BlockDataUtil.getBlockData(block);
-    }
-    
-    /**
-     * Sets block data using version-appropriate methods.
-     * @deprecated Use BlockDataUtil.setBlockData() instead
-     */
-    @Deprecated
-    public static boolean setBlockData(Block block, Object data) {
-        return BlockDataUtil.setBlockData(block, data);
-    }
-    
-    /**
-     * Checks if a material is a shulker box.
-     * @deprecated Use BlockDataUtil.isShulkerBox() instead
-     */
-    @Deprecated
-    public static boolean isShulkerBox(Material material) {
-        return BlockDataUtil.isShulkerBox(material);
-    }
-    
-    /**
-     * Log all detected compatibility features (useful for debugging)
-     */
-    public static void logCompatibilityInfo() {
-        if (Shop.getPlugin() != null) {
-            Shop.getPlugin().getShopLogger().info("=== Modern Compatibility Detection Results ===");
-            Shop.getPlugin().getShopLogger().info("Minecraft Version: " + MC_VERSION);
-            Shop.getPlugin().getShopLogger().info("Needs InventoryView Reflection: " + NEEDS_INVENTORY_VIEW_REFLECTION);
-            Shop.getPlugin().getShopLogger().info("ArmorMeta: " + HAS_ARMOR_META);
-            Shop.getPlugin().getShopLogger().info("OminousBottle: " + HAS_OMINOUS_BOTTLE);
-            Shop.getPlugin().getShopLogger().info("MusicInstrumentMeta: " + HAS_MUSIC_INSTRUMENT_META);
-            Shop.getPlugin().getShopLogger().info("Light Block: " + HAS_LIGHT_BLOCK);
-            Shop.getPlugin().getShopLogger().info("Glow Item Frame: " + HAS_GLOW_ITEM_FRAME);
-            Shop.getPlugin().getShopLogger().info("Translation Keys: " + HAS_GET_TRANSLATION_KEY);
-            Shop.getPlugin().getShopLogger().info("Potion Base Types: " + HAS_POTION_BASE_TYPE);
-            Shop.getPlugin().getShopLogger().info("=======================================");
-        }
     }
 } 

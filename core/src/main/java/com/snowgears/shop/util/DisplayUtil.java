@@ -12,9 +12,9 @@ import org.bukkit.entity.Item;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.material.MaterialData;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.EulerAngle;
-import org.bukkit.util.Vector;
 
 public class DisplayUtil {
 
@@ -490,13 +490,15 @@ public class DisplayUtil {
     }
 
     public static boolean isDisplay(Entity entity){
+        // @ToDo: Cleanup this weird code
         boolean foundLegacy = isDisplayLegacy(entity);
         if(foundLegacy)
             return true;
         
-        // Use our clean PersistentDataUtil instead of complex reflection
-        if(UtilMethods.isMCVersion14Plus() && PersistentDataUtil.isPersistentDataSupported()) {
-            Integer displayValue = PersistentDataUtil.getIntegerData(entity, Shop.getPlugin(), "display");
+        if(MCVersion.atLeast("1.14")) {
+            PersistentDataContainer container = entity.getPersistentDataContainer();
+            NamespacedKey namespacedKey = new NamespacedKey(Shop.getPlugin(), "display");
+            Integer displayValue = container.get(namespacedKey, PersistentDataType.INTEGER);
             return displayValue != null && displayValue == 1;
         }
         

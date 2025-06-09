@@ -53,7 +53,7 @@ public class MiscListener implements Listener {
 
         Block b = event.getBlockClicked();
 
-        if (b.getType().toString().contains("WALL_SIGN")) {
+        if (SignUtil.isWallSign(b)) {
             AbstractShop shop = plugin.getShopHandler().getShop(b.getLocation());
             if (shop != null)
                 event.setCancelled(true);
@@ -80,7 +80,7 @@ public class MiscListener implements Listener {
         if (!MCVersion.atLeast("1.13")) {
             throw new UnsupportedOperationException("Sign creation is not supported in legacy versions, til i fix this stupid shit");
         }
-        if(b.getType().toString().contains("WALL_SIGN")) {
+        if(SignUtil.isWallSign(b)) {
             signDirection = SignUtil.getFacing(b);
             chest = b.getRelative(signDirection.getOppositeFace());
         }
@@ -170,7 +170,7 @@ public class MiscListener implements Listener {
                     //the shop has still not been initialized with an item from a player
                     if (!shop.isInitialized()) {
                         plugin.getShopHandler().removeShop(shop);
-                        if (b.getType().toString().contains("WALL_SIGN")) {
+                        if (SignUtil.isWallSign(b)) {
                             String[] lines = ShopMessage.getTimeoutSignLines(shop);
                             Sign sign = (Sign) b.getState();
                             sign.setLine(0, lines[0]);
@@ -229,7 +229,7 @@ public class MiscListener implements Listener {
         if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
             final Block clicked = event.getClickedBlock();
 
-            if (clicked.getType().toString().contains("WALL_SIGN")) {
+            if (SignUtil.isWallSign(clicked)) {
 
                 if(!plugin.getAllowCreationMethodSign())
                     return;
@@ -545,7 +545,7 @@ public class MiscListener implements Listener {
         Block b = event.getBlock();
         Player player = event.getPlayer();
 
-        if (b.getType().name().contains("WALL_SIGN")) {
+        if (SignUtil.isWallSign(b)) {
             AbstractShop shop = plugin.getShopHandler().getShop(b.getLocation());
             if (shop == null)
                 return;
