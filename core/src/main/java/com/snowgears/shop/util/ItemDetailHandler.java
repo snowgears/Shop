@@ -19,9 +19,9 @@ import java.util.Map;
  * Modern implementation using Java 17+ and latest Minecraft APIs.
  * This uses direct API calls instead of reflection for better performance and readability.
  */
-public class ModernItemDisplayHandler {
+public class ItemDetailHandler {
     
-    public void addArmorDisplayInfo(ItemStack item, TextComponent component) {
+    public static void addArmorDisplayInfo(ItemStack item, TextComponent component) {
         if (!MCVersion.atLeast("1.20")) return;
         // Add armor trim info
         if (item.getItemMeta() instanceof ArmorMeta) {
@@ -35,7 +35,7 @@ public class ModernItemDisplayHandler {
         }
     }
     
-    public void addPotionDisplayInfo(ItemStack item, TextComponent component) {
+    public static void addPotionDisplayInfo(ItemStack item, TextComponent component) {
         if (item.getItemMeta() instanceof PotionMeta) {
             PotionMeta potionMeta = (PotionMeta) item.getItemMeta();
             
@@ -83,7 +83,7 @@ public class ModernItemDisplayHandler {
         return enchants;
     }
 
-    public void addEnchantmentDisplayInfo(ItemStack item, TextComponent component) {
+    public static void addEnchantmentDisplayInfo(ItemStack item, TextComponent component) {
         if (item.getEnchantments().size() > 0) {
             if (!MCVersion.atLeast("1.16")) { 
                 component.addExtra(getEnchantmentsString(item));
@@ -113,7 +113,7 @@ public class ModernItemDisplayHandler {
         }
     }
     
-    public void addOminousBottleDisplayInfo(ItemStack item, TextComponent component) {
+    public static void addOminousBottleDisplayInfo(ItemStack item, TextComponent component) {
         if (!MCVersion.atLeast("1.21")) return;
         
         if (item.getItemMeta() instanceof OminousBottleMeta) {
@@ -123,7 +123,7 @@ public class ModernItemDisplayHandler {
         }
     }
     
-    public void addMusicInstrumentDisplayInfo(ItemStack item, TextComponent component) {
+    public static void addMusicInstrumentDisplayInfo(ItemStack item, TextComponent component) {
         if (!MCVersion.atLeast("1.19")) return;
 
         if (item.getType().name().equals("GOAT_HORN") && item.getItemMeta() instanceof MusicInstrumentMeta) {
@@ -138,7 +138,7 @@ public class ModernItemDisplayHandler {
         }
     }
     
-    private TextComponent getPotionEffectsComponent(List<PotionEffect> effects) {
+    private static TextComponent getPotionEffectsComponent(List<PotionEffect> effects) {
         TextComponent formattedEffects = new TextComponent("");
         int numEffects = effects.size();
         if (numEffects == 0) return formattedEffects;

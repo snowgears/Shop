@@ -468,36 +468,33 @@ public class UtilMethods {
     public static TextComponent getEnchantmentsComponent(ItemStack item){
         TextComponent formattedMessage = new TextComponent("");
         
-        // Use our clean hybrid pattern for version-specific functionality
-        ModernItemDisplayHandler displayHandler = new ModernItemDisplayHandler();
+        // Add enchantments
+        ItemDetailHandler.addEnchantmentDisplayInfo(item, formattedMessage);
         
-        // Add enchantments using the appropriate handler
-        displayHandler.addEnchantmentDisplayInfo(item, formattedMessage);
+        // Add armor information (trims, etc.)
+        ItemDetailHandler.addArmorDisplayInfo(item, formattedMessage);
         
-        // Add armor information (trims, etc.) using the appropriate handler
-        displayHandler.addArmorDisplayInfo(item, formattedMessage);
-        
-        // Add support for displaying music disc information and goat horn sounds
+        // Item Meta details
         if(item.getItemMeta() != null) {
             String itemType = item.getType().name();
             
-            // Add support for displaying music disc information
+            // Music disc information
             if(itemType.startsWith("MUSIC_DISC_")) {
                 String trackName = itemType.replace("MUSIC_DISC_", "");
                 String formattedName = capitalize(trackName.toLowerCase().replace("_", " "));
                 formattedMessage.addExtra(" [Song: " + formattedName + "]");
             }
-            // Handle legacy music disc naming that doesn't follow the MUSIC_DISC_ prefix pattern
+            // Legacy music disc naming that doesn't follow the MUSIC_DISC_ prefix pattern
             else if(itemType.equals("MUSIC_DISC")) { formattedMessage.addExtra(" [Song: Unknown]"); }
             else if(itemType.equals("PIGSTEP")) { formattedMessage.addExtra(" [Song: Pigstep]"); }
             else if(itemType.equals("OTHERSIDE")) { formattedMessage.addExtra(" [Song: Otherside]"); }
             else if(itemType.equals("FIVE")) { formattedMessage.addExtra(" [Song: 5]"); }
             else if(itemType.equals("RELIC")) { formattedMessage.addExtra(" [Song: Relic]"); }
             
-            // Add goat horn support using the appropriate handler
-            displayHandler.addMusicInstrumentDisplayInfo(item, formattedMessage);
+            // Goat horns
+            ItemDetailHandler.addMusicInstrumentDisplayInfo(item, formattedMessage);
             
-            // Add support for displaying bee hive/nest information (MC 1.15+ only)
+            // Bee hive/nest information (MC 1.15+ only)
             if(MCVersion.atLeast("1.15") && (itemType.equals("BEE_NEST") || itemType.equals("BEEHIVE"))) {
                 try {
                     org.bukkit.block.Beehive beehive = (org.bukkit.block.Beehive) ((BlockStateMeta) item.getItemMeta()).getBlockState();
@@ -524,22 +521,22 @@ public class UtilMethods {
             }
         }
 
-        // Add ominous bottle support using the appropriate handler
-        displayHandler.addOminousBottleDisplayInfo(item, formattedMessage);
+        // Ominous bottle details
+        ItemDetailHandler.addOminousBottleDisplayInfo(item, formattedMessage);
 
-        // Add potion support using the appropriate handler
-        displayHandler.addPotionDisplayInfo(item, formattedMessage);
+        // Potion details
+        ItemDetailHandler.addPotionDisplayInfo(item, formattedMessage);
 
-        // Add detailed firework effect information
+        // Firework effect details
         if(item.getItemMeta() != null) {
-            // Handle Firework Stars
+            // Firework stars
             if(item.getItemMeta() instanceof org.bukkit.inventory.meta.FireworkEffectMeta) {
                 org.bukkit.inventory.meta.FireworkEffectMeta fireworkMeta = (org.bukkit.inventory.meta.FireworkEffectMeta) item.getItemMeta();
                 if(fireworkMeta.hasEffect()) {
                     formattedMessage.addExtra(getFormattedFireworkEffect(fireworkMeta.getEffect(), true));
                 }
             }
-            // Handle Fireworks
+            // Fireworks
             else if(item.getItemMeta() instanceof FireworkMeta) {
                 FireworkMeta fireworkMeta = (FireworkMeta) item.getItemMeta();
                 int power = fireworkMeta.getPower();
