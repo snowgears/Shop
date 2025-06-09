@@ -44,12 +44,13 @@
         <module>nms/v1_8_R3</module>
     </modules>
             <properties>
+                <!-- build with compatibility for Java 8 (MC 1.8.8) -->
                 <maven.compiler.source>8</maven.compiler.source>
                 <maven.compiler.target>8</maven.compiler.target>
                 <build.suffix></build.suffix>
                 <!-- Modern dependency versions (Java 17) -->
                 <spigot.version>1.21-R0.1-SNAPSHOT</spigot.version>
-                <hikaricp.version>5.0.1</hikaricp.version>
+                <hikaricp.version>3.4.5</hikaricp.version>
                 <h2.version>2.1.214</h2.version>
                 <junit.version>5.11.0</junit.version>
                 <mariadb.version>2.7.5</mariadb.version>
