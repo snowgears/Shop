@@ -104,6 +104,10 @@ public class ShopHandler {
         }
     }
 
+    public Class<?> getDisplayClass() {
+        return displayClass;
+    }
+
     private boolean initDisplayClass(){
         String packageName = plugin.getServer().getClass().getPackage().getName();
 
