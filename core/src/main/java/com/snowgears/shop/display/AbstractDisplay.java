@@ -8,6 +8,7 @@ import com.snowgears.shop.util.CompatibilityUtil;
 import com.snowgears.shop.util.DisplayUtil;
 import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.util.UtilMethods;
+import com.snowgears.shop.util.MCVersion;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -294,7 +295,12 @@ public abstract class AbstractDisplay {
             ArmorStandData caseStandData = new ArmorStandData();
             caseStandData.setSmall(false);
             caseStandData.setLocation(location);
-            caseStandData.setYaw(DisplayUtil.blockfaceToYaw(this.getShop().getFacing()));
+            if (MCVersion.atLeast("1.19.4")) {
+                // Set yaw if we are creating a Display Text entity to display it in the right direction :)
+                caseStandData.setYaw(DisplayUtil.blockfaceToYaw(this.getShop().getFacing()));
+            } else {
+                caseStandData.setYaw(0.0f);
+            }
 
             spawnArmorStandPacket(player, caseStandData, text);
         } catch (Error | Exception e) {
