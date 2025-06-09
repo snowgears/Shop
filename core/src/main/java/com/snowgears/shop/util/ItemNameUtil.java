@@ -110,7 +110,11 @@ public class ItemNameUtil {
         }
 
         // Fallback to the material name
-        return getNameTranslatable(item.getType());
+        if (TranslationUtil.isSupported()) {
+            return getNameTranslatable(item.getType());
+        } else {
+            return new TextComponent(UtilMethods.getItemName(item));
+        }
     }
 
     public TextComponent getNameTranslatable(Material material){

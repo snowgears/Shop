@@ -1,5 +1,6 @@
 package com.snowgears.shop.display;
 
+import com.snowgears.shop.Shop;
 import com.snowgears.shop.display.AbstractDisplay;
 import com.snowgears.shop.util.ArmorStandData;
 import net.minecraft.server.v1_8_R3.*;
@@ -192,5 +193,14 @@ public class Display_v1_8_R3 extends AbstractDisplay {
             if(player != null && displayTagEntityIDs != null)
                 displayTagEntityIDs.remove(player.getUniqueId());
         }
+    }
+
+    public static String getNMSItemName(ItemStack is) {
+        // Only used for 1.8 and below.
+        // 1.9 can use ItemMeta.getLocalizedName()
+        // 1.16 and above can use .getTranslationKey()
+        String nmsName = CraftItemStack.asNMSCopy(is).getName();
+        Shop.getPlugin().getShopLogger().info("NMS Item Name: " + nmsName);
+        return nmsName;
     }
 }

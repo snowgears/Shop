@@ -321,10 +321,25 @@ public class UtilMethods {
     public static String getItemName(ItemStack is){
         ItemMeta itemMeta = is.getItemMeta();
 
-        if (itemMeta.getDisplayName() == null || itemMeta.getDisplayName().isEmpty())
-            return capitalize(is.getType().name().replace("_", " ").toLowerCase());
-        else
+        if (itemMeta.getDisplayName() != null && !itemMeta.getDisplayName().isEmpty()) {
             return itemMeta.getDisplayName();
+        }
+
+        if (MCVersion.atLeast("1.9") && itemMeta.hasLocalizedName()) {
+            return itemMeta.getLocalizedName();
+        }
+
+        if (MCVersion.atLeast("1.8") &&!MCVersion.atLeast("1.9")) {
+            // we are on 1.8, use NMS to access the translated item name!
+            try {
+                return (String) Shop.getPlugin().getShopHandler().getDisplayClass()
+                    .getDeclaredMethod("getNMSItemName", ItemStack.class)
+                    .invoke(null, is);
+            } catch (Error | Exception e) { e.printStackTrace(); }
+        }
+
+        // Default fallback for all other cases
+        return capitalize(is.getType().name().replace("_", " ").toLowerCase());
     }
 
     public static boolean stringStartsWithUUID(String name){
