@@ -21,6 +21,7 @@ public class BentoBoxHookListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onIslandDelete(IslandDeleteEvent event) {
+        // org.bukkit.util.BoundingBox seems to not be available in 1.8, does this actually work?
         BoundingBox boundingBox = event.getIsland().getBoundingBox();
         World world = event.getIsland().getCenter().getWorld();
 

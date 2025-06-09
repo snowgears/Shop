@@ -10,7 +10,6 @@ import org.bukkit.inventory.ItemStack;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.logging.Level;
 
 public class NMSBullshitHandler {
 
@@ -21,7 +20,6 @@ public class NMSBullshitHandler {
     private Class<?> craftWorldClass;
     private Class<?> craftPlayerClass;
     private Class<?> craftChatMessageClass;
-    private Class<?> enumDirectionClass;
     
     // Cached reflection Method objects
     private Method chatMessageFromStringMethod;
