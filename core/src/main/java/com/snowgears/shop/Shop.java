@@ -30,6 +30,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import com.tcoded.folialib.FoliaLib;
 
+import de.bluecolored.bluemap.api.BlueMapAPI;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -603,35 +605,14 @@ public class Shop extends JavaPlugin {
             plugin.getShopLogger().notice("BlueMap is installed, starting BlueMap integration");
             // Wait for 2 minutes for BlueMap to become available/boot up, then initialize listener.
             foliaLib.getScheduler().runTimer(task -> {
-                // Check if BlueMapAPI classes are available before using them
-                if (CompatibilityUtil.hasBlueMapAPI()) {
-                    try {
-                        // Use reflection to avoid import issues in legacy builds
-                        Class<?> blueMapAPIClass = Class.forName("de.bluecolored.bluemap.api.BlueMapAPI");
-                        java.lang.reflect.Method getInstanceMethod = blueMapAPIClass.getMethod("getInstance");
-                        Object apiOptional = getInstanceMethod.invoke(null);
-                        
-                        // Check if Optional.isPresent()
-                        java.lang.reflect.Method isPresentMethod = apiOptional.getClass().getMethod("isPresent");
-                        boolean isPresent = (Boolean) isPresentMethod.invoke(apiOptional);
-                        
-                        if (isPresent) {
-                            plugin.getShopLogger().debug("BlueMap is ready, creating BlueMap listener");
-                            bluemapHookListener = new BluemapHookListener(plugin);
-                            getServer().getPluginManager().registerEvents(bluemapHookListener, plugin);
-                            // Make sure we load the markers in case there are shops that BlueMap doesn't know about
-                            bluemapHookListener.reloadMarkers(shopHandler);
-                            // Mark the task as complete and cancel the timer
-                            foliaLib.getScheduler().cancelTask(task);
-                        }
-                    } catch (Exception e) {
-                        plugin.getShopLogger().warning("Failed to initialize BlueMap integration: " + e.getMessage());
-                        foliaLib.getScheduler().cancelTask(task);
-                    }
-                } else {
-                    plugin.getShopLogger().warning("BlueMapAPI not available in this Minecraft version - BlueMap integration disabled");
-                    foliaLib.getScheduler().cancelTask(task);
-                }
+                BlueMapAPI.getInstance().ifPresent(api -> {
+                    plugin.getShopLogger().debug("BlueMap is ready, creating BlueMap listener");
+                    bluemapHookListener = new BluemapHookListener(plugin);
+                    getServer().getPluginManager().registerEvents(bluemapHookListener, plugin);
+                    // Make sure we load the markers in case there are shops that BlueMap doesn't know about
+                    bluemapHookListener.reloadMarkers(shopHandler);
+                    // Mark the task as complete and cancel the timer
+                });
             }, 20, 20); // Check every second (20 ticks) until BlueMap is booted
         }
 
