@@ -86,6 +86,11 @@ RUN java -jar BuildTools.jar --remapped --rev 1.20.6 && \
     java -jar BuildTools.jar --remapped --rev 1.21.1 && \
     rm -r /app/*
 
+# Stage 4: Busybox container to keep it running so we can copy the maven repo
+FROM --platform=linux/amd64 busybox:latest AS busybox
+
+COPY --from=jdk21 /root/.m2 /root/.m2
+
 # Keep container running
 CMD ["sleep", "infinity"]
 

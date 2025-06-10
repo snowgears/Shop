@@ -15,7 +15,7 @@ echo ""
 echo "Building using Java 21 (Java 8 compatibility)..."
 echo "--------------------------------------"
 sdk use java 21.0.7-amzn
-mvn clean compile package -T 2C -P modern
+mvn clean compile package -T 2C
 
 if [ $? -eq 0 ]; then
     echo "Build done!"
