@@ -64,6 +64,10 @@
             <id>dmulloy2-repo</id>
             <url>https://repo.dmulloy2.net/repository/public/</url>
         </repository>
+        <repository>
+            <id>bungee-repo</id>
+            <url>https://oss.sonatype.org/content/groups/public/</url>
+        </repository>
     </repositories>
 
     <dependencyManagement>
@@ -211,6 +215,11 @@
             <artifactId>bentobox</artifactId>
             <version>1.21.1</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.OstlerDev.ChatComponentAPI</groupId>
+            <artifactId>ChatComponentAPI</artifactId>
+            <version>v1.12.1</version>
         </dependency>
     </dependencies>
 

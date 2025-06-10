@@ -7,6 +7,7 @@ import com.snowgears.shop.shop.AbstractShop;
 import com.snowgears.shop.shop.ComboShop;
 import com.snowgears.shop.shop.ShopType;
 import net.md_5.bungee.api.chat.*;
+import net.pl3x.bukkit.chatapi.ComponentSender;
 
 import org.bukkit.Bukkit;
 import net.md_5.bungee.api.ChatColor;
@@ -257,7 +258,12 @@ public class ShopMessage {
         // if(!ChatColor.stripColor(fancyMessage.toLegacyText()).trim().isEmpty())
         plugin.getShopLogger().debug("Sent msg to player " + player.getName() + ": " + fancyMessage.toLegacyText(), true);
         try {
-            if (!MCVersion.atLeast("1.13")) { player.sendMessage(fancyMessage.toLegacyText()); return; }
+            if (!MCVersion.atLeast("1.13")) {
+                // Use ChatComponentAPI to send the message for legacy versions
+                // https://github.com/OstlerDev/ChatComponentAPI
+                ComponentSender.sendMessage(player, fancyMessage);
+                return; 
+            }
             player.spigot().sendMessage(fancyMessage);
             return;
         } catch (JsonParseException e) {
@@ -568,6 +574,10 @@ public class ShopMessage {
             
             BaseComponent msg;
             String legacyText = UtilMethods.removeColorsIfOnlyWhite(message.toLegacyText());
+
+            if (legacyText.trim().isEmpty()) {
+                return message;
+            }
             
             // Use the universally available TextComponent.fromLegacyText() method - no reflection needed
             BaseComponent[] components = TextComponent.fromLegacyText(legacyText);
@@ -591,19 +601,16 @@ public class ShopMessage {
 
     private static HoverEvent getTransactionsHoverEvent(PlaceholderContext context) {
         try {
-            BaseComponent hoverText;
             String transactionLore = context.getOfflineTransactions().getTransactionsLore();
             
             // Use the universally available TextComponent.fromLegacyText() method - no reflection needed
             BaseComponent[] components = TextComponent.fromLegacyText(transactionLore);
-            if (components.length > 0) {
-                hoverText = components[0];
-            } else {
-                hoverText = new TextComponent(transactionLore);
+            if (components.length == 0) {
+                components = new BaseComponent[]{new TextComponent(transactionLore)};
             }
             
-            return new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{hoverText});
-        } catch (Exception e) {}
+            return new HoverEvent(HoverEvent.Action.SHOW_TEXT, components);
+        } catch (Exception e) { e.printStackTrace(); }
         return null;
     }
 
@@ -617,7 +624,12 @@ public class ShopMessage {
                 // Add new lines between text
                 hoverText.addExtra(format(line + (i == hoverLines.size() ? "" : "\n"), context));
             }
-            return new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{hoverText});
+            // We need to remove any nested hover events, since legacy versions don't like them
+            // When a hover event has no text, it will be replaced with "null", so we need to remove that
+            // It's a bit of a hack, but it works well...
+            String legacyText = hoverText.toLegacyText().replace("§fnull§f", "§f");
+            BaseComponent[] components = TextComponent.fromLegacyText(legacyText);
+            return new HoverEvent(HoverEvent.Action.SHOW_TEXT, components);
         } catch (Exception e) {}
         return null;
     }

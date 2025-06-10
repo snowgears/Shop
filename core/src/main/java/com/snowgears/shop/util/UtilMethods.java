@@ -374,10 +374,12 @@ public class UtilMethods {
         if (MCVersion.atLeast("1.8") &&!MCVersion.atLeast("1.9")) {
             // we are on 1.8, use NMS to access the translated item name!
             try {
-                return (String) Shop.getPlugin().getShopHandler().getDisplayClass()
                     .getDeclaredMethod("getNMSItemName", ItemStack.class)
                     .invoke(null, is);
-            } catch (Error | Exception e) { e.printStackTrace(); }
+                if (itemName != null) {
+                    return itemName;
+                }
+            } catch (Error | Exception e) {}
         }
 
         // Default fallback for all other cases
