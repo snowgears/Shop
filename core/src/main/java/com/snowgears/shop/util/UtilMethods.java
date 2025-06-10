@@ -367,12 +367,22 @@ public class UtilMethods {
             return itemMeta.getDisplayName();
         }
 
-        if (MCVersion.atLeast("1.9") && itemMeta.hasLocalizedName()) {
+        // 1.16+
+        if (UtilMethods.isTranslationSupported()) {
+            String translationKey = is.getType().getTranslationKey();
+            if (translationKey != null && !translationKey.isEmpty()) {
+                return (new TranslatableComponent(translationKey)).toLegacyText();
+            }
+        }
+
+        // 1.12+
+        if (MCVersion.atLeast("1.12") && itemMeta.hasLocalizedName()) {
             return itemMeta.getLocalizedName();
         }
 
-        if (MCVersion.atLeast("1.8") &&!MCVersion.atLeast("1.9")) {
-            // we are on 1.8, use NMS to access the translated item name!
+        // 1.8+
+        if (!MCVersion.atLeast("1.12")) {
+            // we are on 1.8 -> 1.10, use NMS to access the translated item name!
             try {
                 String itemName = (String) Shop.getPlugin().getShopHandler().getDisplayClass()
                     .getDeclaredMethod("getNMSItemName", ItemStack.class)
@@ -383,7 +393,7 @@ public class UtilMethods {
             } catch (Error | Exception e) {}
         }
 
-        // Default fallback for all other cases
+        // Default fallback just in case :)
         return capitalize(is.getType().name().replace("_", " ").toLowerCase());
     }
 
@@ -716,13 +726,19 @@ public class UtilMethods {
             if(!m.isSolid())
                 nonIntrusiveMaterials.add(m);
         }
+        
+        nonIntrusiveMaterials.remove(Material.WATER);
+        nonIntrusiveMaterials.remove(Material.LAVA);
+        nonIntrusiveMaterials.remove(Material.FIRE);
 
         // Legacy < 1.13 materials (pre-flattening)
         if (!MCVersion.atLeast("1.13")) {
             nonIntrusiveMaterials.add(MaterialUtil.of("WALL_SIGN"));
+            nonIntrusiveMaterials.remove(MaterialUtil.of("END_PORTAL"));
             nonIntrusiveMaterials.remove(MaterialUtil.of("ENDER_PORTAL"));
             nonIntrusiveMaterials.remove(MaterialUtil.of("PORTAL"));
             nonIntrusiveMaterials.remove(MaterialUtil.of("SKULL"));
+            return;
         }
         
         // Add new sign types (MC 1.14+)
@@ -732,10 +748,6 @@ public class UtilMethods {
                 nonIntrusiveMaterials.add(signType);
             }
         }
-        
-        nonIntrusiveMaterials.remove(Material.WATER);
-        nonIntrusiveMaterials.remove(Material.LAVA);
-        nonIntrusiveMaterials.remove(Material.FIRE);
         
         // Remove dangerous materials that exist across versions
         try { nonIntrusiveMaterials.remove(MaterialUtil.of("END_PORTAL")); } catch(NoSuchFieldError e) {}

@@ -198,4 +198,11 @@ public class Display_v1_9_R2 extends AbstractDisplay {
                 displayTagEntityIDs.remove(player.getUniqueId());
         }
     }
+
+    public static String getNMSItemName(ItemStack is) {
+        // Only used for 1.11 and below.
+        // 1.12 can use ItemMeta.getLocalizedName()
+        // 1.16 and above can use .getTranslationKey()
+        return CraftItemStack.asNMSCopy(is).getName();
+    }
 }
