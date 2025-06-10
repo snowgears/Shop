@@ -374,6 +374,7 @@ public class UtilMethods {
         if (MCVersion.atLeast("1.8") &&!MCVersion.atLeast("1.9")) {
             // we are on 1.8, use NMS to access the translated item name!
             try {
+                String itemName = (String) Shop.getPlugin().getShopHandler().getDisplayClass()
                     .getDeclaredMethod("getNMSItemName", ItemStack.class)
                     .invoke(null, is);
                 if (itemName != null) {
