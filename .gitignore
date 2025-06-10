@@ -11,3 +11,4 @@ SpigotBuildTools
 /test/supported_versions
 /test/*.jar
 /other-branches
+/test

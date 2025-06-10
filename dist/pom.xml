@@ -45,7 +45,7 @@
             <artifactId>shop-v1_12_R1</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-        <!-- <dependency>
+        <dependency>
             <groupId>com.snowgears.shop</groupId>
             <artifactId>shop-v1_13_R1</artifactId>
             <version>${project.parent.version}</version>
@@ -54,7 +54,7 @@
             <groupId>com.snowgears.shop</groupId>
             <artifactId>shop-v1_13_R2</artifactId>
             <version>${project.parent.version}</version>
-        </dependency> -->
+        </dependency>
         <dependency>
             <groupId>com.snowgears.shop</groupId>
             <artifactId>shop-v1_14_R1</artifactId>
@@ -110,11 +110,11 @@
             <artifactId>shop-v1_19_R3</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-        <!-- <dependency>
+        <dependency>
             <groupId>com.snowgears.shop</groupId>
             <artifactId>shop-v1_20_R1</artifactId>
             <version>${project.parent.version}</version>
-        </dependency> -->
+        </dependency>
         <dependency>
             <groupId>com.snowgears.shop</groupId>
             <artifactId>shop-v1_20_R2</artifactId>

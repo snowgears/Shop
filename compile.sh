@@ -24,6 +24,7 @@ else
     exit 1
 fi
 
+rm test/Shop-*.jar
 cp target/Shop-*.jar test
 
 echo ""
