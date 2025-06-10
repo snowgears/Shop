@@ -22,9 +22,6 @@ public class CompatibilityUtil {
     public static final boolean HAS_BLOCK_DATA = true;
     public static final boolean HAS_PERSISTENT_DATA_CONTAINER = true;
     
-    // External API availability
-    private static final boolean HAS_BLUEMAP_API = hasClass("de.bluecolored.bluemap.api.BlueMapAPI");
-    
     // Entity types - always true in modern versions
     private static final boolean HAS_ITEM_ENTITY_TYPE = true;
 
@@ -46,11 +43,9 @@ public class CompatibilityUtil {
     
 
     public static boolean hasItemEntityType() { return HAS_ITEM_ENTITY_TYPE; }
-    public static boolean hasBlueMapAPI() { return HAS_BLUEMAP_API; }
     
     /**
-    /**
-     * Creates a NamespacedKey using modern API (no reflection needed).
+     * Creates a consistent reused NamespacedKey using modern API
      */
     public static NamespacedKey createNamespacedKey(Object plugin, String key) {
         if (plugin instanceof org.bukkit.plugin.Plugin) {
@@ -60,7 +55,7 @@ public class CompatibilityUtil {
     }
     
     /**
-     * Sets item data using PersistentDataContainer (modern approach).
+     * Embeds data into an item for retrieval later, supports legacy versions as well!
      */
     public static void setItemData(ItemStack item, String key, String value) {
         if (!MCVersion.atLeast("1.13")) {
@@ -79,7 +74,7 @@ public class CompatibilityUtil {
     }
     
     /**
-     * Gets item data using PersistentDataContainer (modern approach).
+     * Gets item data you stored!
      */
     public static String getItemData(ItemStack item, String key, String defaultValue) {
         if (!MCVersion.atLeast("1.13")) {
