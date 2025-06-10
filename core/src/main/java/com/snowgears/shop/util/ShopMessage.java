@@ -127,13 +127,11 @@ public class ShopMessage {
     public static ChatColor getColor(String color) {
         ChatColor newColor = null;
         if (color.matches(HEX_CODE_REGEX)) { 
-            // Not sure when ChatColor.of was introduced, but it's available in 1.17+
-            // valueOf is still available in 1.21+
-            if (MCVersion.atLeast("1.17")) {
-                newColor = ChatColor.of(color);
-            } else {
-                newColor = ChatColor.valueOf(color);
+            if (!MCVersion.atLeast("1.16")) {
+                plugin.getShopLogger().warning("Hex Colors are only supported in 1.16+! Please remove any hex colors from your config files! Color with issue: " + color);
+                return null;
             }
+            newColor = ChatColor.of(color);
         }
         else if (color.matches(COLOR_CODE_REGEX)) {
             newColor = ChatColor.getByChar(color.charAt(1));
