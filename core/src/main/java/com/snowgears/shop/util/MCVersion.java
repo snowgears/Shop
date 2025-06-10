@@ -29,14 +29,12 @@ public class MCVersion {
         
         if (currentVersionParts == null) {
             // Fallback if version parsing failed
-            System.out.println("[MCVersion] Version parsing failed");
             return false;
         }
         
         int[] requiredParts = parseVersionString(requiredVersion);
         if (requiredParts == null) {
             // Invalid required version format
-            System.out.println("[MCVersion] Invalid required version format");
             return false;
         }
         
@@ -89,7 +87,6 @@ public class MCVersion {
     private static void detectCurrentVersion() {
         try {
             String bukkitVersion = Bukkit.getBukkitVersion();
-            logDebug("Raw Bukkit version: " + bukkitVersion);
             
             // Extract version from strings like "1.20.4-R0.1-SNAPSHOT"
             String versionPart = extractVersionFromBukkitString(bukkitVersion);
@@ -97,13 +94,10 @@ public class MCVersion {
             if (versionPart != null) {
                 currentVersion = versionPart;
                 currentVersionParts = parseVersionString(versionPart);
-                logDebug("Parsed Minecraft version: " + currentVersion);
-            } else {
-                logWarning("Failed to extract version from: " + bukkitVersion);
             }
             
         } catch (Exception e) {
-            logWarning("Error detecting Minecraft version: " + e.getMessage());
+            System.out.println("[Shop] Error detecting Minecraft version: " + e.getMessage());
         }
     }
     
@@ -170,7 +164,6 @@ public class MCVersion {
             return versionParts;
             
         } catch (NumberFormatException e) {
-            logDebug("Invalid version format: " + version);
             return null;
         }
     }
@@ -194,31 +187,5 @@ public class MCVersion {
         }
         
         return 0; // Versions are equal
-    }
-    
-    /**
-     * Logs a debug message if the Shop plugin is available.
-     */
-    private static void logDebug(String message) {
-        try {
-            if (com.snowgears.shop.Shop.getPlugin() != null) {
-                com.snowgears.shop.Shop.getPlugin().getShopLogger().debug("[MCVersion] " + message);
-            }
-        } catch (Exception e) {
-            // Silently ignore - logging is not critical for functionality
-        }
-    }
-    
-    /**
-     * Logs a warning message if the Shop plugin is available.
-     */
-    private static void logWarning(String message) {
-        try {
-            if (com.snowgears.shop.Shop.getPlugin() != null) {
-                com.snowgears.shop.Shop.getPlugin().getShopLogger().warning("[MCVersion] " + message);
-            }
-        } catch (Exception e) {
-            // Silently ignore - logging is not critical for functionality
-        }
     }
 } 
