@@ -139,22 +139,8 @@ public class Shop extends JavaPlugin {
 
     public static boolean loggedDisplayDisabledWarning = false;
 
-    // // Return the custom ShopLogger so that we can log at higher levels.
-    // @Override
-    // public ShopLogger getLogger() { return logger; }
-
-    /**
-     * Returns the custom ShopLogger with legacy compatibility handling.
-     * This method provides access to all custom log levels (NOTICE, HELPFUL, DEBUG, TRACE, SPAM, HYPER)
-     * while gracefully handling legacy Minecraft versions that don't support logger overrides.
-     * 
-     * In legacy builds, the ShopLogger class itself contains built-in compatibility handling,
-     * so this method can simply return the logger instance directly.
-     * 
-     * Use this method instead of getLogger() for maximum compatibility across all Minecraft versions.
-     * 
-     * @return ShopLogger instance with built-in legacy compatibility
-     */
+    // Return the custom ShopLogger so that we can handle logging at higher levels via config
+    // You cannot @Override getLogger() in legacy versions sadly, thus, getShopLogger()
     public ShopLogger getShopLogger() {
         return logger;
     }
@@ -261,9 +247,6 @@ public class Shop extends JavaPlugin {
 
         reloadConfig();
 
-        //Legacy versions don't support NamespacedKey/PersistentDataContainer
-        //signLocationNameSpacedKey = CompatibilityUtil.createNamespacedKey(this, "signLocation");
-        //playerUUIDNameSpacedKey = CompatibilityUtil.createNamespacedKey(this, "playerUUID");
         config = YamlConfiguration.loadConfiguration(configFile);
         // Load logger values again in case the log level was changed on a reload
         this.getShopLogger().setLogLevel(config.getString("logLevel"));
@@ -274,34 +257,12 @@ public class Shop extends JavaPlugin {
         
         shopCreationUtil = new ShopCreationUtil(this);
 
-        //removed item names file after item ids are no longer used. may revisit later with new materials
-//        File itemNameFile = new File(getDataFolder(), "items.tsv");
-//        if (!itemNameFile.exists()) {
-//            itemNameFile.getParentFile().mkdirs();
-//            UtilMethods.copy(getResource("items.tsv"), itemNameFile);
-//        }
-
-        //TODO
-//        File pricesFile = new File(getDataFolder(), "prices.tsv");
-//        if (!pricesFile.exists()) {
-//            pricesFile.getParentFile().mkdirs();
-//            UtilMethods.copy(getResource("prices.tsv"), pricesFile);
-//        }
-
-    // try {
         shopListener = new ShopListener(this);
-    // } catch (Error | Exception e) {
-    //     getShopLogger().severe("Error initializing ShopListener, TransactionHandler, MiscListener, CreativeSelectionListener, DisplayListener, ShopGUIListener");
-    //     getShopLogger().severe(e.getMessage());
-    //     getShopLogger().severe(Arrays.toString(e.getStackTrace()));
-    //     e.printStackTrace();
-    // }
         transactionHandler = new TransactionHandler(this);
         miscListener = new MiscListener(this);
         creativeSelectionListener = new CreativeSelectionListener(this);
         displayListener = new DisplayListener(this);
         guiListener = new ShopGUIListener(this);
-        
 
         //TODO set all config defaults here
         //config.setDefaults();
@@ -612,6 +573,7 @@ public class Shop extends JavaPlugin {
                     // Make sure we load the markers in case there are shops that BlueMap doesn't know about
                     bluemapHookListener.reloadMarkers(shopHandler);
                     // Mark the task as complete and cancel the timer
+                    foliaLib.getScheduler().cancelTask(task);
                 });
             }, 20, 20); // Check every second (20 ticks) until BlueMap is booted
         }
