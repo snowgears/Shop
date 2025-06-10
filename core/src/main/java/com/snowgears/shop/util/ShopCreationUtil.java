@@ -13,7 +13,6 @@ import org.bukkit.Material;
 import org.bukkit.block.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.block.data.type.Light;
 
 public class ShopCreationUtil {
 
@@ -185,12 +184,7 @@ public class ShopCreationUtil {
 
             if (MCVersion.atLeast("1.17") && plugin.getDisplayLightLevel() > 0) {
                 Block displayBlock = shop.getChestLocation().getBlock().getRelative(BlockFace.UP);
-                if (UtilMethods.materialIsNonIntrusive(displayBlock.getType())) {
-                    displayBlock.setType(Material.LIGHT);
-                    Light data = (Light) displayBlock.getBlockData();
-                    data.setLevel(plugin.getDisplayLightLevel());
-                    displayBlock.setBlockData(data);
-                }
+                MaterialUtil.setLightBlockData(displayBlock, plugin.getDisplayLightLevel());
             }
 
             if (type == ShopType.GAMBLE) {

@@ -1,10 +1,14 @@
 package com.snowgears.shop.util;
 
+import com.snowgears.shop.Shop;
+
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import net.md_5.bungee.api.chat.TranslatableComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import java.util.List;
 import java.util.ArrayList;
+import java.lang.reflect.Method;
 
 public class MaterialUtil {
     public static Material of(String type) { return getMaterial(type); }
@@ -20,6 +24,7 @@ public class MaterialUtil {
 
             return Material.valueOf(type.toUpperCase());
         } catch (Error | Exception e) {
+            Shop.getPlugin().getShopLogger().warning("Error getting material! " + e.getMessage());
             return null;
         }
     }
@@ -55,5 +60,32 @@ public class MaterialUtil {
         } else {
             return new TextComponent(material.name());
         }
+    }
+
+    public static void setLightBlockData(Block block, int level){
+        // Requires 1.17+ for Light block
+        if (!MCVersion.atLeast("1.17")) return;
+
+        // For some reason versions that don't have the BlockData class freak out
+        // if you even reference org.bukkit.block.data.type.Light anywhere in your code
+        // even if you do not use it! It throws an error on startup when the class is first loaded.
+        // So we have to use reflection to set the light level.
+        try {
+            block.setType(Material.LIGHT);
+            // Set light level into BlockData
+            Class<?> lightClass = Class.forName("org.bukkit.block.data.type.Light");
+            Object light = lightClass.getDeclaredConstructor().newInstance();
+            Method setLevel = lightClass.getDeclaredMethod("setLevel", int.class);
+            setLevel.invoke(light, level);
+            // Set Light BlockData into the Block
+            MaterialUtil.setBlockData(block, light);
+        } catch (Error | Exception e) {}
+    }
+
+    public static void setBlockData(Block block, Object blockData){
+        try {
+            Method setBlockData = Block.class.getDeclaredMethod("setBlockData", Class.forName("org.bukkit.block.BlockData"));
+            setBlockData.invoke(block, blockData);
+        } catch (Error | Exception e) {}
     }
 }
