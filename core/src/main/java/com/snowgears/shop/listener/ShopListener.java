@@ -24,10 +24,12 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.scheduler.BukkitRunnable;
 import com.tcoded.folialib.wrapper.task.WrappedTask;
 
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -176,8 +178,17 @@ public class ShopListener implements Listener {
                     try { 
                         mainhandItem = player.getInventory().getItemInMainHand().getType(); 
                         // in 1.8.8 it used to be `player.getItemInHand()`
-                    } catch (NoSuchMethodError error) { mainhandItem = Material.AIR; }
-                    if(mainhandItem.toString().contains("SIGN")) {
+                    } catch (NoSuchMethodError error) { 
+                        try {
+                            Method getItemInHand = Player.class.getDeclaredMethod("getItemInHand");
+                            getItemInHand.setAccessible(true);
+                            ItemStack itemInHand = (ItemStack) getItemInHand.invoke(player);
+                            mainhandItem = itemInHand.getType();
+                        } catch (Error | Exception e) {
+                            mainhandItem = Material.AIR;
+                        }
+                    }
+                    if(!mainhandItem.toString().contains("SIGN")) {
 
                         boolean actionPerformed = shop.executeClickAction(event, ShopClickType.SHIFT_RIGHT_CLICK_CHEST);
 

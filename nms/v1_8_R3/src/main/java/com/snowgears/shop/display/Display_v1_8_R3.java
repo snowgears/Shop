@@ -76,7 +76,10 @@ public class Display_v1_8_R3 extends AbstractDisplay {
         nbtTagCompound.setBoolean("Invulnerable", true);
 
         EntityArmorStand armorStand = new EntityArmorStand(worldServer, location.getX(), location.getY(), location.getZ());
-        armorStand.setLocation(location.getX(), location.getY(), location.getZ(), (float)armorStandData.getYaw(), 0);
+        // If we are just a text display we need an offset to make the text not appear in the air
+        // This is because we are not doing armorstand.f() for some reason.
+        float textYOffset = text != null ? 1.8f : 0.0f;
+        armorStand.setLocation(location.getX(), location.getY() - (textYOffset), location.getZ(), (float)armorStandData.getYaw(), 0);
         if(text != null) {
             armorStand.setCustomName(ChatColor.translateAlternateColorCodes('&', text));
             //armorStand.setCustomName(IChatBaseComponent.ChatSerializer.a("{\"text\": \"" + text + "\"}"));
@@ -101,9 +104,12 @@ public class Display_v1_8_R3 extends AbstractDisplay {
         armorStand.setHeadPose(new Vector3f(0.0F, 0.0F, 0.0F));
         armorStand.setGravity(false);
         armorStand.setInvisible(true);
+        armorStand.setOnFire(32767); // Fix lighting glitch for glass case by setting armor stand on fire
         //armorStand.collides = false;
         armorStand.c(nbtTagCompound);
-        armorStand.f(nbtTagCompound);
+        // For some reason, using `f` overwrites `setOnFire` which makes items on armor stand head appear with lighting glitch
+        // Disabling this caused an odd issue where the nametag now displays high up in the air
+        // armorStand.f(nbtTagCompound);
 
         if(armorStandData.isSmall()) {
             armorStand.setSmall(true);
@@ -120,7 +126,7 @@ public class Display_v1_8_R3 extends AbstractDisplay {
                 spawnEntityEquipmentPacket = new PacketPlayOutEntityEquipment(armorStand.getId(), 0, CraftItemStack.asNMSCopy(armorStandData.getEquipment())); //since no Enum exists for MAINHAND, find int that matches that. (Head is 4)
             }
             else {
-                spawnEntityEquipmentPacket = new PacketPlayOutEntityEquipment(armorStand.getId(), 4, CraftItemStack.asNMSCopy(armorStandData.getEquipment()));
+                spawnEntityEquipmentPacket = new PacketPlayOutEntityEquipment(armorStand.getId(), getEquipmentSlot(armorStandData.getEquipmentSlot()), CraftItemStack.asNMSCopy(armorStandData.getEquipment()));
             }
         }
 
@@ -129,6 +135,15 @@ public class Display_v1_8_R3 extends AbstractDisplay {
         if(spawnEntityEquipmentPacket != null){
             sendPacket(player, spawnEntityEquipmentPacket);
         }
+    }
+
+    private int getEquipmentSlot(EquipmentSlot equipmentSlot) {
+        if (equipmentSlot == EquipmentSlot.HAND) { return 0; } 
+        else if (equipmentSlot == EquipmentSlot.FEET) { return 1; }
+        else if (equipmentSlot == EquipmentSlot.LEGS) { return 2; }
+        else if (equipmentSlot == EquipmentSlot.CHEST) { return 3; }
+        else if (equipmentSlot == EquipmentSlot.HEAD) { return 4; }
+        return 0;
     }
 
     @Override

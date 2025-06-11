@@ -24,7 +24,7 @@ public class MaterialUtil {
 
             return Material.valueOf(type.toUpperCase());
         } catch (Error | Exception e) {
-            Shop.getPlugin().getShopLogger().warning("Error getting material! " + e.getMessage());
+            Shop.getPlugin().getShopLogger().debug("Unable to get material: " + e.getMessage());
             return null;
         }
     }

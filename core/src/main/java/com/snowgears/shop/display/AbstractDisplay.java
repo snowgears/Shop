@@ -5,6 +5,7 @@ import com.snowgears.shop.shop.AbstractShop;
 import com.snowgears.shop.shop.ShopType;
 import com.snowgears.shop.util.ArmorStandData;
 import com.snowgears.shop.util.DisplayUtil;
+import com.snowgears.shop.util.MaterialUtil;
 import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.util.UtilMethods;
 import com.snowgears.shop.util.MCVersion;
@@ -120,7 +121,8 @@ public abstract class AbstractDisplay {
                 case GLASS_CASE:
                     //put the extra large glass casing down
                     Location caseLoc = shop.getChestLocation().clone().add(0,1,0);
-                    ArmorStandData caseStandData = DisplayUtil.getArmorStandData(new ItemStack(Material.GLASS), caseLoc, shop.getFacing(), true);
+                    ItemStack glass = new ItemStack(MaterialUtil.of("GLASS"));
+                    ArmorStandData caseStandData = DisplayUtil.getArmorStandData(glass, caseLoc, shop.getFacing(), true);
                     spawnArmorStandPacket(player, caseStandData, null);
 
                     //Drop initial display item
