@@ -7,7 +7,7 @@ import com.snowgears.shop.shop.AbstractShop;
 import com.snowgears.shop.shop.ComboShop;
 import com.snowgears.shop.shop.ShopType;
 import net.md_5.bungee.api.chat.*;
-import net.md_5.bungee.api.chat.hover.content.Item;
+import net.pl3x.bukkit.chatapi.ComponentSender;
 
 import org.bukkit.Bukkit;
 import net.md_5.bungee.api.ChatColor;
@@ -99,27 +99,27 @@ public class ShopMessage {
      * @return The replacement string or an empty string if replacement fails
      */
     public static TextComponent replacePlaceholder(String placeholder, PlaceholderContext context) {
-        plugin.getLogger().spam("[ShopMessage.replacePlaceholder] Attempting to replace placeholder: " + placeholder + " " + context);
+        plugin.getShopLogger().spam("[ShopMessage.replacePlaceholder] Attempting to replace placeholder: " + placeholder + " " + context);
         Function<PlaceholderContext, TextComponent> valueFunction = placeholders.get(placeholder.toLowerCase());
         if (valueFunction != null) {
             try {
-                plugin.getLogger().spam("[ShopMessage.replacePlaceholder]     Running placeholder function... " + placeholder);
+                plugin.getShopLogger().spam("[ShopMessage.replacePlaceholder]     Running placeholder function... " + placeholder);
                 TextComponent message = valueFunction.apply(context);
                 if (message != null) {
-                    plugin.getLogger().trace("[ShopMessage.replacePlaceholder]  *** placeholder " + placeholder + "  value: " + message);
+                    plugin.getShopLogger().trace("[ShopMessage.replacePlaceholder]  *** placeholder " + placeholder + "  value: " + message);
                     return message;
                 }
             } catch (Exception e) {
                 // Log the exception
                 Bukkit.getLogger().warning("Error replacing placeholder " + placeholder + ": " + e.getMessage());
-                // e.printStackTrace();
+                e.printStackTrace();
             } catch (Error e) {
                 Bukkit.getLogger().warning("Error replacing placeholder " + placeholder + ": " + e.getMessage());
-                // e.printStackTrace();
+                e.printStackTrace();
             }
         }
         // If placeholder not found, remove the placeholder and just return an empty string
-        plugin.getLogger().spam("[ShopMessage.replacePlaceholder] *** returning empty string, unable to get function to replace placeholder: " + placeholder);
+        plugin.getShopLogger().spam("[ShopMessage.replacePlaceholder] *** returning empty string, unable to get function to replace placeholder: " + placeholder);
         return new TextComponent("");
     }
 
@@ -127,7 +127,13 @@ public class ShopMessage {
     // Returns null if no color is found.
     public static ChatColor getColor(String color) {
         ChatColor newColor = null;
-        if (color.matches(HEX_CODE_REGEX)) { newColor = ChatColor.of(color); }
+        if (color.matches(HEX_CODE_REGEX)) { 
+            if (!MCVersion.atLeast("1.16")) {
+                plugin.getShopLogger().warning("Hex Colors are only supported in 1.16+! Please remove any hex colors from your config files! Color with issue: " + color);
+                return null;
+            }
+            newColor = ChatColor.of(color);
+        }
         else if (color.matches(COLOR_CODE_REGEX)) {
             newColor = ChatColor.getByChar(color.charAt(1));
         }
@@ -144,7 +150,7 @@ public class ShopMessage {
     public static TextComponent format(String message, PlaceholderContext context) {
         TextComponent formattedMessage = null;
         if (message == null) { return new TextComponent(""); }
-        plugin.getLogger().spam("[ShopMessage] pre-format: " + ChatColor.translateAlternateColorCodes('&', message), true);
+        plugin.getShopLogger().spam("[ShopMessage] pre-format: " + ChatColor.translateAlternateColorCodes('&', message), true);
 
         // Define the regex pattern
         Matcher matcher = Pattern.compile(MESSAGE_PARTS_REGEX).matcher(message);
@@ -163,8 +169,8 @@ public class ShopMessage {
         boolean isObfuscated = false;
         
         for (String part : parts) {
-            plugin.getLogger().spam("\n\n");
-            plugin.getLogger().trace("[ShopMessage.format] part: " + part);
+            plugin.getShopLogger().spam("\n\n");
+            plugin.getShopLogger().trace("[ShopMessage.format] part: " + part);
             TextComponent partComponent = new TextComponent(part);
 
             // Check if we are a color code
@@ -178,7 +184,7 @@ public class ShopMessage {
                         else if (newColor == ChatColor.UNDERLINE) isUnderlined = true;
                         else if (newColor == ChatColor.MAGIC) isObfuscated = true;
                         else if (newColor == ChatColor.RESET) {
-                            plugin.getLogger().hyper("[ShopMessage.format]     matched RESET color code: " + part);
+                            plugin.getShopLogger().hyper("[ShopMessage.format]     matched RESET color code: " + part);
                             latestColor = ChatColor.WHITE;
                             isBold = false;
                             isItalic = false;
@@ -190,26 +196,26 @@ public class ShopMessage {
                             latestColor = newColor;
                         }
                     }
-                    plugin.getLogger().hyper("[ShopMessage.format]     matched COLOR_CODE_REGEX: " + part);
-                    plugin.getLogger().hyper("[ShopMessage.format]     newColor: " + newColor.toString());
-                    plugin.getLogger().hyper("[ShopMessage.format] *** skipping to next part: " + newColor.getName().toUpperCase());
-                    plugin.getLogger().hyper("[ShopMessage.format]     isBold: " + isBold + " isItalic: " + isItalic + " isStrikethrough: " + isStrikethrough + " isUnderlined: " + isUnderlined + " isObfuscated: " + isObfuscated);
+                    plugin.getShopLogger().hyper("[ShopMessage.format]     matched COLOR_CODE_REGEX: " + part);
+                    plugin.getShopLogger().hyper("[ShopMessage.format]     newColor: " + newColor.toString());
+                    plugin.getShopLogger().hyper("[ShopMessage.format] *** skipping to next part: " + newColor.getName().toUpperCase());
+                    plugin.getShopLogger().hyper("[ShopMessage.format]     isBold: " + isBold + " isItalic: " + isItalic + " isStrikethrough: " + isStrikethrough + " isUnderlined: " + isUnderlined + " isObfuscated: " + isObfuscated);
                     continue; // Don't add this text to the message, just go to the next part
                 } catch (Exception e) {
-                    plugin.getLogger().hyper("[ShopMessage.format] XXX unknown color code! Going to add this as a normal string! " + part);
+                    plugin.getShopLogger().hyper("[ShopMessage.format] XXX unknown color code! Going to add this as a normal string! " + part);
                 }
             }
 
             // If we match to a placeholder, then we want to use it's TextComponent instead of the "normal" one
             if (part.matches(PLACEHOLDER_REGEX)) {
-                plugin.getLogger().hyper("[ShopMessage.format]     matched PLACEHOLDER_REGEX: " + part);
-                plugin.getLogger().hyper("[ShopMessage.format]     is part placeholder? " + (placeholders.get(part) != null));
+                plugin.getShopLogger().hyper("[ShopMessage.format]     matched PLACEHOLDER_REGEX: " + part);
+                plugin.getShopLogger().hyper("[ShopMessage.format]     is part placeholder? " + (placeholders.get(part) != null));
                 if (placeholders.get(part) != null) {
-                    plugin.getLogger().hyper("[ShopMessage.format]     replacing placeholder... " + part);
+                    plugin.getShopLogger().hyper("[ShopMessage.format]     replacing placeholder... " + part);
                     partComponent = replacePlaceholder(part, context);
                     // Check if we set a color inside our part (for example [stock color])
                     if (partComponent.getColor() != latestColor && partComponent.getColor() != null && partComponent.getColor() != ChatColor.WHITE) { 
-                        plugin.getLogger().hyper("[ShopMessage.format]     getting latestColor from partComponent: " + partComponent.getColor().getName().toUpperCase());
+                        plugin.getShopLogger().hyper("[ShopMessage.format]     getting latestColor from partComponent: " + partComponent.getColor().getName().toUpperCase());
                         latestColor = partComponent.getColor(); 
                     }
                 }
@@ -217,7 +223,7 @@ public class ShopMessage {
 
             // Set the color
             if (latestColor != null) {
-                plugin.getLogger().hyper("[ShopMessage.format]     setting part color to: " + latestColor.getName().toUpperCase());
+                plugin.getShopLogger().hyper("[ShopMessage.format]     setting part color to: " + latestColor.getName().toUpperCase());
                 partComponent.setColor(latestColor);
             }
             partComponent.setBold(isBold);
@@ -232,14 +238,14 @@ public class ShopMessage {
                 formattedMessage.addExtra(partComponent);
             }
             addedText = true;
-            plugin.getLogger().hyper("[ShopMessage.format] *** add part TextComponent to main message: " + partComponent);
+            plugin.getShopLogger().hyper("[ShopMessage.format] *** add part TextComponent to main message: " + partComponent);
         }
 
         // Handle if we are just a color code with an empty string
         if (formattedMessage == null) formattedMessage = new TextComponent("");
         if (!addedText && latestColor != null) formattedMessage.setColor(latestColor);
 
-        plugin.getLogger().spam("[ShopMessage] postFormat: " + formattedMessage.toLegacyText(), true);
+        plugin.getShopLogger().spam("[ShopMessage] postFormat: " + formattedMessage.toLegacyText(), true);
         return formattedMessage;
     }
 
@@ -250,22 +256,26 @@ public class ShopMessage {
         TextComponent fancyMessage = format(message, context);
         // Verify we are not trying to send an empty string or null
         // if(!ChatColor.stripColor(fancyMessage.toLegacyText()).trim().isEmpty())
-        plugin.getLogger().debug("Sent msg to player " + player.getName() + ": " + fancyMessage.toLegacyText(), true);
+        plugin.getShopLogger().debug("Sent msg to player " + player.getName() + ": " + fancyMessage.toLegacyText(), true);
         try {
+            if (!MCVersion.atLeast("1.13")) {
+                // Use ChatComponentAPI to send the message for legacy versions
+                // https://github.com/OstlerDev/ChatComponentAPI
+                ComponentSender.sendMessage(player, fancyMessage);
+                return; 
+            }
             player.spigot().sendMessage(fancyMessage);
             return;
         } catch (JsonParseException e) {
             plugin.getNBTAdapter().handleException("Possible NBTAPI error while sending message to player, Item Hover events will now be disabled! Details: " + e.getMessage());
-        } catch (Exception e) {
-            plugin.getLogger().warning("Error sending message to player: " + e.getMessage());
-        } catch (Error e) {
-            plugin.getLogger().warning("Error sending message to player: " + e.getMessage());
+        } catch (Error | Exception e) {
+            plugin.getShopLogger().warning("Error sending message to player: " + e.getMessage());
         }
 
         // If we get here, we have an error, we should at least try to send it as legacy text
         try {
             player.sendMessage(fancyMessage.toLegacyText());
-            plugin.getLogger().warning("Sent legacy text message to player as backup, removed hover/click events");
+            plugin.getShopLogger().warning("Sent legacy text message to player as backup, removed hover/click events");
         } catch (Exception e) {} catch (Error e) {}
     }
 
@@ -545,7 +555,7 @@ public class ShopMessage {
             // ItemTag tag = ItemTag.ofNbt(nbt);
             // Item itemContent = new Item(itemId, item.getAmount(), tag);
             // return new HoverEvent(HoverEvent.Action.SHOW_ITEM, itemContent);
-        } catch (Exception e) {
+        } catch (Error | Exception e) {
             return null;
         }
     }
@@ -561,10 +571,14 @@ public class ShopMessage {
         }
         try {
             if (item == null) { return null; }
-            BaseComponent msg = TextComponent.fromLegacy(UtilMethods.removeColorsIfOnlyWhite(message.toLegacyText()));
+            TextComponent msg;
+            String legacyText = UtilMethods.removeColorsIfOnlyWhite(message.toLegacyText());
+            if (legacyText.trim().isEmpty()) { return message; }
+            
+            msg = new TextComponent(TextComponent.fromLegacyText(legacyText));
             HoverEvent event = getItemHoverEvent(item);
             if (event != null) { msg.setHoverEvent(event); }
-            return (TextComponent) msg;
+            return msg;
         } catch (Exception e) {
             plugin.getNBTAdapter().handleException("Error embedding item hover text: " + e.getMessage());
             return message;
@@ -576,9 +590,16 @@ public class ShopMessage {
 
     private static HoverEvent getTransactionsHoverEvent(PlaceholderContext context) {
         try {
-            BaseComponent hoverText = TextComponent.fromLegacy(context.getOfflineTransactions().getTransactionsLore());
-            return new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{hoverText});
-        } catch (Exception e) {}
+            String transactionLore = context.getOfflineTransactions().getTransactionsLore();
+            
+            // Use the universally available TextComponent.fromLegacyText() method - no reflection needed
+            BaseComponent[] components = TextComponent.fromLegacyText(transactionLore);
+            if (components.length == 0) {
+                components = new BaseComponent[]{new TextComponent(transactionLore)};
+            }
+            
+            return new HoverEvent(HoverEvent.Action.SHOW_TEXT, components);
+        } catch (Exception e) { e.printStackTrace(); }
         return null;
     }
 
@@ -592,7 +613,12 @@ public class ShopMessage {
                 // Add new lines between text
                 hoverText.addExtra(format(line + (i == hoverLines.size() ? "" : "\n"), context));
             }
-            return new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{hoverText});
+            // We need to remove any nested hover events, since legacy versions don't like them
+            // When a hover event has no text, it will be replaced with "null", so we need to remove that
+            // It's a bit of a hack, but it works well...
+            String legacyText = hoverText.toLegacyText().replace("§fnull§f", "§f");
+            BaseComponent[] components = TextComponent.fromLegacyText(legacyText);
+            return new HoverEvent(HoverEvent.Action.SHOW_TEXT, components);
         } catch (Exception e) {}
         return null;
     }

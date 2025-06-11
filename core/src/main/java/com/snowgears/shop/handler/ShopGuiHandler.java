@@ -3,10 +3,12 @@ package com.snowgears.shop.handler;
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.gui.*;
 import com.snowgears.shop.shop.AbstractShop;
+import com.snowgears.shop.util.CompatibilityUtil;
 import com.snowgears.shop.util.ConfigUpdater;
 import com.snowgears.shop.util.PlayerSettings;
 import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.util.UtilMethods;
+import com.snowgears.shop.util.MCVersion;
 import org.bukkit.Bukkit;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Material;
@@ -16,13 +18,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.material.MaterialData;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+import com.snowgears.shop.util.MaterialUtil;
 
 public class ShopGuiHandler {
 
@@ -98,12 +100,17 @@ public class ShopGuiHandler {
                 itemMeta = playerHead.getItemMeta();
             }
             else{
-                playerHead = new ItemStack(Material.PLAYER_HEAD);
+                playerHead = new ItemStack(MaterialUtil.of("PLAYER_HEAD"));
                 itemMeta = playerHead.getItemMeta();
 
                 //System.out.println("[Shop] player was not null. Adding owning player to icon skin");
                 if (offlinePlayer != null && offlinePlayer.getName() != null)
+                try {
                     ((SkullMeta)itemMeta).setOwningPlayer(offlinePlayer);
+                } catch (NoSuchMethodError e) {
+                    // Compatibility for 1.8.8
+                    ((SkullMeta)itemMeta).setOwner(offlinePlayer.getName());
+                }
             }
 
         }
@@ -134,8 +141,8 @@ public class ShopGuiHandler {
         itemMeta.setDisplayName(name);
         itemMeta.setLore(lore);
 
-        PersistentDataContainer container = itemMeta.getPersistentDataContainer();
-        container.set(Shop.getPlugin().getPlayerUUIDNameSpacedKey(), PersistentDataType.STRING, playerUUID.toString());
+        // Store player UUID in item data using the new helper method
+        CompatibilityUtil.setItemData(playerHead, "playerUUID", playerUUID.toString());
 
         playerHead.setItemMeta(itemMeta);
 
@@ -244,7 +251,11 @@ public class ShopGuiHandler {
         File configFile = new File(plugin.getDataFolder(), "guiConfig.yml");
         if (!configFile.exists()) {
             configFile.getParentFile().mkdirs();
-            UtilMethods.copy(plugin.getResource("guiConfig.yml"), configFile);
+            if (MCVersion.atLeast("1.13")) {
+                UtilMethods.copy(plugin.getResource("guiConfig.yml"), configFile);
+            } else {
+                UtilMethods.copy(plugin.getResource("guiConfig.pre-1.13.yml"), configFile);
+            }
         }
 
         try {
@@ -298,21 +309,26 @@ public class ShopGuiHandler {
 
             ItemStack icon = null;
             if(type != null) {
-                icon = new ItemStack(Material.valueOf(type.toUpperCase()));
+                try {
+                    icon = new ItemStack(Material.valueOf(type.toUpperCase()));
+                } catch (Exception e) {
+                    plugin.getShopLogger().warning("Issue loading icon from guiConfig.yml: " + iconEnum.toString() + " with type: " + type);
+                    // Leave icon null
+                }
             }
             else if(childKey.equals("set_gamble")){
                 icon = plugin.getGambleDisplayItem().clone();
             }
             else if(parentKey.equals("list")){
                 if(childKey.equals("player")) {
-                    icon = new ItemStack(Material.PLAYER_HEAD, 1, (short) 3);
+                    icon = new ItemStack(MaterialUtil.of("PLAYER_HEAD"), 1, (short) 3);
                 }
             }
             else if(childKey.equals("shop_icon")){
                 icon = new ItemStack(Material.DIRT); // just a placeholder. will replace with the item shop is selling later
             }
             else if(childKey.equals("player_icon")){
-                icon = new ItemStack(Material.PLAYER_HEAD); // just a placeholder. will replace with the player head of shop later
+                icon = new ItemStack(MaterialUtil.of("PLAYER_HEAD")); // just a placeholder. will replace with the player head of shop later
             }
 
             if(icon != null) {

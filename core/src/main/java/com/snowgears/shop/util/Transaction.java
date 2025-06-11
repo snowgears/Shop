@@ -224,6 +224,12 @@ public class Transaction {
         this.seller.deductItem(itemSold);
         this.buyer.depositItem(itemSold);
 
+        // Force update the player's inventory to show the new items
+        // Without this there is a dupe glitch in old versions (ex 1.8.8)
+        // In newer versions the inventory is automatically updated when 
+        // it is interacted with, so this is not needed.
+        this.player.updateInventory();
+
         // Special handling for Gamble shops!
         if (shop.getType() == ShopType.GAMBLE) {
             // Cycle display to show won item

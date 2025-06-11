@@ -14,11 +14,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataType;
-
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.UUID;
+
+import com.snowgears.shop.util.CompatibilityUtil;
+import com.snowgears.shop.util.EconomyUtils;
+import com.snowgears.shop.util.PlayerSettings;
+import com.snowgears.shop.util.ShopMessage;
+import com.snowgears.shop.util.UtilMethods;
 
 public class ShopGUIListener implements Listener {
 
@@ -28,17 +31,21 @@ public class ShopGUIListener implements Listener {
         plugin = instance;
     }
 
+    /**
+    * In API versions 1.20.6 and earlier, InventoryView is a class.
+    * In versions 1.21 and later, it is an interface.
+    * This method uses reflection to get the top Inventory object from the
+    * InventoryView associated with an InventoryEvent, to avoid runtime errors.
+    * @param event The generic InventoryEvent with an InventoryView to inspect.
+    * @return The top Inventory object from the event's InventoryView.
+    */
     public String getInventoryViewTitle(InventoryClickEvent event) {
         try {
             Object view = event.getView();
             Method getTitle = view.getClass().getMethod("getTitle");
             getTitle.setAccessible(true);
             return (String) getTitle.invoke(view);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+        } catch (Error | Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -171,7 +178,7 @@ public class ShopGUIListener implements Listener {
                         //ItemStack playerIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.LIST_PLAYER, null, null); //for some reason this is returning null
                         //ItemStack adminPlayerIcon = plugin.getGuiHandler().getIcon(ShopGuiHandler.GuiIcon.LIST_PLAYER_ADMIN, null, null);
 
-                        String playerUUIDString = clicked.getItemMeta().getPersistentDataContainer().get(plugin.getPlayerUUIDNameSpacedKey(), PersistentDataType.STRING);
+                        String playerUUIDString = CompatibilityUtil.getItemData(clicked, "playerUUID", "");
                         UUID uuid;
                         try {
                             uuid = UUID.fromString(playerUUIDString);
@@ -185,9 +192,9 @@ public class ShopGUIListener implements Listener {
                         return;
                     }
                     else if(window instanceof ListPlayerShopsWindow || window instanceof ListSearchResultsWindow || window instanceof ListShopsWindow){
-
-                        String signLocation = clicked.getItemMeta().getPersistentDataContainer().get(plugin.getSignLocationNameSpacedKey(), PersistentDataType.STRING);
-                        if(signLocation != null){
+                        // Lookup the location we stored on the itemstack (if there is any)
+                        String signLocation = CompatibilityUtil.getItemData(clicked, "signLocation", "");
+                        if(signLocation != null && !signLocation.isEmpty()){
                             Location loc = UtilMethods.getLocation(signLocation);
                             AbstractShop shop = plugin.getShopHandler().getShop(loc);
 
@@ -217,7 +224,7 @@ public class ShopGUIListener implements Listener {
                                         plugin.getGuiHandler().closeWindow(player);
                                     }
                                 }
-                                else{
+                                else {
                                     if(player.isOp()){
                                         shop.teleportPlayer(player);
                                         plugin.getGuiHandler().closeWindow(player);

@@ -12,6 +12,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Container;
+import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
@@ -29,6 +30,9 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.scheduler.BukkitRunnable;
 import java.util.*;
 import com.tcoded.folialib.wrapper.task.WrappedTask;
+import com.snowgears.shop.util.CompatibilityUtil;
+import com.snowgears.shop.util.MCVersion;
+import com.snowgears.shop.util.SignUtil;
 
 public class DisplayListener implements Listener {
 
@@ -44,8 +48,14 @@ public class DisplayListener implements Listener {
                 for (Player player : plugin.getServer().getOnlinePlayers()) {
                     if (player != null) {
                         try {
-                            Block block = player.getTargetBlockExact(8);
-                            if (block != null && block.getBlockData() instanceof WallSign) {
+                            Block block;
+                            if (MCVersion.atLeast("1.13")) {
+                                block = player.getTargetBlockExact(8);
+                            } else {
+                                // transparent should be `null` so that only air is transparent
+                                block = player.getTargetBlock(null, 8);
+                            }
+                            if (block != null && SignUtil.isWallSign(block)) {
                                 AbstractShop shopObj = plugin.getShopHandler().getShop(block.getLocation());
                                 if (shopObj != null) {
                                     shopObj.getDisplay().showDisplayTags(player);
@@ -168,6 +178,16 @@ public class DisplayListener implements Listener {
     @EventHandler (priority = EventPriority.HIGHEST)
     public void onShopInventoryClose(InventoryCloseEvent event) {
         try {
+            // Chest for legacy support
+            if (event.getInventory().getHolder() instanceof Chest) {
+                Chest chest = ((Chest)event.getInventory().getHolder());
+                AbstractShop shop = plugin.getShopHandler().getShopByChest(chest.getBlock());
+                if(shop == null) {
+                    return;
+                }
+
+                shop.updateStock();
+            }
             if(event.getInventory().getHolder() instanceof Container){
                 Container container = ((Container)event.getInventory().getHolder());
                 AbstractShop shop = plugin.getShopHandler().getShopByChest(container.getBlock());
@@ -200,7 +220,7 @@ public class DisplayListener implements Listener {
                 }
             }
             //for some reason, EnderChest also does not extend Container
-            else if(event.getInventory().getType() == InventoryType.ENDER_CHEST){
+            else if(event.getInventory().getType() == InventoryType.valueOf("ENDER_CHEST")){
                 AbstractShop shop;
                 if(event.getInventory().getLocation() == null){ return; }
                 shop = plugin.getShopHandler().getShopByChest(event.getInventory().getLocation().getBlock());

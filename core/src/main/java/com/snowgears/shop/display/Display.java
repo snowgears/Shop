@@ -53,7 +53,7 @@ public class Display extends AbstractDisplay {
         entityItem.setPickUpDelay(32767);
         entityItem.setTicksFrozen(2147483647);
 
-        Shop.getPlugin().getLogger().log(java.util.logging.Level.FINE, "Item Location: " + location);
+        Shop.getPlugin().getShopLogger().log(java.util.logging.Level.FINE, "Item Location: " + location);
 
         ClientboundRemoveEntitiesPacket entityDestroyPacket = new ClientboundRemoveEntitiesPacket(entityID);
         ClientboundAddEntityPacket entitySpawnPacket = new ClientboundAddEntityPacket(entityItem.getId(), entityItem.getUUID(), location.getX(), location.getY(), location.getZ(), entityItem.getXRot(), entityItem.getYRot(), entityItem.getType(), 0, entityItem.getDeltaMovement(), entityItem.getYHeadRot());
@@ -111,7 +111,7 @@ public class Display extends AbstractDisplay {
             armorStand.setSmall(true);
         }
 
-        Shop.getPlugin().getLogger().log(java.util.logging.Level.FINE, "Floating Tag Label Location: " + location);
+        Shop.getPlugin().getShopLogger().log(java.util.logging.Level.FINE, "Floating Tag Label Location: " + location);
 
         ClientboundAddEntityPacket spawnEntityLivingPacket = new ClientboundAddEntityPacket(armorStand.getId(), armorStand.getUUID(), location.getX(), location.getY(), location.getZ(), armorStand.getXRot(), armorStand.getYRot(), armorStand.getType(), 0, armorStand.getDeltaMovement(), armorStand.getYHeadRot());
         ClientboundSetEntityDataPacket spawnEntityMetadataPacket = new ClientboundSetEntityDataPacket(armorStand.getId(), armorStand.getEntityData().packDirty());
@@ -154,7 +154,7 @@ public class Display extends AbstractDisplay {
         itemFrame.setItem(itemStack);
         itemFrame.setDirection(getMojangDirection(facing));
 
-        Shop.getPlugin().getLogger().log(java.util.logging.Level.FINE, "ItemFrame Location: " + location);
+        Shop.getPlugin().getShopLogger().log(java.util.logging.Level.FINE, "ItemFrame Location: " + location);
 
         ClientboundAddEntityPacket entitySpawnPacket = new ClientboundAddEntityPacket(itemFrame.getId(), itemFrame.getUUID(), location.getX(), location.getY(), location.getZ(), itemFrame.getXRot(), itemFrame.getYRot(), itemFrame.getType(), itemFrame.getDirection().get3DDataValue(), itemFrame.getDeltaMovement(), itemFrame.getYHeadRot());
         ClientboundSetEntityDataPacket entityMetadataPacket = new ClientboundSetEntityDataPacket(entityID, itemFrame.getEntityData().packDirty());
@@ -238,11 +238,5 @@ public class Display extends AbstractDisplay {
             default:
                 return net.minecraft.world.entity.EquipmentSlot.HEAD;
         }
-    }
-
-    @Override
-    public String getItemNameNMS(ItemStack item) {
-        net.minecraft.world.item.ItemStack itemStack = nmsHelper.getMCItemStack(item);
-        return itemStack.getItem().getName(itemStack).getString();
     }
 }

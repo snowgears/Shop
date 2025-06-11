@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define variables
-IMAGE_NAME="spigot-buildtools"
+IMAGE_NAME="spigot-buildtools:dev"
 CONTAINER_NAME="spigot-builder"
 LOCAL_DIR="./SpigotBuildTools"
 DOCKERHUB_IMAGE="ostlerdev/spigot-maven:latest"

@@ -30,7 +30,7 @@
  *      - Deprecated API usage or conflicts with other plugins.
  *
  * 3. **INFO**
- *    - **Purpose**: Provides general informational messages about the plugin’s
+ *    - **Purpose**: Provides general informational messages about the plugin's
  *      operations, typically logged during startup and shutdown.
  *    - **Use Cases**:
  *      - *"ChestShop plugin enabled successfully."*
@@ -142,8 +142,8 @@ public class ShopLogger extends Logger {
         super(!colorEnabled ? context.getDescription().getName() : INTENSE_WHITE + context.getDescription().getName() + RESET, null);
         plugin = context;
         enableColor = colorEnabled;
-
-        setParent(context.getServer().getLogger());
+        
+        setParent(context.getLogger());
         setLevel(Level.ALL);
     }
 
@@ -166,12 +166,12 @@ public class ShopLogger extends Logger {
         else if (level == SPAM) { spam(message); }
         else if (level == HYPER) { hyper(message); }
         // Catch some custom unknown log level
-        else super.log(level, message);
+        else super.getParent().log(level, message);
     }
 
     public void logFilterLevel(Level level, String message) {
         if (this.getLogLevel().intValue() > level.intValue()) { return; }
-        super.log(Level.INFO, message);
+        super.getParent().log(Level.INFO, message);
     }
 
     public String addColor(String color, String message) {
@@ -180,24 +180,43 @@ public class ShopLogger extends Logger {
     }
 
     // Normal Logging functions
-    public void severe(String message) { super.log(Level.SEVERE, addColor(BOLD + INTENSE_RED, message)); }
-    public void warning(String message) { super.log(Level.WARNING, addColor(BOLD + INTENSE_YELLOW, message)); }
-    public void info(String message) { super.log(Level.INFO, addColor(YELLOW, message)); }
+    public void severe(String message) { super.getParent().log(Level.SEVERE, addColor(BOLD + INTENSE_RED, message)); }
+    public void warning(String message) { super.getParent().log(Level.WARNING, addColor(BOLD + INTENSE_YELLOW, message)); }
+    public void info(String message) { super.getParent().log(Level.INFO, addColor(YELLOW, message)); }
     // Additional Log Levels
-    public void notice(String message) { logFilterLevel(NOTICE, addColor(BLUE, "[Notice] " + message)); }
-    public void helpful(String message) { logFilterLevel(HELPFUL, addColor(CYAN, "[Helpful] " + message)); }
-    public void debug(String message) { logFilterLevel(DEBUG, addColor(DIM_GREY, "[Debug] " + message)); }
+    public void notice(String message) { 
+        logFilterLevel(NOTICE, addColor(BLUE, "[Notice] " + message)); 
+    }
+    
+    public void helpful(String message) { 
+        logFilterLevel(HELPFUL, addColor(CYAN, "[Helpful] " + message)); 
+    }
+    
+    public void debug(String message) { 
+        logFilterLevel(DEBUG, addColor(DIM_GREY, "[Debug] " + message)); 
+    }
+    
     public void debug(String message, boolean withChatColors) {
         if (this.getLogLevel().intValue() > DEBUG.intValue()) { return; }
         Bukkit.getConsoleSender().sendMessage(INTENSE_WHITE + "[" + plugin.getDescription().getName() + "] " + DIM_GREY + "[Debug] " + message + RESET);
     }
-    public void trace(String message) { logFilterLevel(TRACE, addColor(VERY_DIM_GREY, "[Trace] " + message)); }
-    public void spam(String message) { logFilterLevel(SPAM, addColor(VERY_VERY_DIM_GREY, "[Spam] " + message)); }
+    
+    public void trace(String message) { 
+        logFilterLevel(TRACE, addColor(VERY_DIM_GREY, "[Trace] " + message)); 
+    }
+    
+    public void spam(String message) { 
+        logFilterLevel(SPAM, addColor(VERY_VERY_DIM_GREY, "[Spam] " + message)); 
+    }
+    
     public void spam(String message, boolean withChatColors) {
         if (this.getLogLevel().intValue() > SPAM.intValue()) { return; }
         Bukkit.getConsoleSender().sendMessage(INTENSE_WHITE + "[" + plugin.getDescription().getName() + "] " + DIM_GREY + "[Spam] " + message + RESET);
     }
-    public void hyper(String message) { logFilterLevel(SPAM, addColor(ALMOST_BLACK, "[Hyper] " + message)); }
+    
+    public void hyper(String message) { 
+        logFilterLevel(SPAM, addColor(ALMOST_BLACK, "[Hyper] " + message)); 
+    }
 
     public void setLogLevel(String level) {
         if (level == null) { setLevel(Level.INFO); return; }

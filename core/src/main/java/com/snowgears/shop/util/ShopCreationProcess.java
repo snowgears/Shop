@@ -14,11 +14,13 @@ import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import com.tcoded.folialib.wrapper.task.WrappedTask;
+import com.snowgears.shop.util.CompatibilityUtil;
 
 public class ShopCreationProcess {
 
@@ -138,13 +140,9 @@ public class ShopCreationProcess {
         Shop.getPlugin().getFoliaLib().getScheduler().runAtLocation(clickedChest.getLocation(), task -> {
             //TODO do some calculation here if clickedFace is filled with a block or UP / DOWN was clicked
             Block signBlock = clickedChest.getRelative(clickedFace);
-            signBlock.setType(Material.OAK_WALL_SIGN);
+            signBlock.setType(MaterialUtil.of("OAK_WALL_SIGN"));
 
-            if(signBlock.getBlockData() instanceof WallSign) {
-                Directional wallSignData = (Directional) signBlock.getBlockData();
-                wallSignData.setFacing(clickedFace);
-                signBlock.setBlockData(wallSignData);
-            }
+            SignUtil.setFacing(signBlock, clickedFace);
 
             AbstractShop shop = Shop.getPlugin().getShopCreationUtil().createShop(Bukkit.getPlayer(playerUUID), clickedChest, signBlock, getPricePair(), getItemAmount(), isAdmin, shopType, clickedFace, true);
             if(shop == null) {
@@ -241,7 +239,7 @@ public class ShopCreationProcess {
 
     public void displayFloatingLines(List<String> lines) {
         if (!this.display.isEnabled()) {
-            Shop.getPlugin().getLogger().warning("Unable to display floating text for player " + player.getName() + ", Display is disabled");
+            Shop.getPlugin().getShopLogger().warning("Unable to display floating text for player " + player.getName() + ", Display is disabled");
             return;
         }
         // Remove any existing text

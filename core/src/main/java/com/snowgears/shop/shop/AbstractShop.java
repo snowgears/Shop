@@ -15,8 +15,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.Sound;
 import org.bukkit.Effect;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
@@ -24,13 +22,10 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
+import com.snowgears.shop.util.CompatibilityUtil;
+import com.snowgears.shop.util.SignUtil;
 
 import java.util.*;
-import java.util.logging.Level;
-
-import static com.snowgears.shop.util.UtilMethods.isMCVersion17Plus;
 
 public abstract class AbstractShop {
 
@@ -137,27 +132,35 @@ public abstract class AbstractShop {
     public boolean load() {
         if (signLocation != null) {
             try {
-                facing = ((WallSign) signLocation.getBlock().getBlockData()).getFacing();
-                chestLocation = signLocation.getBlock().getRelative(facing.getOppositeFace()).getLocation();
+                facing = SignUtil.getFacing(signLocation.getBlock());
+                if (facing != null) {
+                    chestLocation = signLocation.getBlock().getRelative(facing.getOppositeFace()).getLocation();
+                } else {
+                    //this shop has no valid wall sign. return false
+                    Shop.getPlugin().getShopLogger().warning("Failed to load shop, invalid sign: " + this);
+                    return false;
+                }
 
                 //if shop is made out of a container that is no longer enabled, delete it
                 if(chestLocation != null) {
                     if (!Shop.getPlugin().getShopHandler().isChest(chestLocation.getBlock())){
+                        Shop.getPlugin().getShopLogger().warning("Unable to load shop, this shop's container type (" + chestLocation.getBlock().getType() + ") is no longer enabled (config.yml enabledContainers): " + this);
+                        Shop.getPlugin().getShopLogger().warning("Deleting Shop with disabled container type!! (" + chestLocation.getBlock().getType() + "): " + this);
                         this.delete();
                         return false;
                     }
                 }
                 this.updateStock();
-                Shop.getPlugin().getLogger().debug("Loaded shop: " + this);
+                Shop.getPlugin().getShopLogger().debug("Loaded shop: " + this);
                 return true;
-            } catch (ClassCastException cce) {
+            } catch (Error | Exception e) {
                 //this shop has no sign on it. return false
-                Shop.getPlugin().getLogger().warning("Failed to load shop, no sign for chest: " + this);
+                Shop.getPlugin().getShopLogger().warning("Failed to load shop, unexpected error when checking sign and/or container! " + this);
                 return false;
             }
         } else {
             //this shop has no sign location defined
-            Shop.getPlugin().getLogger().warning("Failed to load shop, no signLocation: " + this);
+            Shop.getPlugin().getShopLogger().warning("Failed to load shop, no signLocation: " + this);
             return false;
         }
     }
@@ -209,7 +212,7 @@ public abstract class AbstractShop {
         boolean hasStockChange = stock != oldStock;
         if(hasStockChange){
             signLinesRequireRefresh = true;
-            Shop.getPlugin().getLogger().trace("[AbstractShop.updateStock] updateSign, new stock != oldStock! newStock: " + stock + " old stock: " + oldStock + "\n" + this);
+            Shop.getPlugin().getShopLogger().trace("[AbstractShop.updateStock] updateSign, new stock != oldStock! newStock: " + stock + " old stock: " + oldStock + "\n" + this);
             this.updateSign();
 
             //also set marker in here if using a marker integration
@@ -247,14 +250,6 @@ public abstract class AbstractShop {
 
     public Location getSignLocation() {
         return signLocation;
-    }
-
-    public WallSign getSign(){
-        BlockData signBlockData = this.getSignLocation().getBlock().getBlockData();
-        if(signBlockData instanceof WallSign){
-            return (WallSign)signBlockData;
-        }
-        return null;
     }
 
     public Location getChestLocation() {
@@ -412,7 +407,10 @@ public abstract class AbstractShop {
             // In the past we used to explicitly set the durability of an item to be 0, this caused blocks/items to be saved
             // with extra NBT data that we don't actually want. For example, dirt shouldn't have a damage of 0.
             // Detect if we set it to 0, and if so, remove it from the ItemMeta!
-            if (item.getItemMeta() instanceof Damageable && ((Damageable) item.getItemMeta()).getDamage() == 0) {
+            if (MCVersion.atLeast("1.21") 
+                && item.getItemMeta() instanceof Damageable 
+                && ((Damageable) item.getItemMeta()).getDamage() == 0
+            ) {
                 String components = item.getItemMeta().getAsComponentString(); // example: "[minecraft:damage=53]"
 
                 // Remove it from the array
@@ -429,12 +427,12 @@ public abstract class AbstractShop {
             // Default return original item
             return item;
         } catch (Exception e) {
-            Shop.getPlugin().getLogger().warning("Error removing zero damage meta from item: " + item);
-            Shop.getPlugin().getLogger().warning("checkItemDurability feature may be unsupported on your version of Paper/Spigot!");
+            Shop.getPlugin().getShopLogger().warning("Error removing zero damage meta from item: " + item);
+            Shop.getPlugin().getShopLogger().warning("checkItemDurability feature may be unsupported on your version of Paper/Spigot!");
             return item;
         } catch (Error e) {
-            Shop.getPlugin().getLogger().warning("Error removing zero damage meta from item: " + item);
-            Shop.getPlugin().getLogger().warning("checkItemDurability feature may be unsupported on your version of Paper/Spigot!");
+            Shop.getPlugin().getShopLogger().warning("Error removing zero damage meta from item: " + item);
+            Shop.getPlugin().getShopLogger().warning("checkItemDurability feature may be unsupported on your version of Paper/Spigot!");
             return item;
         }
     }
@@ -477,14 +475,14 @@ public abstract class AbstractShop {
             lore.add(ShopMessage.format(loreLine, context).toLegacyText());
         }
 
-        ItemMeta iconMeta = guiIcon.getItemMeta();
-        iconMeta.setDisplayName(name);
-        iconMeta.setLore(lore);
+        ItemMeta itemMeta = guiIcon.getItemMeta();
+        itemMeta.setDisplayName(name);
+        itemMeta.setLore(lore);
 
-        PersistentDataContainer container = iconMeta.getPersistentDataContainer();
-        container.set(Shop.getPlugin().getSignLocationNameSpacedKey(), PersistentDataType.STRING, UtilMethods.getCleanLocation(this.getSignLocation(), true));
+        // Store sign location in item data using the new helper method  
+        CompatibilityUtil.setItemData(guiIcon, "signLocation", UtilMethods.getCleanLocation(this.getSignLocation(), true));
 
-        guiIcon.setItemMeta(iconMeta);
+        guiIcon.setItemMeta(itemMeta);
     }
 
     public int getItemDurabilityPercent(){
@@ -542,13 +540,8 @@ public abstract class AbstractShop {
                 signBlock.setLine(3, lines[3]);
             }
 
-            if(isMCVersion17Plus()) {
-                if (Shop.getPlugin().getGlowingSignText()) {
-                    signBlock.setGlowingText(true);
-                }
-                else{
-                    signBlock.setGlowingText(false);
-                }
+            if(MCVersion.atLeast("1.17")) {
+                signBlock.setGlowingText(Shop.getPlugin().getGlowingSignText());
             }
 
             signBlock.update(true);
@@ -562,16 +555,17 @@ public abstract class AbstractShop {
     public void delete() {
         display.remove(null);
 
-        if(UtilMethods.isMCVersion17Plus() && Shop.getPlugin().getDisplayLightLevel() > 0) {
+        if(MCVersion.atLeast("1.17") && Shop.getPlugin().getDisplayLightLevel() > 0) {
             Block displayBlock = this.getChestLocation().getBlock().getRelative(BlockFace.UP);
             if(UtilMethods.materialIsNonIntrusive(displayBlock.getType())) {
                 displayBlock.setType(Material.AIR);
             }
         }
 
-        Block b = this.getSignLocation().getBlock();
-        if (b.getBlockData() instanceof WallSign) {
-            Sign signBlock = (Sign) b.getState();
+        // Clear sign text on delete
+        Block block = this.getSignLocation().getBlock();
+        if (SignUtil.isWallSign(block)) {
+            Sign signBlock = (Sign) block.getState();
             signBlock.setLine(0, "");
             signBlock.setLine(1, "");
             signBlock.setLine(2, "");
@@ -581,7 +575,7 @@ public abstract class AbstractShop {
 
         //finally remove the shop from the shop handler
         Shop.getPlugin().getShopHandler().removeShop(this);
-        Shop.getPlugin().getLogger().debug("Deleted Shop " + this);
+        Shop.getPlugin().getShopLogger().helpful("Deleted Shop " + this);
     }
 
     public void teleportPlayer(Player player){
@@ -664,10 +658,12 @@ public abstract class AbstractShop {
     public void sendEffects(boolean success, Player player){
         try {
             if (success) {
-                if (Shop.getPlugin().playSounds()) player.playSound(this.getSignLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F);
+                Sound successSound = MCVersion.atLeast("1.13") ? Sound.valueOf("ENTITY_EXPERIENCE_ORB_PICKUP") : Sound.valueOf("ORB_PICKUP");
+                if (Shop.getPlugin().playSounds()) player.playSound(this.getSignLocation(), successSound, 1.0F, 1.0F);
                 if (Shop.getPlugin().playEffects()) player.getWorld().playEffect(this.getChestLocation(), Effect.STEP_SOUND, Material.EMERALD_BLOCK);
             } else {
-                if (Shop.getPlugin().playSounds()) player.playSound(this.getSignLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0F, 1.0F);
+                Sound issueSound = MCVersion.atLeast("1.13") ? Sound.valueOf("ITEM_SHIELD_BLOCK") : Sound.valueOf("ANVIL_LAND");
+                if (Shop.getPlugin().playSounds()) player.playSound(this.getSignLocation(), issueSound, 1.0F, 1.0F);
                 if (Shop.getPlugin().playEffects()) player.getWorld().playEffect(this.getChestLocation(), Effect.STEP_SOUND, Material.REDSTONE_BLOCK);
             }
         } catch (Error e){

@@ -11,6 +11,11 @@ import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.Repairable;
+import org.bukkit.event.inventory.InventoryEvent;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
+
 
 import java.util.*;
 
@@ -107,8 +112,8 @@ public class InventoryUtils {
 
     public static Inventory getVirtualInventory(Inventory inventory) {
         // Check a cloned inventory instead of manipulating the original inventory
-        Inventory clonedInv = Bukkit.createInventory(null, inventory.getStorageContents().length);
-        clonedInv.setContents(inventory.getStorageContents());
+        Inventory clonedInv = Bukkit.createInventory(null, inventory.getContents().length);
+        clonedInv.setContents(inventory.getContents());
 
         return clonedInv;
     }
@@ -117,7 +122,7 @@ public class InventoryUtils {
     public static int getAmount(Inventory inventory, ItemStack itemStack){
         if(inventory == null)
             return 0;
-        ItemStack[] contents = inventory.getStorageContents();
+        ItemStack[] contents = inventory.getContents();
         int amount = 0;
         for (int i = 0; i < contents.length; i++) {
             ItemStack is = contents[i];
@@ -141,26 +146,36 @@ public class InventoryUtils {
 
         // Check if we are ignoring item durability, if so, reset the durability of both items and continue with later checks
         if (!Shop.getPlugin().checkItemDurability()) {
-            Damageable is1Damagable = (Damageable) itemStack1.getItemMeta();
-            is1Damagable.setDamage(0);
-
-            Damageable is2Damagable = (Damageable) itemStack2.getItemMeta();
-            is2Damagable.setDamage(0);
-
-            itemStack1.setItemMeta(is1Damagable);
-            itemStack2.setItemMeta(is2Damagable);
+            if (MCVersion.atLeast("1.13")) {
+                ItemMeta meta1 = itemStack1.getItemMeta();
+                ItemMeta meta2 = itemStack2.getItemMeta();
+                // Damageable exists 1.13+
+                if (meta1 instanceof Damageable && meta2 instanceof Damageable) {
+                    ((Damageable) meta1).setDamage(0);
+                    ((Damageable) meta2).setDamage(0);
+                
+                    itemStack1.setItemMeta(meta1);
+                    itemStack2.setItemMeta(meta2);
+                }
+            } else {
+                // Legacy approach using direct ItemStack methods
+                itemStack1.setDurability((short) 0);
+                itemStack2.setDurability((short) 0);
+            }
         }
 
-        // Check if we are ignoring item durability, if so, reset the durability of both items and continue with later checks
+        // Check if we are ignoring item repair cost, if so, reset the repair cost of both items and continue with later checks
         if (Shop.getPlugin().ignoreItemRepairCost()) {
-            Repairable item1Cost = (Repairable) itemStack1.getItemMeta();
-            item1Cost.setRepairCost(0);
-
-            Repairable item2Cost = (Repairable) itemStack2.getItemMeta();
-            item2Cost.setRepairCost(0);
-
-            itemStack1.setItemMeta(item1Cost); // @TODO: I believe this should be item1Cost
-            itemStack2.setItemMeta(item2Cost);
+            ItemMeta meta1 = itemStack1.getItemMeta();
+            ItemMeta meta2 = itemStack2.getItemMeta();
+            // Reparable exists going back to at least 1.8, maybe older
+            if (meta1 instanceof Repairable && meta2 instanceof Repairable) {
+                ((Repairable) meta1).setRepairCost(0);
+                ((Repairable) meta2).setRepairCost(0);
+                
+                itemStack1.setItemMeta(meta1);
+                itemStack2.setItemMeta(meta2);
+            }      
         }
 
         ItemMeta i1Meta = itemStack1.getItemMeta();
@@ -201,11 +216,13 @@ public class InventoryUtils {
 
 
         //fix NBT attributes for cached older items to be compatible with Spigot serializer updates
-        if (i1Meta != null && i2Meta != null && i1Meta.hasAttributeModifiers() && i2Meta.hasAttributeModifiers()) {
-            i1Meta.setAttributeModifiers(i1Meta.getAttributeModifiers());
-            i2Meta.setAttributeModifiers(i2Meta.getAttributeModifiers());
-            itemStack1.setItemMeta(i1Meta);
-            itemStack2.setItemMeta(i2Meta);
+        if (MCVersion.atLeast("1.13")) {
+            if (i1Meta != null && i2Meta != null && i1Meta.hasAttributeModifiers() && i2Meta.hasAttributeModifiers()) {
+                i1Meta.setAttributeModifiers(i1Meta.getAttributeModifiers());
+                i2Meta.setAttributeModifiers(i2Meta.getAttributeModifiers());
+                itemStack1.setItemMeta(i1Meta);
+                itemStack2.setItemMeta(i2Meta);
+            }
         }
 
         return itemStack1.isSimilar(itemStack2);

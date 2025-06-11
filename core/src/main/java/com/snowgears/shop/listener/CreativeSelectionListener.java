@@ -12,6 +12,7 @@ import com.snowgears.shop.util.PlayerData;
 import com.snowgears.shop.util.ShopActionType;
 import com.snowgears.shop.util.ShopCreationProcess;
 import com.snowgears.shop.util.ShopMessage;
+import com.snowgears.shop.util.SignUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -64,7 +65,7 @@ public class CreativeSelectionListener implements Listener {
         if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
             final Block clicked = event.getClickedBlock();
 
-            if (clicked.getBlockData() instanceof WallSign) {
+            if (SignUtil.isWallSign(clicked)) {
                 AbstractShop shop = plugin.getShopHandler().getShop(clicked.getLocation());
                 if (shop == null) {
                     return;
@@ -182,7 +183,7 @@ public class CreativeSelectionListener implements Listener {
                 return;
             }
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            plugin.getLogger().log(Level.SEVERE, "Error checking inventory title", e);
+            plugin.getShopLogger().log(Level.SEVERE, "Error checking inventory title", e);
         }
         
         // Check if player is online - this handles the PlayerQuitEvent case as well
@@ -453,16 +454,16 @@ public class CreativeSelectionListener implements Listener {
     /**
      * Prevent players from swapping items between hands while in creative selection mode
      */
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerSwapHandItems(PlayerSwapHandItemsEvent event) {
-        Player player = event.getPlayer();
+    // @EventHandler(priority = EventPriority.HIGHEST)
+    // public void onPlayerSwapHandItems(PlayerSwapHandItemsEvent event) {
+    //     Player player = event.getPlayer();
         
-        // Check if player is in creative selection mode
-        if (playerDataMap.containsKey(player.getUniqueId())) {
-            // Cancel the hand swap event
-            event.setCancelled(true);
-        }
-    }
+    //     // Check if player is in creative selection mode
+    //     if (playerDataMap.containsKey(player.getUniqueId())) {
+    //         // Cancel the hand swap event
+    //         event.setCancelled(true);
+    //     }
+    // }
 
     /**
      * Prevent players from changing gamemode while in creative selection mode
@@ -530,20 +531,20 @@ public class CreativeSelectionListener implements Listener {
     /**
      * Prevent players from picking up items during creative selection
      */
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onEntityPickupItem(EntityPickupItemEvent event) {
-        if (!(event.getEntity() instanceof Player)) {
-            return;
-        }
+    // @EventHandler(priority = EventPriority.HIGHEST)
+    // public void onEntityPickupItem(EntityPickupItemEvent event) {
+    //     if (!(event.getEntity() instanceof Player)) {
+    //         return;
+    //     }
         
-        Player player = (Player) event.getEntity();
+    //     Player player = (Player) event.getEntity();
         
-        // Check if player is in creative selection mode
-        if (playerDataMap.containsKey(player.getUniqueId())) {
-            // Cancel all item pickups
-            event.setCancelled(true);
-        }
-    }
+    //     // Check if player is in creative selection mode
+    //     if (playerDataMap.containsKey(player.getUniqueId())) {
+    //         // Cancel all item pickups
+    //         event.setCancelled(true);
+    //     }
+    // }
 
     /**
      * If a player dies during creative selection, ensure their state is properly restored
@@ -559,7 +560,7 @@ public class CreativeSelectionListener implements Listener {
             
             // We're going to handle the player data restoration during respawn
             // so we store the UUID in case they disconnect
-            plugin.getLogger().log(Level.WARNING, 
+            plugin.getShopLogger().log(Level.WARNING, 
                 "Player " + player.getName() + " died during creative selection. " +
                 "Their gamemode will be restored on respawn.");
         }
@@ -578,7 +579,7 @@ public class CreativeSelectionListener implements Listener {
             boolean removed = removePlayerFromCreativeSelection(player);
             if (removed) {
                 player.updateInventory();
-                plugin.getLogger().log(Level.INFO, 
+                plugin.getShopLogger().log(Level.INFO, 
                     "Player " + player.getName() + "'s gamemode restored after death during creative selection.");
             }
         }

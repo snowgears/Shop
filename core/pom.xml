@@ -59,6 +59,15 @@
             <id>papermc</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
+        <repository>
+            <!-- ProtocolLib repository -->
+            <id>dmulloy2-repo</id>
+            <url>https://repo.dmulloy2.net/repository/public/</url>
+        </repository>
+        <repository>
+            <id>bungee-repo</id>
+            <url>https://oss.sonatype.org/content/groups/public/</url>
+        </repository>
     </repositories>
 
     <dependencyManagement>
@@ -75,15 +84,16 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>5.11.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
             <version>${spigot.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot</artifactId>
+            <version>${spigot.version}</version>
+            <classifier>remapped-mojang</classifier> <!-- remapped-mojang is 1.17+ only available in local maven repo it seems-->
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -129,9 +139,75 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>com.github.alex9849</groupId>
+            <artifactId>advanced-region-market</artifactId>
+            <version>3.5.3</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>${hikaricp.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>${mariadb.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.tr7zw</groupId>
+            <artifactId>item-nbt-api-plugin</artifactId>
+            <version>${nbt-api.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.tr7zw</groupId>
+            <artifactId>item-nbt-api</artifactId>
+            <version>${nbt-api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>${jetbrains-annotations.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <!-- FoliaLib -->
+            <groupId>com.github.technicallycoded</groupId>
+            <artifactId>FoliaLib</artifactId>
+            <version>0.4.4</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <!-- ProtocolLib for Item Displays -->
+            <groupId>com.comphenix.protocol</groupId>
+            <artifactId>ProtocolLib</artifactId>
+            <version>5.3.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.intellectualsites.plotsquared</groupId>
+            <artifactId>plotsquared-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>de.bluecolored.bluemap</groupId>
             <artifactId>BlueMapAPI</artifactId>
-            <version>2.7.2</version>
+            <version>${bluemap.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -141,64 +217,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.alex9849</groupId>
-            <artifactId>advanced-region-market</artifactId>
-            <version>3.5.3</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-            <version>5.0.1</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mariadb.jdbc</groupId>
-            <artifactId>mariadb-java-client</artifactId>
-            <version>2.7.5</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>2.1.214</version> <!-- Updating to 2.2.220 broke things, leave it here for now -->
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>de.tr7zw</groupId>
-            <artifactId>item-nbt-api-plugin</artifactId>
-            <version>2.14.1</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>de.tr7zw</groupId>
-            <artifactId>item-nbt-api</artifactId>
-            <version>2.14.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.intellectualsites.plotsquared</groupId>
-            <artifactId>plotsquared-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot</artifactId>
-            <version>${spigot.version}</version>
-            <classifier>remapped-mojang</classifier>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>24.0.1</version>
-            <scope>provided</scope>
-        </dependency>
-        <!-- FoliaLib dependency -->
-        <dependency>
-            <groupId>com.github.technicallycoded</groupId>
-            <artifactId>FoliaLib</artifactId>
-            <version>0.4.4</version>
-            <scope>compile</scope>
+            <groupId>com.github.OstlerDev.ChatComponentAPI</groupId>
+            <artifactId>ChatComponentAPI</artifactId>
+            <version>v1.12.1</version>
         </dependency>
     </dependencies>
 
@@ -262,7 +283,7 @@
 <!--                        <configuration>-->
 <!--                            <srgIn>org.spigotmc:minecraft-server:${spigot.version}:txt:maps-mojang</srgIn>-->
 <!--                            <reverse>true</reverse>-->
-<!--                            <remappedDependencies>org.spigotmc:spigot:${spigot.version}:jar:remapped-mojang</remappedDependencies>-->
+<!--                            <remappedDependencies>org.spigotmc:spigot:${spigot.version}:jar:remapped-obf</remappedDependencies>-->
 <!--                            <remappedArtifactAttached>true</remappedArtifactAttached>-->
 <!--                            <remappedClassifierName>remapped-obf</remappedClassifierName>-->
 <!--                        </configuration>-->
@@ -285,7 +306,6 @@
     </build>
 
     <properties>
-        <spigot.version>1.21-R0.1-SNAPSHOT</spigot.version>
     </properties>
 
 </project>

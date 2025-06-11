@@ -6,14 +6,18 @@ import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ArmorMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.inventory.meta.OminousBottleMeta;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionType;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.ChatColor;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 public class ItemNameUtil {
 
@@ -38,8 +42,18 @@ public class ItemNameUtil {
         // Add custom formatting for player heads
         if(item.getItemMeta() != null && item.getItemMeta() instanceof SkullMeta){
             SkullMeta skullMeta = (SkullMeta) item.getItemMeta();
-            if (skullMeta.getOwningPlayer() != null) {
-                return new TextComponent(skullMeta.getOwnerProfile().getName() + "'s Head");
+            if (skullMeta != null) {
+                try {
+                    if (skullMeta.getOwningPlayer() != null && skullMeta.getOwningPlayer().getName() != null) {
+                        return new TextComponent(skullMeta.getOwningPlayer().getName() + "'s Head");
+                    }
+                } catch (NoSuchMethodError error) {
+                    if (skullMeta.hasOwner() && skullMeta.getOwner() != null) {
+                        return new TextComponent(skullMeta.getOwner() + "'s Head");
+                    }
+                }
+                
+                return new TextComponent("Player Head");
             }
         }
 
@@ -67,31 +81,51 @@ public class ItemNameUtil {
             }
         }
 
-        // Add custom potion formatting
+        // Add custom potion formatting using clean PotionUtil
         if(item.getItemMeta() != null && item.getItemMeta() instanceof PotionMeta){
-            PotionMeta potionMeta = (PotionMeta) item.getItemMeta();
-            if (potionMeta.getBasePotionType() != null) {
-                String formattedName = UtilMethods.capitalize(item.getType().name().replace("_", " ").toLowerCase());
-                formattedName += " of ";
-                formattedName += UtilMethods.capitalize(potionMeta.getBasePotionType().toString().replace("_", " ").toLowerCase());
-                return new TextComponent(formattedName);
+            String formattedName = UtilMethods.capitalize(item.getType().name().replace("_", " ").toLowerCase());
+            
+            // Add extra potion detail if we can
+            String potionType = null;
+            try { 
+                potionType = ((PotionMeta) item.getItemMeta()).getBasePotionType().toString(); 
+            } catch (Exception e) {}
+            // If we can't get the base potion type, try to get the first custom effect
+            if (potionType == null) {
+                // If we can't get the base potion type, try to get the first custom effect
+                List<PotionEffect> customEffects = ((PotionMeta) item.getItemMeta()).getCustomEffects();
+                if (!customEffects.isEmpty()) {
+                    potionType = customEffects.get(0).getType().toString();
+                }
             }
+            // If we have a potion type, add it to the name
+            if (potionType != null) {
+                formattedName += " of ";
+                // Convert LONG_STRENGTH to "Long Strength"
+                formattedName += UtilMethods.capitalize(potionType.replace("_", " ").toLowerCase());
+            }
+
+            return new TextComponent(formattedName);
         }
 
-        try {
-            // Ominous Bottle's are Yellow *shrug*
-            if (item.getItemMeta() != null && item.getItemMeta() instanceof org.bukkit.inventory.meta.OminousBottleMeta) {
+        // Check for Ominous Bottle (modern versions only)
+        if (MCVersion.atLeast("1.21")) {
+            if (item.getItemMeta() != null && item.getItemMeta() instanceof OminousBottleMeta) {
                 TextComponent name = getNameTranslatable(item.getType());
                 name.setColor(net.md_5.bungee.api.ChatColor.YELLOW);
                 return name;
             }
-        } catch (Exception e) {} catch (Error e) {} // Backwards compatibility
+        }
 
         // Fallback to the material name
-        return getNameTranslatable(item.getType());
+        if (UtilMethods.isTranslationSupported()) {
+            return getNameTranslatable(item.getType());
+        } else {
+            return new TextComponent(UtilMethods.getItemName(item));
+        }
     }
 
     public TextComponent getNameTranslatable(Material material){
-        return new TextComponent(new TranslatableComponent(material.getTranslationKey()));
+        return  MaterialUtil.getTranslatableComponent(material);
     }
 }

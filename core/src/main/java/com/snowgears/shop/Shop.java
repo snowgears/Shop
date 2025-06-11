@@ -14,7 +14,6 @@ import com.snowgears.shop.util.*;
 import com.snowgears.shop.util.Metrics;
 import com.snowgears.shop.util.Metrics.*;
 import java.util.concurrent.Callable;
-import de.bluecolored.bluemap.api.BlueMapAPI;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -30,6 +29,8 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import com.tcoded.folialib.FoliaLib;
+
+import de.bluecolored.bluemap.api.BlueMapAPI;
 
 import java.io.File;
 import java.io.IOException;
@@ -116,8 +117,6 @@ public class Shop extends JavaPlugin {
     private ItemListType itemListType;
     private List<String> worldBlackList;
     private HashMap<ShopClickType, ShopAction> clickTypeActionMap;
-    private NamespacedKey signLocationNameSpacedKey;
-    private NamespacedKey playerUUIDNameSpacedKey;
     private LogHandler logHandler;
     
     // Shop display optimization settings
@@ -140,9 +139,11 @@ public class Shop extends JavaPlugin {
 
     public static boolean loggedDisplayDisabledWarning = false;
 
-    // Return the custom ShopLogger so that we can log at higher levels.
-    @Override
-    public ShopLogger getLogger() { return logger; }
+    // Return the custom ShopLogger so that we can handle logging at higher levels via config
+    // You cannot @Override getLogger() in legacy versions sadly, thus, getShopLogger()
+    public ShopLogger getShopLogger() {
+        return logger;
+    }
 
     @Override
     public void onLoad(){
@@ -154,24 +155,24 @@ public class Shop extends JavaPlugin {
         config = YamlConfiguration.loadConfiguration(configFile);
         // Load logger
         logger = new ShopLogger(this, config.getBoolean("enableLogColor"));
-        this.getLogger().setLogLevel(config.getString("logLevel"));
+        this.getShopLogger().setLogLevel(config.getString("logLevel"));
 
         // look for the worldguard boolean, as it needs a flag registered before worldguard is enabled
         hookWorldGuard = config.getBoolean("hookWorldGuard");
         // Check if WorldGuard exists
         // Note: If WorldGuard exists we will check to verify a user can build in the region
         if (getServer().getPluginManager().getPlugin("WorldGuard") != null) {
-            this.getLogger().notice("WorldGuard detected, Shop will respect `passthrough`, `build`, and `chest-access` region flags during shop creation!");
+            this.getShopLogger().notice("WorldGuard detected, Shop will respect `passthrough`, `build`, and `chest-access` region flags during shop creation!");
             // Store for later
             this.worldGuardExists = true;
             // Check if we want to require `allow-shop: true` to exist on regions
             if(hookWorldGuard){
-                this.getLogger().notice("Registering WorldGuard `allow-shop` flag...");
+                this.getShopLogger().notice("Registering WorldGuard `allow-shop` flag...");
                 // Register flag for WorldGuard if we are hooking into the flag system
                 WorldGuardHook.registerAllowShopFlag();
-                this.getLogger().notice("WorldGuard `allow-shop` flag restriction enabled, Shops can only be created in regions with the `allow-shop` flag set!");
+                this.getShopLogger().notice("WorldGuard `allow-shop` flag restriction enabled, Shops can only be created in regions with the `allow-shop` flag set!");
             } else {
-                this.getLogger().notice("WorldGuard `allow-shop` flag restriction is disabled, if you want to only allow shops in regions with the `allow-shop` flag, please set `hookWorldGuard` to `true` in `config.yml`");
+                this.getShopLogger().notice("WorldGuard `allow-shop` flag restriction is disabled, if you want to only allow shops in regions with the `allow-shop` flag, please set `hookWorldGuard` to `true` in `config.yml`");
             }
         } else {
             this.worldGuardExists = false;
@@ -245,31 +246,16 @@ public class Shop extends JavaPlugin {
         }
 
         reloadConfig();
-        signLocationNameSpacedKey = new NamespacedKey(this, "signLocation");
-        playerUUIDNameSpacedKey = new NamespacedKey(this, "playerUUID");
+
         config = YamlConfiguration.loadConfiguration(configFile);
         // Load logger values again in case the log level was changed on a reload
-        this.getLogger().setLogLevel(config.getString("logLevel"));
-        this.getLogger().enableColor(config.getBoolean("enableLogColor"));
+        this.getShopLogger().setLogLevel(config.getString("logLevel"));
+        this.getShopLogger().enableColor(config.getBoolean("enableLogColor"));
 
         nmsBullshitHandler = new NMSBullshitHandler(this);
         nbtAdapter = new NBTAdapter(this);
         
         shopCreationUtil = new ShopCreationUtil(this);
-
-        //removed item names file after item ids are no longer used. may revisit later with new materials
-//        File itemNameFile = new File(getDataFolder(), "items.tsv");
-//        if (!itemNameFile.exists()) {
-//            itemNameFile.getParentFile().mkdirs();
-//            UtilMethods.copy(getResource("items.tsv"), itemNameFile);
-//        }
-
-        //TODO
-//        File pricesFile = new File(getDataFolder(), "prices.tsv");
-//        if (!pricesFile.exists()) {
-//            pricesFile.getParentFile().mkdirs();
-//            UtilMethods.copy(getResource("prices.tsv"), pricesFile);
-//        }
 
         shopListener = new ShopListener(this);
         transactionHandler = new TransactionHandler(this);
@@ -328,7 +314,7 @@ public class Shop extends JavaPlugin {
             boolean success;
             success = (fileDirectory.mkdirs());
             if (!success) {
-                this.getLogger().severe("[Shop] Data folder could not be created!");
+                this.getShopLogger().severe("[Shop] Data folder could not be created!");
             }
         }
 
@@ -337,9 +323,9 @@ public class Shop extends JavaPlugin {
 
         usePerms = config.getBoolean("usePermissions");
         if (usePerms) {
-            this.getLogger().info("Permissions enabled, Shop will respect player permissions");
+            this.getShopLogger().info("Permissions enabled, Shop will respect player permissions");
         } else {
-            this.getLogger().info("Permissions disabled, everyone will be able to create/use shops by default");
+            this.getShopLogger().info("Permissions disabled, everyone will be able to create/use shops by default");
         }
         checkUpdates = config.getBoolean("checkUpdates");
         enableGUI = config.getBoolean("enableGUI");
@@ -387,8 +373,8 @@ public class Shop extends JavaPlugin {
         offlinePurchaseNotificationsEnabled = config.getBoolean("offlinePurchaseNotifications.enabled");
 
         if (offlinePurchaseNotificationsEnabled && config.getString("logging.type").toUpperCase().equals("OFF")) {
-            this.getLogger().warning("Offline purchase notifications are enabled in `config.yml` but DB logging is set to `OFF`. Offline purchase notifications will be disabled.");
-            this.getLogger().warning("Please set `logging.type` to `FILE` or setup a database in `config.yml` to enable offline purchase notifications.");
+            this.getShopLogger().warning("Offline purchase notifications are enabled in `config.yml` but DB logging is set to `OFF`. Offline purchase notifications will be disabled.");
+            this.getShopLogger().warning("Please set `logging.type` to `FILE` or setup a database in `config.yml` to enable offline purchase notifications.");
             offlinePurchaseNotificationsEnabled = false;
         }
 
@@ -437,18 +423,18 @@ public class Shop extends JavaPlugin {
             YamlConfiguration gambleItemConfig = YamlConfiguration.loadConfiguration(gambleDisplayFile);
             gambleDisplayItem = gambleItemConfig.getItemStack("GAMBLE_DISPLAY");
         } catch (IllegalArgumentException e) {
-            this.getLogger().severe("Error loading gamble display item from file: " + gambleDisplayFile.getAbsolutePath());
+            this.getShopLogger().severe("Error loading gamble display item from file: " + gambleDisplayFile.getAbsolutePath());
             gambleDisplayItem = new ItemStack(Material.DIAMOND);
         } catch (Exception e) {
-            this.getLogger().warning("Error loading gamble display item from file: " + gambleDisplayFile.getAbsolutePath());
+            this.getShopLogger().warning("Error loading gamble display item from file: " + gambleDisplayFile.getAbsolutePath());
             gambleDisplayItem = new ItemStack(Material.DIAMOND);
         } catch (Error e) {
-            this.getLogger().warning("Error loading gamble display item from file: " + gambleDisplayFile.getAbsolutePath());
+            this.getShopLogger().warning("Error loading gamble display item from file: " + gambleDisplayFile.getAbsolutePath());
             gambleDisplayItem = new ItemStack(Material.DIAMOND);
         }
 
         if (gambleDisplayItem == null) {
-            this.getLogger().severe("Error loading gamble display item from file: " + gambleDisplayFile.getAbsolutePath());
+            this.getShopLogger().severe("Error loading gamble display item from file: " + gambleDisplayFile.getAbsolutePath());
             gambleDisplayItem = new ItemStack(Material.DIAMOND);
         }
 
@@ -499,20 +485,20 @@ public class Shop extends JavaPlugin {
         // Check if we should load VAULT economy
         if (currencyType == CurrencyType.VAULT) {
             if (setupEconomy()) {
-                this.getLogger().info("Shops will use the Vault economy (" + currencyName + ") as currency on the server.");
+                this.getShopLogger().info("Shops will use the Vault economy (" + currencyName + ") as currency on the server.");
             } else {
-                this.getLogger().severe("Unable to connect to Vault Economy! Are both Vault AND an Economy plugin installed?");
-                this.getLogger().severe("Plugin Disabled: Invalid configuration value `economy.type` config.yml. If you do not wish to use Vault with Shop, make sure to set `economy.type` in the config file to `ITEM`.");
+                this.getShopLogger().severe("Unable to connect to Vault Economy! Are both Vault AND an Economy plugin installed?");
+                this.getShopLogger().severe("Plugin Disabled: Invalid configuration value `economy.type` config.yml. If you do not wish to use Vault with Shop, make sure to set `economy.type` in the config file to `ITEM`.");
                 getServer().getPluginManager().disablePlugin(plugin);
                 return;
             }
         } else {
             if (itemCurrency == null) {
-                this.getLogger().severe("Plugin Disabled: Invalid value for `itemCurrencyID` in `config.yml`");
+                this.getShopLogger().severe("Plugin Disabled: Invalid value for `itemCurrencyID` in `config.yml`");
                 getServer().getPluginManager().disablePlugin(plugin);
                 return;
             }
-            this.getLogger().info("Shops will use " + itemNameUtil.getName(itemCurrency).toPlainText() + "(s) as the currency on the server.");
+            this.getShopLogger().info("Shops will use " + itemNameUtil.getName(itemCurrency).toPlainText() + "(s) as the currency on the server.");
         }
 
         commandHandler = new CommandHandler(this, null, commandAlias, "Base command for the Shop plugin", "/shop", new ArrayList(Arrays.asList(commandAlias)));
@@ -529,7 +515,9 @@ public class Shop extends JavaPlugin {
 
         guiHandler = new ShopGuiHandler(plugin);
         shopHandler = new ShopHandler(plugin);
-        guiHandler.loadIconsAndTitles();
+        if(enableGUI){
+            guiHandler.loadIconsAndTitles();
+        }
         enderChestHandler = new EnderChestHandler(plugin);
         logHandler = new LogHandler(plugin, config);
 
@@ -541,45 +529,45 @@ public class Shop extends JavaPlugin {
 
         //only define different listener hooks if the plugins are present on the server
         if (getServer().getPluginManager().getPlugin("WorldGuard") != null) {
-            this.getLogger().notice("WorldGuard is installed, creating WorldGuard listener");
-            this.getLogger().helpful("Shop will respect WorldGuard `passthrough`, `build`, and `chest-access` region flags during shop creation!");
+            this.getShopLogger().notice("WorldGuard is installed, creating WorldGuard listener");
+            this.getShopLogger().helpful("Shop will respect WorldGuard `passthrough`, `build`, and `chest-access` region flags during shop creation!");
             // Store for later
             this.worldGuardExists = true;
             // Check if we want to require `allow-shop: true` to exist on regions
             if(hookWorldGuard){
-                this.getLogger().helpful("WorldGuard `allow-shop` flag restriction enabled, Shops can only be created in regions with the `allow-shop` flag set!");
+                this.getShopLogger().helpful("WorldGuard `allow-shop` flag restriction enabled, Shops can only be created in regions with the `allow-shop` flag set!");
                 // Register flag for WorldGuard if we are hooking into the flag system
                 // Only log, don't re-register flags, we do that in the onLoad function.
 //                WorldGuardHook.registerAllowShopFlag();
             } else {
-                this.getLogger().helpful("WorldGuard `allow-shop` flag restriction is disabled, if you want to only allow shops in regions with the `allow-shop` flag, please set `hookWorldGuard` to `true` in `config.yml`");
+                this.getShopLogger().helpful("WorldGuard `allow-shop` flag restriction is disabled, if you want to only allow shops in regions with the `allow-shop` flag, please set `hookWorldGuard` to `true` in `config.yml`");
             }
         } else {
             this.worldGuardExists = false;
         }
 
         if(getServer().getPluginManager().getPlugin("Towny") != null && this.hookTowny){
-            this.getLogger().notice("Towny is installed, Shop will respect Towny!");
+            this.getShopLogger().notice("Towny is installed, Shop will respect Towny!");
         }
 
         if(getServer().getPluginManager().getPlugin("LWC") != null){
             lwcHookListener = new LWCHookListener(this);
             getServer().getPluginManager().registerEvents(lwcHookListener, this);
-            this.getLogger().notice("LWC is installed, creating LWC listener");
+            this.getShopLogger().notice("LWC is installed, creating LWC listener");
         }
 
         if(getServer().getPluginManager().getPlugin("dynmap") != null && dynmapEnabled){
             dynmapHookListener = new DynmapHookListener(this);
             getServer().getPluginManager().registerEvents(dynmapHookListener, this);
-            this.getLogger().notice("Dynmap is installed, creating Dynmap listener");
+            this.getShopLogger().notice("Dynmap is installed, creating Dynmap listener");
         }
 
         if(getServer().getPluginManager().getPlugin("BlueMap") != null && bluemapEnabled){
-            plugin.getLogger().notice("BlueMap is installed, starting BlueMap integration");
+            plugin.getShopLogger().notice("BlueMap is installed, starting BlueMap integration");
             // Wait for 2 minutes for BlueMap to become available/boot up, then initialize listener.
             foliaLib.getScheduler().runTimer(task -> {
                 BlueMapAPI.getInstance().ifPresent(api -> {
-                    plugin.getLogger().debug("BlueMap is ready, creating BlueMap listener");
+                    plugin.getShopLogger().debug("BlueMap is ready, creating BlueMap listener");
                     bluemapHookListener = new BluemapHookListener(plugin);
                     getServer().getPluginManager().registerEvents(bluemapHookListener, plugin);
                     // Make sure we load the markers in case there are shops that BlueMap doesn't know about
@@ -593,19 +581,19 @@ public class Shop extends JavaPlugin {
         if(getServer().getPluginManager().getPlugin("BentoBox") != null){
             bentoBoxHookListener = new BentoBoxHookListener(this);
             getServer().getPluginManager().registerEvents(bentoBoxHookListener, this);
-            this.getLogger().notice("BentoBox is installed, creating BentoBox listener");
+            this.getShopLogger().notice("BentoBox is installed, creating BentoBox listener");
         }
 
         if(getServer().getPluginManager().getPlugin("AdvancedRegionMarket") != null){
             armHookListener = new ARMHookListener(this);
             getServer().getPluginManager().registerEvents(armHookListener, this);
-            this.getLogger().notice("AdvancedRegionMarket is installed, creating AdvancedRegionMarket listener");
+            this.getShopLogger().notice("AdvancedRegionMarket is installed, creating AdvancedRegionMarket listener");
         }
 
         if(getServer().getPluginManager().getPlugin("PlotSquared") != null){
             plotSquaredHookListener = new PlotSquaredHookListener(this);
             getServer().getPluginManager().registerEvents(plotSquaredHookListener, this);
-            this.getLogger().notice("PlotSquared is installed, creating PlotSquared listener");
+            this.getShopLogger().notice("PlotSquared is installed, creating PlotSquared listener");
         }
 
         int bstatsPluginId = 25211;
@@ -781,7 +769,7 @@ public class Shop extends JavaPlugin {
 
         displayListener.startRepeatingDisplayViewTask();
 
-        this.getLogger().info("Enabled Shop " + this.getDescription().getVersion());
+        this.getShopLogger().info("Enabled Shop " + this.getDescription().getVersion());
 
         if(checkUpdates){
             new UpdateChecker(this).checkForUpdate();
@@ -798,11 +786,11 @@ public class Shop extends JavaPlugin {
         //save any remaining shops (usually not required but just in case)
         if (shopHandler != null) shopHandler.saveAllShops();
 
-        this.getLogger().info("Disabled Shop " + this.getDescription().getVersion());
+        this.getShopLogger().info("Disabled Shop " + this.getDescription().getVersion());
     }
 
     public void reload(){
-        this.getLogger().info("Reloading Shop " + this.getDescription().getVersion());
+        this.getShopLogger().info("Reloading Shop " + this.getDescription().getVersion());
 
         HandlerList.unregisterAll(displayListener);
         HandlerList.unregisterAll(shopListener);
@@ -837,7 +825,7 @@ public class Shop extends JavaPlugin {
         if (getServer().getPluginManager().getPlugin("Vault") == null) {
             return false;
         }
-        this.getLogger().notice("Vault is installed, creating Vault integration for Economy support");
+        this.getShopLogger().notice("Vault is installed, creating Vault integration for Economy support");
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
         if (rsp == null) {
             return false;
@@ -1163,14 +1151,6 @@ public class Shop extends JavaPlugin {
 
     public NBTAdapter getNBTAdapter() {
         return nbtAdapter;
-    }
-
-    public NamespacedKey getSignLocationNameSpacedKey(){
-        return signLocationNameSpacedKey;
-    }
-
-    public NamespacedKey getPlayerUUIDNameSpacedKey(){
-        return playerUUIDNameSpacedKey;
     }
 
     public LogHandler getLogHandler(){

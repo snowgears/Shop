@@ -44,7 +44,7 @@ public class DynmapHookListener implements Listener {
             plugin.getFoliaLib().getScheduler().runTimer(() -> updateMarkers(), 1, 20 * 120 * 60);
         } catch(NullPointerException e){
             enabled = false;
-            plugin.getLogger().warning("Dynmap marker api was null. Disabling DynMap integration.");
+            plugin.getShopLogger().warning("Dynmap marker api was null. Disabling DynMap integration.");
         }
     }
 
@@ -66,7 +66,7 @@ public class DynmapHookListener implements Listener {
         if(!enabled)
             return;
         if (api == null || api.getMarkerAPI() == null) {
-            plugin.getLogger().warning("Dynmap marker api not ready, skipping...");
+            plugin.getShopLogger().warning("Dynmap marker api not ready, skipping...");
             return;
         }
         shopMarkerSet.getMarkers().forEach(GenericMarker::deleteMarker);

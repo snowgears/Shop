@@ -1,16 +1,13 @@
 package com.snowgears.shop.listener;
 
 import com.snowgears.shop.Shop;
-import com.snowgears.shop.display.AbstractDisplay;
 import com.snowgears.shop.event.PlayerDestroyShopEvent;
 import com.snowgears.shop.event.PlayerResizeShopEvent;
 import com.snowgears.shop.hook.WorldGuardHook;
 import com.snowgears.shop.shop.AbstractShop;
 import com.snowgears.shop.shop.ShopType;
 import com.snowgears.shop.util.*;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -56,7 +53,7 @@ public class MiscListener implements Listener {
 
         Block b = event.getBlockClicked();
 
-        if (b.getBlockData() instanceof WallSign) {
+        if (SignUtil.isWallSign(b)) {
             AbstractShop shop = plugin.getShopHandler().getShop(b.getLocation());
             if (shop != null)
                 event.setCancelled(true);
@@ -80,11 +77,14 @@ public class MiscListener implements Listener {
 
         BlockFace signDirection = null;
         Block chest = null;
-        if(b.getBlockData() instanceof WallSign) {
-            signDirection = ((WallSign) b.getBlockData()).getFacing();
+        if (!MCVersion.atLeast("1.13")) {
+            throw new UnsupportedOperationException("Sign creation is not supported in legacy versions, til i fix this stupid shit");
+        }
+        if(SignUtil.isWallSign(b)) {
+            signDirection = SignUtil.getFacing(b);
             chest = b.getRelative(signDirection.getOppositeFace());
         }
-        else if(b.getBlockData() instanceof Rotatable){ //regular sign post
+        else if(b.getType().toString().contains("SIGN_POST") && b.getBlockData() instanceof Rotatable){ //regular sign post
             signDirection = ((Rotatable) b.getBlockData()).getRotation();
             //adjust the sign direction to cordinal direction if its not already one
             if( signDirection.toString().indexOf('_') != -1) {
@@ -170,7 +170,7 @@ public class MiscListener implements Listener {
                     //the shop has still not been initialized with an item from a player
                     if (!shop.isInitialized()) {
                         plugin.getShopHandler().removeShop(shop);
-                        if (b.getBlockData() instanceof WallSign) {
+                        if (SignUtil.isWallSign(b)) {
                             String[] lines = ShopMessage.getTimeoutSignLines(shop);
                             Sign sign = (Sign) b.getState();
                             sign.setLine(0, lines[0]);
@@ -229,7 +229,7 @@ public class MiscListener implements Listener {
         if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
             final Block clicked = event.getClickedBlock();
 
-            if (clicked.getBlockData() instanceof WallSign) {
+            if (SignUtil.isWallSign(clicked)) {
 
                 if(!plugin.getAllowCreationMethodSign())
                     return;
@@ -256,7 +256,7 @@ public class MiscListener implements Listener {
                     }
                 }
                 event.setCancelled(true); //cancel event regardless
-                Shop.getPlugin().getLogger().trace("[MiscListener.onPreShopSignClick] updateSign");
+                Shop.getPlugin().getShopLogger().trace("[MiscListener.onPreShopSignClick] updateSign");
                 shop.updateSign();
             }
             else if(plugin.getShopHandler().isChest(clicked)){
@@ -314,7 +314,7 @@ public class MiscListener implements Listener {
                 }
                 else {
                     ShopCreationProcess currentProcess = playerChatCreationSteps.get(player.getUniqueId());
-                    plugin.getLogger().debug("Current Shop Creation Process: " + currentProcess);
+                    plugin.getShopLogger().debug("Current Shop Creation Process: " + currentProcess);
                     if (currentProcess != null && currentProcess.getStep() == ShopCreationProcess.ChatCreationStep.BARTER_ITEM) {
                         if (!plugin.getShopCreationUtil().itemsCanBeInitialized(player, currentProcess.getItemStack(), event.getItem())) {
                             event.setCancelled(true);
@@ -374,9 +374,10 @@ public class MiscListener implements Listener {
                 process.displayFloatingText("createHitChest", null);
                 List<String> autocomplete = new ArrayList<>();
                 Arrays.asList(ShopType.values()).forEach((shopType -> autocomplete.add(shopType.toString().toLowerCase())));
-                try {
+                
+                if (MCVersion.atLeast("1.17")) {
                     player.setCustomChatCompletions(autocomplete);
-                } catch (Error error) {} // Suppress error if autocomplete is not supported
+                }
                 if((!plugin.usePerms() && player.isOp()) || (plugin.usePerms() && player.hasPermission("shop.operator"))) {
                     ShopMessage.sendMessage("adminCreateHitChest", null, process, player);
                 }
@@ -402,7 +403,7 @@ public class MiscListener implements Listener {
         Player player = event.getPlayer();
         if(playerChatCreationSteps.containsKey(player.getUniqueId())){
             ShopCreationProcess process = playerChatCreationSteps.get(player.getUniqueId());
-            plugin.getLogger().debug("Shop Creation Process: " + process.getStep() + " Player " + player.getName() + " input: " + event.getMessage(), true);
+            plugin.getShopLogger().debug("Shop Creation Process: " + process.getStep() + " Player " + player.getName() + " input: " + event.getMessage(), true);
             switch (process.getStep()){
                 case SHOP_TYPE:
                     ShopType type = plugin.getShopCreationUtil().getShopType(event.getMessage());
@@ -544,13 +545,17 @@ public class MiscListener implements Listener {
         Block b = event.getBlock();
         Player player = event.getPlayer();
 
-        if (b.getBlockData() instanceof WallSign) {
+        if (SignUtil.isWallSign(b)) {
             AbstractShop shop = plugin.getShopHandler().getShop(b.getLocation());
             if (shop == null)
                 return;
             // Disable dropping sign if its fake
             if(shop.isFakeSign()){
-                event.setDropItems(false);
+                try {
+                    event.setDropItems(false);
+                } catch (NoSuchMethodError error) {
+                    // Ignore, sry u can get free signs supr slowly in old versions
+                }
             }
             if (!shop.isInitialized()) {
                 event.setCancelled(true);
@@ -560,7 +565,7 @@ public class MiscListener implements Listener {
             if(plugin.getDestroyShopRequiresSneak()){
                 if(!player.isSneaking()){
                     event.setCancelled(true);
-                    Shop.getPlugin().getLogger().trace("[MiscListener.shopDestroy : getDestroyShopRequiresSneak] updateSign");
+                    Shop.getPlugin().getShopLogger().trace("[MiscListener.shopDestroy : getDestroyShopRequiresSneak] updateSign");
                     shop.updateSign();
                     return;
                 }
@@ -601,7 +606,11 @@ public class MiscListener implements Listener {
                 plugin.getLogHandler().logAction(player, shop, ShopActionType.DESTROY);
 
                 if(shop.isFakeSign()){
-                    event.setDropItems(false);
+                    try {
+                        event.setDropItems(false);
+                    } catch (NoSuchMethodError error) {
+                        // Ignore, sry u can get free signs supr slowly in old versions
+                    }
                 }
 
                 if((!shop.isAdmin()) && plugin.returnCreationCost() && plugin.getCreationCost() > 0) {
@@ -641,7 +650,11 @@ public class MiscListener implements Listener {
                     plugin.getLogHandler().logAction(player, shop, ShopActionType.DESTROY);
 
                     if(shop.isFakeSign()){
-                        event.setDropItems(false);
+                        try {
+                            event.setDropItems(false);
+                        } catch (NoSuchMethodError error) {
+                            // Ignore, sry u can get free signs supr slowly in old versions
+                        }
                     }
 
                     ShopMessage.sendMessage(shop.getType().toString(), "opDestroy", player, shop);

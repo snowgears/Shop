@@ -2,10 +2,8 @@ package com.snowgears.shop.util;
 
 import com.snowgears.shop.Shop;
 import com.snowgears.shop.shop.ShopType;
-import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -46,7 +44,7 @@ public class OfflineTransactions {
     }
 
     public String getTransactionsLore(){
-        return StringUtils.join(txStrings, "\n");
+        return String.join("\n", txStrings);
     }
 
     private void calculate(){

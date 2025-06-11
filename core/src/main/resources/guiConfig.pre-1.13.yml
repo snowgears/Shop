@@ -1,0 +1,275 @@
+# THIS FILE IS USED TO CONFIGURE WHAT MESSAGES ARE DISPLAYED #
+# ================================================================== #
+# &b : AQUA
+# &0 : BLACK
+# &9 : BLUE
+# &l : BOLD
+# &3 : DARK_AQUA
+# &1 : DARK_BLUE
+# &8 : DARK_GRAY
+# &2 : DARK_GREEN
+# &5 : DARK_PURPLE
+# &4 : DARK_RED
+# &6 : GOLD
+# &7 : GRAY
+# &a : GREEN
+# &o : ITALIC
+# &d : LIGHT_PURPLE
+# &k : MAGIC
+# &c : RED
+# &r : RESET
+# &m : STRIKETHROUGH
+# &n : UNDERLINE
+# &f : WHITE
+# &e : YELLOW
+
+titles:
+   home: "Shop Menu"
+   list_players: "Shops By Player"
+   list_shops: "Shops"
+   settings: "Your Settings"
+   list_search_results: "Search Results"
+   commands: "Commands"
+
+icons:
+   all:
+      shop_icon:
+         name: "[item] &7(x[item amount])"
+         lore:
+            - "&7Type: &b[shop type]"
+            - "&7Barter: &f[barter item] &7(x[barter item amount])"
+            - "&7Price: &a[price]"
+            - "[stock color]Stocked"
+      player_icon:
+         name: "[owner]"
+         lore:
+            - "&7Shops: &b[user amount]"
+      admin_icon:
+         name: "&dAdmin"
+         type: "CHEST"
+         lore:
+            - "&7Shops: &b[user amount]"
+   menubar:
+      back:
+         type: "BARRIER"
+         name: "Back"
+         lore:
+            - "&7Go back to previous window."
+      search:
+         type: "COMPASS"
+         name: "Search"
+         lore:
+            - "&7Search for a specific player or item."
+      last_page:
+         type: "STAINED_GLASS_PANE"
+         data: 14
+         name: "Previous Page"
+         lore:
+            - "&7Go back."
+      next_page:
+         type: "STAINED_GLASS_PANE"
+         data: 14
+         name: "Next Page"
+         lore:
+            - "&7Go forward."
+      sort_price_low:
+         type: "EMERALD"
+         name: "&l&6Sort"
+         lore:
+            - "&7Ordered by price - low to high."
+      sort_price_high:
+         type: "DIAMOND"
+         name: "&l&6Sort"
+         lore:
+            - "&7Ordered by price - high to low."
+      sort_name_low:
+         type: "BOOK"
+         name: "&l&6Sort"
+         lore:
+            - "&7Ordered by item name - A-Z."
+      sort_name_high:
+         type: "BOOK_AND_QUILL"
+         name: "&l&6Sort"
+         lore:
+            - "&7Ordered by item name - Z-A."
+      filter_type_all:
+         type: "INK_SACK"
+         data: 15
+         name: "&l&6Filter shop type"
+         lore:
+            - "&7All shop types"
+      filter_type_sell:
+         type: "INK_SACK"
+         data: 2
+         name: "&l&6Filter shop type"
+         lore:
+            - "&7Sell shops"
+      filter_type_buy:
+         type: "INK_SACK"
+         data: 1
+         name: "&l&6Filter shop type"
+         lore:
+            - "&7Buy shops"
+      filter_type_barter:
+         type: "INK_SACK"
+         data: 4
+         name: "&l&6Filter shop type"
+         lore:
+            - "&7Barter shops"
+      filter_type_gamble:
+         type: "INK_SACK"
+         data: 14
+         name: "&l&6Filter shop type"
+         lore:
+            - "&7Gamble shops"
+      filter_stock_all:
+         type: "STAINED_GLASS"
+         data: 0
+         name: "&l&6Filter by stock"
+         lore:
+            - "&7All shops"
+      filter_stock_in:
+         type: "STAINED_GLASS"
+         data: 5
+         name: "&l&6Filter by stock"
+         lore:
+            - "&7Shops in stock"
+      filter_stock_out:
+         type: "STAINED_GLASS"
+         data: 14
+         name: "&l&6Filter by stock"
+         lore:
+            - "&7Shops out of stock"
+
+   home:
+      list_all_shops:
+         type: "CHEST"
+         name: "All Shops"
+         lore:
+            - "&7List all shops"
+            - "&7on the server."
+      list_players:
+         type: "SKULL_ITEM"
+         name: "Player Shops"
+         data: 3
+         lore:
+            - "&7List all players"
+            - "&7with shops on the server."
+      search:
+         type: "COMPASS"
+         name: "Search"
+         lore:
+            - "&7Find a shop by an item"
+      settings:
+         type: "GOLD_AXE"
+         name: "Settings"
+         lore:
+            - "&7Change your shop"
+            - "&7notification settings."
+      commands:
+         type: "ENCHANTMENT_TABLE"
+         name: "Commands"
+         lore:
+            - "&7Run commands available to operators."
+   settings:
+      notify_owner_on:
+         type: "WOOL"
+         data: 5
+         name: "Sales Notifications (owner)"
+         lore:
+            - "&7You will be notified"
+            - "&7when players purchase from your shops."
+      notify_owner_off:
+         type: "WOOL"
+         data: 14
+         name: "Sales Notifications (owner)"
+         lore:
+            - "&7You will not be notified"
+            - "&7when players purchase from your shops."
+      notify_user_on:
+         type: "WOOL"
+         data: 5
+         name: "Sales Notifications (user)"
+         lore:
+            - "&7You will be notified"
+            - "&7when you make purchases from shops."
+      notify_user_off:
+         type: "WOOL"
+         data: 14
+         name: "Sales Notifications (user)"
+         lore:
+            - "&7You will not be notified"
+            - "&7when you make purchases from shops."
+      notify_stock_on:
+         type: "WOOL"
+         data: 5
+         name: "Stock Notifications (owner)"
+         lore:
+            - "&7You will be notified"
+            - "&7when your shops run out of stock or space."
+      notify_stock_off:
+         type: "WOOL"
+         data: 14
+         name: "Stock Notifications (owner)"
+         lore:
+            - "&7You will not be notified"
+            - "&7when your shops run out of stock or space."
+   commands:
+      currency:
+         type: "EMERALD"
+         name: "Check Server Currency"
+         lore:
+            - "&7Display what currency"
+            - "&7the server is using."
+      set_currency:
+         type: "GLOWSTONE_DUST"
+         name: "Set Server Currency"
+         lore:
+            - "&7Set the server currency"
+            - "&7to the item in your hand."
+      set_gamble:
+         name: "Set Gamble Display"
+         lore:
+            - "&7Set the gamble displays"
+            - "&7to the item in your hand."
+      refresh_displays:
+         type: "BONE"
+         name: "Refresh Shop Displays"
+         lore:
+            - "&7Refresh all of the"
+            - "&7shop displays on the server."
+      reload:
+         type: "WEB"
+         name: "Reload Plugin"
+         lore:
+            - "&7Reload the shop plugin."
+      itemlist_allow_add:
+         type: "WATER_BUCKET"
+         name: "Add to allow list"
+         lore:
+            - "&7Add your current inventory"
+            - "&7items to the item ALLOW LIST."
+      itemlist_allow_remove:
+         type: "BUCKET"
+         name: "Remove from allow list"
+         lore:
+            - "&7Remove your current inventory"
+            - "&7items from the item ALLOW LIST."
+      itemlist_deny_add:
+         type: "WATER_BUCKET"
+         name: "Add to deny list"
+         lore:
+            - "&7Add your current inventory"
+            - "&7items to the item DENY LIST."
+      itemlist_deny_remove:
+         type: "BUCKET"
+         name: "Remove from deny list"
+         lore:
+            - "&7Remove your current inventory"
+            - "&7items from the item DENY LIST."
+   list:
+      player_admin:
+         type: "CHEST"
+         name: "Admin"
+         lore:
+            - "&7Shops owned by the server."

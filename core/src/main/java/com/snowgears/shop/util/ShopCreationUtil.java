@@ -10,11 +10,7 @@ import com.snowgears.shop.shop.AbstractShop;
 import com.snowgears.shop.shop.ShopType;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.Tag;
 import org.bukkit.block.*;
-import org.bukkit.block.data.Directional;
-import org.bukkit.block.data.type.Light;
-import org.bukkit.block.data.type.WallSign;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -158,7 +154,11 @@ public class ShopCreationUtil {
 
         //removed all the direction checking code. just make sure its a container
         //make sure that the sign is in front of the chest, unless it is a shulker box
-        if (chestBlock.getState() instanceof Container || (plugin.useEnderChests() && chestBlock.getType() == Material.ENDER_CHEST)) {
+        if (chestBlock.getType().toString().contains("CHEST") 
+            || (plugin.useEnderChests() && chestBlock.getType().toString().contains("ENDER_CHEST"))
+            || chestBlock.getType().toString().contains("BARREL")
+            || chestBlock.getType().toString().contains("SHULKER_BOX")
+        ) {
             //System.out.println("Chest of shop was a container.");
             existingShop = plugin.getShopHandler().getShopByChest(chestBlock);
             if (existingShop != null) {
@@ -169,20 +169,7 @@ public class ShopCreationUtil {
                 }
             }
 
-
-            if (!(signBlock.getBlockData() instanceof WallSign)) {
-                if (!signBlock.getType().toString().contains("_SIGN")) {
-                    return null;
-                }
-                String wallSignString = signBlock.getType().toString().replaceAll("_SIGN", "_WALL_SIGN");
-                signBlock.setType(Material.valueOf(wallSignString));
-
-                Directional wallSignData = (Directional) signBlock.getBlockData();
-                wallSignData.setFacing(signDirection);
-                signBlock.setBlockData(wallSignData);
-            }
-            Sign signBlockState = (Sign) signBlock.getState();
-            signBlockState.update();
+            SignUtil.setFacing(signBlock, signDirection);
 
             shop.setAdmin(isAdmin);
             shop.load();
@@ -195,14 +182,9 @@ public class ShopCreationUtil {
             if (e.isCancelled())
                 return null;
 
-            if (UtilMethods.isMCVersion17Plus() && plugin.getDisplayLightLevel() > 0) {
+            if (MCVersion.atLeast("1.17") && plugin.getDisplayLightLevel() > 0) {
                 Block displayBlock = shop.getChestLocation().getBlock().getRelative(BlockFace.UP);
-                if (UtilMethods.materialIsNonIntrusive(displayBlock.getType())) {
-                    displayBlock.setType(Material.LIGHT);
-                    Light data = (Light) displayBlock.getBlockData();
-                    data.setLevel(plugin.getDisplayLightLevel());
-                    displayBlock.setBlockData(data);
-                }
+                MaterialUtil.setLightBlockData(displayBlock, plugin.getDisplayLightLevel());
             }
 
             if (type == ShopType.GAMBLE) {
@@ -217,7 +199,7 @@ public class ShopCreationUtil {
             }
 
             plugin.getShopHandler().addShop(shop);
-            Shop.getPlugin().getLogger().trace("[ShopCreationUtil.createShop] updateSign");
+            Shop.getPlugin().getShopLogger().trace("[ShopCreationUtil.createShop] updateSign");
             shop.updateSign();
         }
         return shop;
@@ -233,7 +215,7 @@ public class ShopCreationUtil {
 
     public void sendCreationSuccess(Player player, AbstractShop shop){
         if (shop.getDisplay() != null) shop.getDisplay().spawn(player);
-        Shop.getPlugin().getLogger().trace("[ShopCreationUtil.sendCreationSuccess] updateSign");
+        Shop.getPlugin().getShopLogger().trace("[ShopCreationUtil.sendCreationSuccess] updateSign");
         shop.setSignLinesRequireRefresh(true);
         shop.updateSign();
         shop.setNeedsSave(true);
@@ -315,8 +297,8 @@ public class ShopCreationUtil {
 
         try {
             //stop the edge case of shulker boxes being able to be used in shulker chests
-            if (Tag.SHULKER_BOXES.isTagged(item.getType())) {
-                if (shop.getChestLocation().getBlock().getState() instanceof ShulkerBox) {
+            if (item.getType().toString().contains("SHULKER_BOX")) {
+                if (shop.getChestLocation().getBlock().getType().toString().contains("SHULKER_BOX")) {
                     return false;
                 }
             }

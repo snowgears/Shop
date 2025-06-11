@@ -12,9 +12,12 @@ import org.bukkit.block.data.type.WallSign;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.ArmorMeta;
+import org.bukkit.inventory.meta.BlockStateMeta;
+// TODO: Phase 2 - Add conditional import for ArmorMeta (Java 17+ only)
+// import org.bukkit.inventory.meta.ArmorMeta;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 import org.bukkit.inventory.meta.PotionMeta;
@@ -41,6 +44,10 @@ import org.bukkit.util.io.BukkitObjectInputStream;
 public class UtilMethods {
 
     private static ArrayList<Material> nonIntrusiveMaterials = new ArrayList<Material>();
+
+    public static boolean isTranslationSupported() {
+        return MCVersion.atLeast("1.16");
+    }
 
     public static String trimForSign(String text) {
         final int MAX_SIGN_WIDTH = 80; // Maximum width allowed on a sign line
@@ -273,10 +280,9 @@ public class UtilMethods {
     // -1 - RIGHT SIDE
     // 0 - EXACT CENTER
     public static int calculateSideFromClickedSign(Player player, Block signBlock){
-        if(!(signBlock.getBlockData() instanceof WallSign))
+        if(!SignUtil.isWallSign(signBlock))
             return 0;
-        WallSign s = (WallSign)signBlock.getBlockData();
-        BlockFace attachedFace = s.getFacing().getOppositeFace();
+        BlockFace attachedFace = SignUtil.getFacing(signBlock).getOppositeFace();
         Location chest = signBlock.getRelative(attachedFace).getLocation().add(0.5,0.5,0.5);
         Location head = player.getLocation().add(0, player.getEyeHeight(), 0);
 
@@ -357,10 +363,38 @@ public class UtilMethods {
     public static String getItemName(ItemStack is){
         ItemMeta itemMeta = is.getItemMeta();
 
-        if (itemMeta.getDisplayName() == null || itemMeta.getDisplayName().isEmpty())
-            return capitalize(is.getType().name().replace("_", " ").toLowerCase());
-        else
+        if (itemMeta.getDisplayName() != null && !itemMeta.getDisplayName().isEmpty()) {
             return itemMeta.getDisplayName();
+        }
+
+        // 1.16+
+        if (UtilMethods.isTranslationSupported()) {
+            String translationKey = is.getType().getTranslationKey();
+            if (translationKey != null && !translationKey.isEmpty()) {
+                return (new TranslatableComponent(translationKey)).toLegacyText();
+            }
+        }
+
+        // 1.12+
+        if (MCVersion.atLeast("1.12") && itemMeta.hasLocalizedName()) {
+            return itemMeta.getLocalizedName();
+        }
+
+        // 1.8+
+        if (!MCVersion.atLeast("1.12")) {
+            // we are on 1.8 -> 1.10, use NMS to access the translated item name!
+            try {
+                String itemName = (String) Shop.getPlugin().getShopHandler().getDisplayClass()
+                    .getDeclaredMethod("getNMSItemName", ItemStack.class)
+                    .invoke(null, is);
+                if (itemName != null) {
+                    return itemName;
+                }
+            } catch (Error | Exception e) {}
+        }
+
+        // Default fallback just in case :)
+        return capitalize(is.getType().name().replace("_", " ").toLowerCase());
     }
 
     public static boolean stringStartsWithUUID(String name){
@@ -446,145 +480,76 @@ public class UtilMethods {
 
     public static TextComponent getEnchantmentsComponent(ItemStack item){
         TextComponent formattedMessage = new TextComponent("");
-
-        if(item.getItemMeta() instanceof EnchantmentStorageMeta || item.getEnchantments().size() > 0){
-            Map<Enchantment, Integer> enchantsMap;
-            if(item.getItemMeta() instanceof EnchantmentStorageMeta){
-                enchantsMap = ((EnchantmentStorageMeta) item.getItemMeta()).getStoredEnchants();
-            }
-            else { enchantsMap = item.getEnchantments(); }
-
-            if(enchantsMap == null || enchantsMap.isEmpty()) return formattedMessage;
-
-            formattedMessage.addExtra(" [");
-            int i=0;
-            for(Map.Entry<Enchantment, Integer> entry : enchantsMap.entrySet()){
-                formattedMessage.addExtra(new TranslatableComponent(entry.getKey().getTranslationKey()));
-                formattedMessage.addExtra(formatRomanNumerals(entry.getValue()));
-                i++;
-                if(i != enchantsMap.size()) formattedMessage.addExtra(", ");
-                else formattedMessage.addExtra("]");
-            }
-        }
-
-        if(item.getItemMeta() != null && item.getItemMeta() instanceof ArmorMeta){
-            ArmorMeta armorMeta = (ArmorMeta) item.getItemMeta();
-            if (armorMeta.getTrim() != null) {
-                String material = translate(armorMeta.getTrim().getMaterial().getTranslationKey());
-                String pattern = translate(armorMeta.getTrim().getPattern().getTranslationKey());
-                // Since we want to remove the "Armor Trim" and "Material" from the string, we have to translate it first
-                // causing translatable components to not work clientside.
-                formattedMessage.addExtra(" [" + pattern.replace(" Armor Trim", ""));
-                formattedMessage.addExtra(" (" + material.replace(" Material", "") + ")]");
-            }
-        }
         
-        // Add support for displaying music disc information and goat horn sounds
+        // Add enchantments
+        ItemDetailHandler.addEnchantmentDisplayInfo(item, formattedMessage);
+        
+        // Add armor information (trims, etc.)
+        ItemDetailHandler.addArmorDisplayInfo(item, formattedMessage);
+        
+        // Item Meta details
         if(item.getItemMeta() != null) {
             String itemType = item.getType().name();
             
-            // Add support for displaying music disc information
+            // Music disc information
             if(itemType.startsWith("MUSIC_DISC_")) {
                 String trackName = itemType.replace("MUSIC_DISC_", "");
                 String formattedName = capitalize(trackName.toLowerCase().replace("_", " "));
                 formattedMessage.addExtra(" [Song: " + formattedName + "]");
             }
-            // Handle legacy music disc naming that doesn't follow the MUSIC_DISC_ prefix pattern
+            // Legacy music disc naming that doesn't follow the MUSIC_DISC_ prefix pattern
             else if(itemType.equals("MUSIC_DISC")) { formattedMessage.addExtra(" [Song: Unknown]"); }
             else if(itemType.equals("PIGSTEP")) { formattedMessage.addExtra(" [Song: Pigstep]"); }
             else if(itemType.equals("OTHERSIDE")) { formattedMessage.addExtra(" [Song: Otherside]"); }
             else if(itemType.equals("FIVE")) { formattedMessage.addExtra(" [Song: 5]"); }
             else if(itemType.equals("RELIC")) { formattedMessage.addExtra(" [Song: Relic]"); }
             
-            // Add support for displaying goat horn sounds
-            else if(itemType.equals("GOAT_HORN")) {
-                // Try to get the instrument type from item data if available
-                try {
-                    org.bukkit.inventory.meta.MusicInstrumentMeta instrumentMeta = (org.bukkit.inventory.meta.MusicInstrumentMeta) item.getItemMeta();
-                    if (instrumentMeta != null && instrumentMeta.getInstrument() != null) {
-                        String instrumentKey = instrumentMeta.getInstrument().getKey().getKey();
-                        // Format the instrument key properly (e.g., "ponder_goat_horn" -> "Ponder")
-                        String soundType = instrumentKey.replace("_goat_horn", "");
-                        formattedMessage.addExtra(" [Sound: " + capitalize(soundType) + "]");
-                    } else {
-                        formattedMessage.addExtra(" [Sound: Unknown]");
-                    }
-                } catch (Exception e) {
-                    // Fallback for older versions or if the meta is not available
-                    formattedMessage.addExtra(" [Sound: Unknown]");
-                }
-            }
+            // Goat horns
+            ItemDetailHandler.addMusicInstrumentDisplayInfo(item, formattedMessage);
             
-            // Add support for displaying bee hive/nest information
-            else if(itemType.equals("BEE_NEST") || itemType.equals("BEEHIVE")) {
+            // Bee hive/nest information (MC 1.15+ only)
+            if(MCVersion.atLeast("1.15") && (itemType.equals("BEE_NEST") || itemType.equals("BEEHIVE"))) {
                 try {
-                    if(item.getItemMeta() instanceof org.bukkit.inventory.meta.BlockStateMeta) {
-                        org.bukkit.inventory.meta.BlockStateMeta blockStateMeta = (org.bukkit.inventory.meta.BlockStateMeta) item.getItemMeta();
-                        
-                        if(blockStateMeta.hasBlockState() && blockStateMeta.getBlockState() instanceof org.bukkit.block.Beehive) {
-                            org.bukkit.block.Beehive beehive = (org.bukkit.block.Beehive) blockStateMeta.getBlockState();
-                            
-                            int honeyLevel = 0;
-                            int beeCount = 0;
-                            
-                            // Get honey level (this is from BlockData)
-                            try {
-                                org.bukkit.block.data.type.Beehive beehiveData = (org.bukkit.block.data.type.Beehive) beehive.getBlockData();
-                                honeyLevel = beehiveData.getHoneyLevel();
-                            } catch (Exception e) { }
-                            // Get bee count (this is from the entity storage)
-                            try { beeCount = beehive.getEntityCount(); } catch (Exception e) {}
-                            
-                            // Format the message
-                            if(honeyLevel > 0 || beeCount > 0) {
-                                StringBuilder beeInfo = new StringBuilder(" [");
-                                if(honeyLevel > 0) {
-                                    beeInfo.append("Honey: ").append(honeyLevel).append("/5");
-                                    if(beeCount > 0) { beeInfo.append(", "); }
-                                }
-                                if(beeCount > 0) { beeInfo.append("Bees: ").append(beeCount); }
-                                beeInfo.append("]");
-                                formattedMessage.addExtra(beeInfo.toString());
-                            }
+                    org.bukkit.block.Beehive beehive = (org.bukkit.block.Beehive) ((BlockStateMeta) item.getItemMeta()).getBlockState();
+                    int honeyLevel = 0;
+                    int beeCount = 0;
+
+                    // Get honey level (this is from BlockData)
+                    honeyLevel = ((org.bukkit.block.data.type.Beehive) beehive.getBlockData()).getHoneyLevel();
+                    // Get bee count (this is from the entity storage)
+                    beeCount = beehive.getEntityCount();
+
+                    // Format the message
+                    if(honeyLevel > 0 || beeCount > 0) {
+                        StringBuilder beeInfo = new StringBuilder(" [");
+                        if(honeyLevel > 0) {
+                            beeInfo.append("Honey: ").append(honeyLevel).append("/5");
+                            if(beeCount > 0) { beeInfo.append(", "); }
                         }
+                        if(beeCount > 0) { beeInfo.append("Bees: ").append(beeCount); }
+                        beeInfo.append("]");
+                        formattedMessage.addExtra(beeInfo.toString());
                     }
-                } catch (Exception e) { /* Silently handle any exceptions for backward compatibility */ }
+                } catch (Exception e) {}
             }
         }
 
-        // Add Ominous Bottle support (Bad Omen level)
-        try {
-            if(item.getItemMeta() != null && item.getItemMeta() instanceof org.bukkit.inventory.meta.OminousBottleMeta) {
-                org.bukkit.inventory.meta.OminousBottleMeta ominousMeta = (org.bukkit.inventory.meta.OminousBottleMeta) item.getItemMeta();
-                int level = ominousMeta.hasAmplifier() ? ominousMeta.getAmplifier() + 1 : 1; // zero based
-                formattedMessage.addExtra(" [Bad Omen" + formatRomanNumerals(level) + "]");
-            }
-        } catch (Error e) {} catch (Exception e) {  /* This might happen on older versions where OminousBottleMeta isn't available */ }
+        // Ominous bottle details
+        ItemDetailHandler.addOminousBottleDisplayInfo(item, formattedMessage);
 
-        // Add custom potion formatting
-        if(item.getItemMeta() != null && item.getItemMeta() instanceof PotionMeta){
-            PotionMeta potionMeta = (PotionMeta) item.getItemMeta();
-            if (potionMeta.getBasePotionType() != null) {
-                formattedMessage.addExtra(getPotionEffects(potionMeta.getBasePotionType().getPotionEffects()));
-            }
-            
-            // Check for custom effects
-            List<PotionEffect> customEffects = potionMeta.getCustomEffects();
-            if(!customEffects.isEmpty()) {
-                formattedMessage.addExtra(getPotionEffects(customEffects));
-            }
-        }
+        // Potion details
+        ItemDetailHandler.addPotionDisplayInfo(item, formattedMessage);
 
-        // Add detailed firework effect information
+        // Firework effect details
         if(item.getItemMeta() != null) {
-            // Handle Firework Stars
+            // Firework stars
             if(item.getItemMeta() instanceof org.bukkit.inventory.meta.FireworkEffectMeta) {
                 org.bukkit.inventory.meta.FireworkEffectMeta fireworkMeta = (org.bukkit.inventory.meta.FireworkEffectMeta) item.getItemMeta();
                 if(fireworkMeta.hasEffect()) {
                     formattedMessage.addExtra(getFormattedFireworkEffect(fireworkMeta.getEffect(), true));
                 }
             }
-            // Handle Fireworks
+            // Fireworks
             else if(item.getItemMeta() instanceof FireworkMeta) {
                 FireworkMeta fireworkMeta = (FireworkMeta) item.getItemMeta();
                 int power = fireworkMeta.getPower();
@@ -611,38 +576,6 @@ public class UtilMethods {
         }
 
         return new TextComponent(ChatColor.stripColor(formattedMessage.toLegacyText()));
-    }
-
-    private static TextComponent getPotionEffects(List<PotionEffect> effects){
-        TextComponent formattedEffects = new TextComponent("");
-        int numEffects = effects.size();
-        if (numEffects == 0) return formattedEffects;
-        formattedEffects.addExtra(" (");
-        for (int i = 0; i < numEffects; i++) {
-            PotionEffect effect = effects.get(i);
-            formattedEffects.addExtra(new TranslatableComponent(effect.getType().getTranslationKey()));
-            
-            // Show level for all potions, not just those with amplifier > 0
-            // For potions with amplifier 0, we don't add any suffix (it's the base level)
-            if(effect.getAmplifier() > 0) {
-                formattedEffects.addExtra(formatRomanNumerals(effect.getAmplifier() + 1)); // +1 because amplifier is 0-based
-            }
-            
-            // Only add duration for non-instant effects
-            // Instant effects like Instant Health and Instant Damage shouldn't show duration
-            boolean isInstantEffect = effect.getType().equals(org.bukkit.potion.PotionEffectType.INSTANT_HEALTH) || 
-                                     effect.getType().equals(org.bukkit.potion.PotionEffectType.INSTANT_DAMAGE);
-            
-            if(effect.getDuration() > 0 && !isInstantEffect) {
-                formattedEffects.addExtra(formatTickTime(effect.getDuration()));
-            }
-            
-            // if we have more than one effect, add a comma, dont add a comma after the last effect
-            if(i < numEffects - 1)
-                formattedEffects.addExtra(", ");
-        }
-        formattedEffects.addExtra(")");
-        return formattedEffects;
     }
 
     /**
@@ -748,7 +681,7 @@ public class UtilMethods {
      * @return Formatted color name
      */
     private static String formatFireworkColor(org.bukkit.Color color) {
-        Shop.getPlugin().getLogger().debug("[formatFireworkColor]     color: " + color.toString());
+        Shop.getPlugin().getShopLogger().debug("[formatFireworkColor]     color: " + color.toString());
 
         // Map common RGB values to color names
         if(color.equals(org.bukkit.Color.WHITE)) return "White";
@@ -793,60 +726,39 @@ public class UtilMethods {
             if(!m.isSolid())
                 nonIntrusiveMaterials.add(m);
         }
-        try{
-            nonIntrusiveMaterials.add(Material.WARPED_WALL_SIGN);
-            nonIntrusiveMaterials.add(Material.ACACIA_WALL_SIGN);
-            nonIntrusiveMaterials.add(Material.BIRCH_WALL_SIGN);
-            nonIntrusiveMaterials.add(Material.CRIMSON_WALL_SIGN);
-            nonIntrusiveMaterials.add(Material.DARK_OAK_WALL_SIGN);
-            nonIntrusiveMaterials.add(Material.JUNGLE_WALL_SIGN);
-            nonIntrusiveMaterials.add(Material.OAK_WALL_SIGN);
-            nonIntrusiveMaterials.add(Material.SPRUCE_WALL_SIGN);
-        } catch(NoSuchFieldError e){
-            nonIntrusiveMaterials.add(Material.LEGACY_WALL_SIGN);
-        }
+        
         nonIntrusiveMaterials.remove(Material.WATER);
         nonIntrusiveMaterials.remove(Material.LAVA);
         nonIntrusiveMaterials.remove(Material.FIRE);
-        nonIntrusiveMaterials.remove(Material.END_PORTAL);
-        nonIntrusiveMaterials.remove(Material.NETHER_PORTAL);
-        nonIntrusiveMaterials.remove(Material.SKELETON_SKULL);
-        nonIntrusiveMaterials.remove(Material.WITHER_SKELETON_SKULL);
-        nonIntrusiveMaterials.remove(Material.PLAYER_HEAD);
-        nonIntrusiveMaterials.remove(Material.CREEPER_HEAD);
 
-        try{ nonIntrusiveMaterials.add(Material.LIGHT); } catch(NoSuchFieldError e){}
-    }
-
-    public static BlockFace getDirectionOfChest(Block block){
-        if(block.getBlockData() instanceof Directional){
-            return ((Directional)block.getBlockData()).getFacing();
+        // Legacy < 1.13 materials (pre-flattening)
+        if (!MCVersion.atLeast("1.13")) {
+            nonIntrusiveMaterials.add(MaterialUtil.of("WALL_SIGN"));
+            nonIntrusiveMaterials.remove(MaterialUtil.of("END_PORTAL"));
+            nonIntrusiveMaterials.remove(MaterialUtil.of("ENDER_PORTAL"));
+            nonIntrusiveMaterials.remove(MaterialUtil.of("PORTAL"));
+            nonIntrusiveMaterials.remove(MaterialUtil.of("SKULL"));
+            return;
         }
-        return null;
-    }
-
-    //returns if Minecraft version 1.17 or above
-    public static boolean isMCVersion17Plus(){
-        //LIGHT only available in MC 1.17+
-        try {
-            if(Material.LIGHT != null)
-                return true;
-        } catch (NoSuchFieldError e) {
-            return false;
+        
+        // Add new sign types (MC 1.14+)
+        if (MCVersion.atLeast("1.14")) {
+            // Get all sign types from MaterialUtil, then loop through them and add them to nonIntrusiveMaterials
+            for (Material signType : MaterialUtil.getWallSignTypes()) {
+                nonIntrusiveMaterials.add(signType);
+            }
         }
-        return false;
-    }
-
-    //returns if Minecraft version 1.14 or above
-    public static boolean isMCVersion14Plus(){
-        //LIGHT only available in MC 1.17+
-        try {
-            if(Material.BARREL != null)
-                return true;
-        } catch (NoSuchFieldError e) {
-            return false;
-        }
-        return false;
+        
+        // Remove dangerous materials that exist across versions
+        try { nonIntrusiveMaterials.remove(MaterialUtil.of("END_PORTAL")); } catch(NoSuchFieldError e) {}
+        try { nonIntrusiveMaterials.remove(MaterialUtil.of("NETHER_PORTAL")); } catch(NoSuchFieldError e) {}
+        try { nonIntrusiveMaterials.remove(MaterialUtil.of("SKELETON_SKULL")); } catch(NoSuchFieldError e) {}
+        try { nonIntrusiveMaterials.remove(MaterialUtil.of("WITHER_SKELETON_SKULL")); } catch(NoSuchFieldError e) {}
+        try { nonIntrusiveMaterials.remove(MaterialUtil.of("PLAYER_HEAD")); } catch(NoSuchFieldError e) {}
+        try { nonIntrusiveMaterials.remove(MaterialUtil.of("CREEPER_HEAD")); } catch(NoSuchFieldError e) {}
+        
+        // Add LIGHT material if available
+        try { nonIntrusiveMaterials.add(MaterialUtil.of("LIGHT")); } catch(NoSuchFieldError e) {}
     }
 
     //this takes a dirty (pre-cleaned) string and finds how much to multiply the final by
@@ -1031,7 +943,7 @@ public class UtilMethods {
         boolean isUnderlined = false;
         boolean isObfuscated = false;
         for (String word : words) {
-            if (Shop.getPlugin() != null) Shop.getPlugin().getLogger().hyper("[ShopMessage.format]     word: " + word);
+            if (Shop.getPlugin() != null) Shop.getPlugin().getShopLogger().hyper("[ShopMessage.format]     word: " + word);
             
             boolean isStandardColor = word.matches(COLOR_CODE_REGEX);
             boolean isHexColor = word.matches(HEX_COLOR_CODE_REGEX);
@@ -1044,7 +956,7 @@ public class UtilMethods {
                     else if (newColor == ChatColor.UNDERLINE) isUnderlined = true;
                     else if (newColor == ChatColor.MAGIC) isObfuscated = true;
                     else if (newColor == ChatColor.RESET) {
-                        if (Shop.getPlugin() != null) Shop.getPlugin().getLogger().hyper("[ShopMessage.format]     matched RESET color code: " + word);
+                        if (Shop.getPlugin() != null) Shop.getPlugin().getShopLogger().hyper("[ShopMessage.format]     matched RESET color code: " + word);
                         latestColor = ChatColor.WHITE;
                         latestHexColor = ""; // Reset hex color when RESET code is found
                         isBold = false;
@@ -1100,10 +1012,10 @@ public class UtilMethods {
             int currentLineLength = ChatColor.stripColor(currentLine.toString()).length();
             int nextWordLength = ChatColor.stripColor(word).length();
             int potentialLength = currentLineLength + nextWordLength;
-            if (Shop.getPlugin() != null) Shop.getPlugin().getLogger().spam("[ShopMessage.format]     potentialLength: " + potentialLength + " maxLineLength: " + maxLineLength);
+            if (Shop.getPlugin() != null) Shop.getPlugin().getShopLogger().spam("[ShopMessage.format]     potentialLength: " + potentialLength + " maxLineLength: " + maxLineLength);
             
             if (word.matches(" ") && potentialLength > maxLineLength) {
-                if (Shop.getPlugin() != null) Shop.getPlugin().getLogger().spam("[ShopMessage.format]     adding line: " + currentLine.toString().trim(), true);
+                if (Shop.getPlugin() != null) Shop.getPlugin().getShopLogger().spam("[ShopMessage.format]     adding line: " + currentLine.toString().trim(), true);
                 linesByColor.add(currentLine.toString());
                 currentLine = new StringBuilder(latestColors);
             } else {
@@ -1113,7 +1025,7 @@ public class UtilMethods {
 
         // Append the last line if there's any content left
         if (currentLine.length() > 0) {
-            if (Shop.getPlugin() != null) Shop.getPlugin().getLogger().spam("[ShopMessage.format]     adding line: " + currentLine.toString().trim(), true);
+            if (Shop.getPlugin() != null) Shop.getPlugin().getShopLogger().spam("[ShopMessage.format]     adding line: " + currentLine.toString().trim(), true);
             linesByColor.add(currentLine.toString());
         }
 

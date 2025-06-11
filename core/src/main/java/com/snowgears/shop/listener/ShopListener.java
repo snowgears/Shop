@@ -24,10 +24,12 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.scheduler.BukkitRunnable;
 import com.tcoded.folialib.wrapper.task.WrappedTask;
 
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -102,7 +104,7 @@ public class ShopListener implements Listener {
 
         //player clicked the sign of a shop
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK) {
-            if (event.getClickedBlock().getBlockData() instanceof WallSign) {
+            if (SignUtil.isWallSign(event.getClickedBlock())) {
                 AbstractShop shop = plugin.getShopHandler().getShop(event.getClickedBlock().getLocation());
                 if (shop == null || !shop.isInitialized())
                     return;
@@ -153,8 +155,9 @@ public class ShopListener implements Listener {
                     return;
                 }
 
-                if((!plugin.getShopHandler().isChest(shop.getChestLocation().getBlock())) || !(shop.getSignLocation().getBlock().getBlockData() instanceof WallSign)){
-                    plugin.getLogger().warning("Deleting Shop because chest does not exist, or sign is not exist! " + shop);
+                if((!plugin.getShopHandler().isChest(shop.getChestLocation().getBlock())) 
+                    || !SignUtil.isWallSign(shop.getSignLocation().getBlock())){
+                    plugin.getShopLogger().warning("Deleting Shop because chest does not exist, and/or sign is not exist! " + shop);
                     shop.delete();
                     return;
                 }
@@ -171,7 +174,21 @@ public class ShopListener implements Listener {
                 //player is sneaking and clicks a chest of a shop
                 if(player.isSneaking()){
                     //don't execute the action and cancel event if player is holding a sign (may be trying to place directly onto chest)
-                    if(!Tag.SIGNS.isTagged(player.getInventory().getItemInMainHand().getType())) {
+                    Material mainhandItem;
+                    try { 
+                        mainhandItem = player.getInventory().getItemInMainHand().getType(); 
+                        // in 1.8.8 it used to be `player.getItemInHand()`
+                    } catch (NoSuchMethodError error) { 
+                        try {
+                            Method getItemInHand = Player.class.getDeclaredMethod("getItemInHand");
+                            getItemInHand.setAccessible(true);
+                            ItemStack itemInHand = (ItemStack) getItemInHand.invoke(player);
+                            mainhandItem = itemInHand.getType();
+                        } catch (Error | Exception e) {
+                            mainhandItem = Material.AIR;
+                        }
+                    }
+                    if(!mainhandItem.toString().contains("SIGN")) {
 
                         boolean actionPerformed = shop.executeClickAction(event, ShopClickType.SHIFT_RIGHT_CLICK_CHEST);
 
@@ -249,7 +266,7 @@ public class ShopListener implements Listener {
         while (blockIterator.hasNext()) {
 
             Block block = blockIterator.next();
-            if (Tag.WALL_SIGNS.isTagged(block.getType())) {
+            if (block.getType().toString().contains("SIGN")) {
                 shop = plugin.getShopHandler().getShop(block.getLocation());
             } else if (plugin.getShopHandler().isChest(block)) {
                 shop = plugin.getShopHandler().getShopByChest(block);
@@ -344,7 +361,7 @@ public class ShopListener implements Listener {
                     if (hoursSinceLastPlayed >= plugin.getHoursOfflineToRemoveShops()) {
                         boolean deletedShop = false;
                         for (AbstractShop shop : plugin.getShopHandler().getShops(offlinePlayer.getUniqueId())) {
-                            plugin.getLogger().notice("Deleting Shop because player " + offlinePlayer.getName() + " has not logged in within the required " + (int) hoursSinceLastPlayed + " hours! " + shop);
+                            plugin.getShopLogger().notice("Deleting Shop because player " + offlinePlayer.getName() + " has not logged in within the required " + (int) hoursSinceLastPlayed + " hours! " + shop);
                             shop.delete();
                             deletedShop = true;
                         }
@@ -434,7 +451,7 @@ public class ShopListener implements Listener {
         // Skip shop display processing if player is in creative selection mode
         CreativeSelectionListener creativeModeListener = plugin.getCreativeSelectionListener();
         if (creativeModeListener != null && creativeModeListener.isPlayerInCreativeSelection(player)) {
-            plugin.getLogger().debug("Skipping shop display refresh for " + player.getName() + " (in creative selection)");
+            plugin.getShopLogger().debug("Skipping shop display refresh for " + player.getName() + " (in creative selection)");
             return;
         }
         
@@ -447,10 +464,10 @@ public class ShopListener implements Listener {
             if (player.isOnline()) {
                 // Check again inside the delayed task in case player entered selection during the delay
                 if (creativeModeListener != null && creativeModeListener.isPlayerInCreativeSelection(player)) {
-                    plugin.getLogger().debug("Skipping delayed shop display refresh for " + player.getName() + " (in creative selection)");
+                    plugin.getShopLogger().debug("Skipping delayed shop display refresh for " + player.getName() + " (in creative selection)");
                     return;
                 }
-                plugin.getLogger().debug("First display refresh for " + player.getName() + " after teleport");
+                plugin.getShopLogger().debug("First display refresh for " + player.getName() + " after teleport");
                 plugin.getShopHandler().forceProcessShopDisplaysNearPlayer(player);
             }
         }, 5); // 5 ticks (250ms) delay
@@ -460,10 +477,10 @@ public class ShopListener implements Listener {
             if (player.isOnline()) {
                 // Check again inside the delayed task in case player entered selection during the delay
                 if (creativeModeListener != null && creativeModeListener.isPlayerInCreativeSelection(player)) {
-                    plugin.getLogger().debug("Skipping delayed shop display refresh for " + player.getName() + " (in creative selection)");
+                    plugin.getShopLogger().debug("Skipping delayed shop display refresh for " + player.getName() + " (in creative selection)");
                     return;
                 }
-                plugin.getLogger().debug("Second display refresh for " + player.getName() + " after teleport");
+                plugin.getShopLogger().debug("Second display refresh for " + player.getName() + " after teleport");
                 plugin.getShopHandler().forceProcessShopDisplaysNearPlayer(player);
             }
         }, 15); // 750ms delay

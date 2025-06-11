@@ -152,7 +152,7 @@ public class BluemapHookListener implements Listener {
 //            });
 //
 //        } catch(IOException e){
-//            plugin.getLogger().warning("Bluemap marker api not ready, skipping...");
+//            plugin.getShopLogger().warning("Bluemap marker api not ready, skipping...");
 //            return;
 //        }
 //

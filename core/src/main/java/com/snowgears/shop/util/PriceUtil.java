@@ -54,7 +54,7 @@ public class PriceUtil {
                 prices.put(idAndMetadata, price);
             }
         } catch (IOException e) {
-            Shop.getPlugin().getLogger().log(Level.SEVERE,"Unable to initialize prices buffer reader. Turning off price enforcement and ignoring prices.tsv.");
+            Shop.getPlugin().getShopLogger().log(Level.SEVERE,"Unable to initialize prices buffer reader. Turning off price enforcement and ignoring prices.tsv.");
             return;
         }
     }

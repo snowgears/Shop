@@ -5,8 +5,11 @@ import com.snowgears.shop.shop.AbstractShop;
 import com.snowgears.shop.shop.ShopType;
 import com.snowgears.shop.util.ArmorStandData;
 import com.snowgears.shop.util.DisplayUtil;
+import com.snowgears.shop.util.MaterialUtil;
 import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.util.UtilMethods;
+import com.snowgears.shop.util.MCVersion;
+import com.snowgears.shop.util.SignUtil;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -17,7 +20,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.*;
@@ -108,18 +110,22 @@ public abstract class AbstractDisplay {
                     Location leftLoc = shop.getChestLocation().clone().add(0,1,0);
                     leftLoc.add(getLargeItemBarterOffset(false));
                     ArmorStandData armorStandData = DisplayUtil.getArmorStandData(item, leftLoc, shop.getFacing(), false);
+                    armorStandData.setDisplayType("LARGE_ITEM");
                     spawnArmorStandPacket(player, armorStandData, null);
 
                     //put second large display down
                     Location rightLoc = shop.getChestLocation().clone().add(0,1,0);
                     rightLoc.add(getLargeItemBarterOffset(true));
                     ArmorStandData armorStandData2 = DisplayUtil.getArmorStandData(barterItem, rightLoc, shop.getFacing(), false);
+                    armorStandData2.setDisplayType("LARGE_ITEM");
                     spawnArmorStandPacket(player, armorStandData2, null);
                     break;
                 case GLASS_CASE:
                     //put the extra large glass casing down
                     Location caseLoc = shop.getChestLocation().clone().add(0,1,0);
-                    ArmorStandData caseStandData = DisplayUtil.getArmorStandData(new ItemStack(Material.GLASS), caseLoc, shop.getFacing(), true);
+                    ItemStack glass = new ItemStack(MaterialUtil.of("GLASS"));
+                    ArmorStandData caseStandData = DisplayUtil.getArmorStandData(glass, caseLoc, shop.getFacing(), true);
+                    caseStandData.setDisplayType("GLASS_CASE");
                     spawnArmorStandPacket(player, caseStandData, null);
 
                     //Drop initial display item
@@ -141,12 +147,14 @@ public abstract class AbstractDisplay {
                     break;
                 case LARGE_ITEM:
                     ArmorStandData armorStandData = DisplayUtil.getArmorStandData(item, shop.getChestLocation().clone().add(0,1,0), shop.getFacing(), false);
+                    armorStandData.setDisplayType("LARGE_ITEM");
                     spawnArmorStandPacket(player, armorStandData, null);
                     break;
                 case GLASS_CASE:
                     //put the extra large glass casing down
                     Location caseLoc = shop.getChestLocation().clone().add(0,1,0);
                     ArmorStandData caseStandData = DisplayUtil.getArmorStandData(new ItemStack(Material.GLASS), caseLoc, shop.getFacing(), true);
+                    caseStandData.setDisplayType("GLASS_CASE");
                     spawnArmorStandPacket(player, caseStandData, null);
 
                     //drop the display item in the glass case
@@ -167,7 +175,7 @@ public abstract class AbstractDisplay {
                         frameLocation = shop.getChestLocation().clone().add(0,1,0);
                     }
 
-                    if(UtilMethods.isMCVersion17Plus() && Shop.getPlugin().getGlowingItemFrame()){
+                    if(MCVersion.atLeast("1.17") && Shop.getPlugin().getGlowingItemFrame()){
                         spawnItemFramePacket(player, shop.getItemStack(), frameLocation, shop.getFacing(), true);
                     }
                     else {
@@ -200,12 +208,12 @@ public abstract class AbstractDisplay {
             lowerTagLocation = UtilMethods.pushLocationInDirection(lowerTagLocation, this.getShop().getFacing(), 0.2);
 
             Block displayBlock = lowerTagLocation.getBlock();
-            if(UtilMethods.isMCVersion14Plus() && this.isChunkLoaded()) {
-                if (displayBlock.getType() == Material.BARREL || displayBlock.getRelative(BlockFace.DOWN).getType() == Material.BARREL) {
+            if(MCVersion.atLeast("1.14") && this.isChunkLoaded()) {
+                if (displayBlock.getType() == Material.valueOf("BARREL") || displayBlock.getRelative(BlockFace.DOWN).getType() == Material.valueOf("BARREL")) {
                     lowerTagLocation = lowerTagLocation.add(0, .25, 0);
                 }
-                // If there is a block above our display, offset the tag location
-                // so that it doesn't become hidden inside the block. (most noticible with chests)
+                // If there is a block above our display, offset the tag location so that it doesn't become hidden inside the block.
+                // (most noticible with chests. displays completely disappear)
                 if (getShop().getChestLocation().clone().add(0,2,0).getBlock().getType() != Material.AIR) {
                     // Adds 0.35 on top of the 0.2 added above (total of 0.55)
                     // 0.3 to get to edge of block, 0.05 to give a lil more wiggle room when the player isnt looking directly at the display
@@ -245,7 +253,7 @@ public abstract class AbstractDisplay {
                 String tagLine = entry.getKey();
                 Location asTagLocation = entry.getValue();
                 
-                Shop.getPlugin().getLogger().spam("[Display] Adding tag line: " + tagLine, true);
+                Shop.getPlugin().getShopLogger().spam("[Display] Adding tag line: " + tagLine, true);
                 createTagEntity(player, tagLine, asTagLocation);
             }
 
@@ -288,12 +296,25 @@ public abstract class AbstractDisplay {
     }
 
     public void createTagEntity(Player player, String text, Location location){
-        Shop.getPlugin().getLogger().debug("Spawning hologram for player " + player.getName() + " at " + location.getBlockX() + "/" + location.getBlockY() + "/" + location.getBlockZ() + ": " + text, true);
-        ArmorStandData caseStandData = new ArmorStandData();
-        caseStandData.setSmall(false);
-        caseStandData.setLocation(location);
+        Shop.getPlugin().getShopLogger().debug("Spawning hologram for player " + player.getName() + " at " + location.getBlockX() + "/" + location.getBlockY() + "/" + location.getBlockZ() + ": " + text, true);
+        try {
+            ArmorStandData caseStandData = new ArmorStandData();
+            caseStandData.setDisplayType("TEXT_DISPLAY");
+            caseStandData.setSmall(false);
+            caseStandData.setLocation(location);
+            if (MCVersion.atLeast("1.19.4")) {
+                // Set yaw if we are creating a Display Text entity to display it in the right direction :)
+                caseStandData.setYaw(DisplayUtil.blockfaceToYaw(this.getShop().getFacing()));
+            } else {
+                caseStandData.setYaw(0.0f);
+            }
 
-        spawnArmorStandPacket(player, caseStandData, text);
+            spawnArmorStandPacket(player, caseStandData, text);
+        } catch (Error | Exception e) {
+            Shop.getPlugin().getShopLogger().warning("Error while creating tag entity, sending player the tag as text");
+            e.printStackTrace();
+            player.sendMessage(text);
+        }
     }
 
     public void addRemoveDisplayTask(Player player) {
@@ -390,7 +411,8 @@ public abstract class AbstractDisplay {
                 for(Entity e : this.getShop().getChestLocation().getWorld().getNearbyEntities(this.getItemDropLocation(false), 1, 1, 1)){
                     if(e.getType() == EntityType.ITEM_FRAME){
                         ItemFrame i = (ItemFrame)e;
-                        if(i.getAttachedFace() == getShop().getSign().getFacing().getOppositeFace()) {
+                        BlockFace signFacing = SignUtil.getFacing(getShop().getSignLocation().getBlock());
+                        if(signFacing != null && i.getAttachedFace() == signFacing.getOppositeFace()) {
                             skip = true;
                             break;
                         }
@@ -408,7 +430,7 @@ public abstract class AbstractDisplay {
         this.setType(cycle[index], true);
         this.spawn(player);
         Shop.getPlugin().getShopHandler().addActiveShopDisplay(player, this.shopSignLocation);
-        Shop.getPlugin().getLogger().trace("[AbstractDisplay.cycleType] updateSign");
+        Shop.getPlugin().getShopLogger().trace("[AbstractDisplay.cycleType] updateSign");
 
 //        getShop().updateSign();
         getShop().setNeedsSave(true);
@@ -684,6 +706,4 @@ public abstract class AbstractDisplay {
     protected boolean isSameWorld(Player player){
         return player.getWorld().getUID().equals(this.shopSignLocation.getWorld().getUID());
     }
-
-    public abstract String getItemNameNMS(ItemStack item);
 }
