@@ -111,13 +111,7 @@ public class ShopHandler {
     }
 
     private boolean initDisplayClass(){
-        String packageName = plugin.getServer().getClass().getPackage().getName();        
-        // Check to see if the craftbukkit classes are exposed directly at "org.bukkit.craftbukkit"
-        // or if they are in a relocated package under the revision (like "org.bukkit.craftbukkit.v1_20_R1")
-        boolean isNotRelocated = packageName.equals("org.bukkit.craftbukkit");
-        Shop.getPlugin().getShopLogger().info("Detected Minecraft version: " + MCVersion.getCurrent());
-        
-        if (MCVersion.atLeast("1.20.6") || isNotRelocated) {
+        if (MCVersion.atLeast("1.20.6") || MCVersion.getRevision().isEmpty()) {
             // We are on a newer version that does not relocate CB classes, load the default display package
             try {
                 Shop.getPlugin().getShopLogger().info("Using item display handler - com.snowgears.shop.display.Display");
@@ -135,7 +129,7 @@ public class ShopHandler {
             return false;
         } else {
             // We are still on an older version, so go ahead
-            String nmsVersion = packageName.substring(packageName.lastIndexOf('.') + 1);
+            String nmsVersion = MCVersion.getRevision();
 
             try {
                 Shop.getPlugin().getShopLogger().info("Using legacy NMS display class - com.snowgears.shop.display.Display_" + nmsVersion);
