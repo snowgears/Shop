@@ -507,7 +507,7 @@ public class DisplayUtil {
 
     private static boolean isDisplayLegacy(Entity entity){
         try {
-            if (CompatibilityUtil.hasItemEntityType() && entity.getType().name().equals("ITEM")) {
+            if (entity.getType().name().equals("ITEM") || entity.getType().name().equals("DROPPED_ITEM")) {
                 ItemMeta itemMeta = ((Item) entity).getItemStack().getItemMeta();
                 if (itemMeta != null && UtilMethods.containsLocation(itemMeta.getDisplayName())) {
                     return true;

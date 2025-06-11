@@ -949,7 +949,8 @@ public class ShopHandler {
                     entity.remove();
                 }
                 //make to sure to clear items from old version of plugin too
-                else if (CompatibilityUtil.hasItemEntityType() && entity.getType().name().equals("ITEM")) {
+                // Switched from DROPPED_ITEM to ITEM in 1.21
+                else if (entity.getType().name().equals("ITEM") || entity.getType().name().equals("DROPPED_ITEM")) {
                     ItemMeta itemMeta = ((Item) entity).getItemStack().getItemMeta();
                     if (UtilMethods.stringStartsWithUUID(itemMeta.getDisplayName())) {
                         entity.remove();

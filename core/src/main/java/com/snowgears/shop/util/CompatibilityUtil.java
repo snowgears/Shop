@@ -22,9 +22,6 @@ public class CompatibilityUtil {
     public static final boolean HAS_BLOCK_DATA = true;
     public static final boolean HAS_PERSISTENT_DATA_CONTAINER = true;
     
-    // Entity types - always true in modern versions
-    private static final boolean HAS_ITEM_ENTITY_TYPE = true;
-
     /**
      * Safely checks if a class exists without throwing ClassNotFoundException
      */
@@ -40,9 +37,6 @@ public class CompatibilityUtil {
     // =================================
     // Public API Methods
     // =================================
-    
-
-    public static boolean hasItemEntityType() { return HAS_ITEM_ENTITY_TYPE; }
     
     /**
      * Creates a consistent reused NamespacedKey using modern API
