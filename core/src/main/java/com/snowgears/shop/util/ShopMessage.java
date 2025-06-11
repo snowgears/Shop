@@ -571,25 +571,14 @@ public class ShopMessage {
         }
         try {
             if (item == null) { return null; }
-            
-            BaseComponent msg;
+            TextComponent msg;
             String legacyText = UtilMethods.removeColorsIfOnlyWhite(message.toLegacyText());
-
-            if (legacyText.trim().isEmpty()) {
-                return message;
-            }
+            if (legacyText.trim().isEmpty()) { return message; }
             
-            // Use the universally available TextComponent.fromLegacyText() method - no reflection needed
-            BaseComponent[] components = TextComponent.fromLegacyText(legacyText);
-            if (components.length > 0) {
-                msg = components[0];
-            } else {
-                msg = new TextComponent(legacyText);
-            }
-            
+            msg = new TextComponent(TextComponent.fromLegacyText(legacyText));
             HoverEvent event = getItemHoverEvent(item);
             if (event != null) { msg.setHoverEvent(event); }
-            return (TextComponent) msg;
+            return msg;
         } catch (Exception e) {
             plugin.getNBTAdapter().handleException("Error embedding item hover text: " + e.getMessage());
             return message;
