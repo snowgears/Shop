@@ -110,12 +110,14 @@ public abstract class AbstractDisplay {
                     Location leftLoc = shop.getChestLocation().clone().add(0,1,0);
                     leftLoc.add(getLargeItemBarterOffset(false));
                     ArmorStandData armorStandData = DisplayUtil.getArmorStandData(item, leftLoc, shop.getFacing(), false);
+                    armorStandData.setDisplayType("LARGE_ITEM");
                     spawnArmorStandPacket(player, armorStandData, null);
 
                     //put second large display down
                     Location rightLoc = shop.getChestLocation().clone().add(0,1,0);
                     rightLoc.add(getLargeItemBarterOffset(true));
                     ArmorStandData armorStandData2 = DisplayUtil.getArmorStandData(barterItem, rightLoc, shop.getFacing(), false);
+                    armorStandData2.setDisplayType("LARGE_ITEM");
                     spawnArmorStandPacket(player, armorStandData2, null);
                     break;
                 case GLASS_CASE:
@@ -123,6 +125,7 @@ public abstract class AbstractDisplay {
                     Location caseLoc = shop.getChestLocation().clone().add(0,1,0);
                     ItemStack glass = new ItemStack(MaterialUtil.of("GLASS"));
                     ArmorStandData caseStandData = DisplayUtil.getArmorStandData(glass, caseLoc, shop.getFacing(), true);
+                    caseStandData.setDisplayType("GLASS_CASE");
                     spawnArmorStandPacket(player, caseStandData, null);
 
                     //Drop initial display item
@@ -144,12 +147,14 @@ public abstract class AbstractDisplay {
                     break;
                 case LARGE_ITEM:
                     ArmorStandData armorStandData = DisplayUtil.getArmorStandData(item, shop.getChestLocation().clone().add(0,1,0), shop.getFacing(), false);
+                    armorStandData.setDisplayType("LARGE_ITEM");
                     spawnArmorStandPacket(player, armorStandData, null);
                     break;
                 case GLASS_CASE:
                     //put the extra large glass casing down
                     Location caseLoc = shop.getChestLocation().clone().add(0,1,0);
                     ArmorStandData caseStandData = DisplayUtil.getArmorStandData(new ItemStack(Material.GLASS), caseLoc, shop.getFacing(), true);
+                    caseStandData.setDisplayType("GLASS_CASE");
                     spawnArmorStandPacket(player, caseStandData, null);
 
                     //drop the display item in the glass case
@@ -294,6 +299,7 @@ public abstract class AbstractDisplay {
         Shop.getPlugin().getShopLogger().debug("Spawning hologram for player " + player.getName() + " at " + location.getBlockX() + "/" + location.getBlockY() + "/" + location.getBlockZ() + ": " + text, true);
         try {
             ArmorStandData caseStandData = new ArmorStandData();
+            caseStandData.setDisplayType("TEXT_DISPLAY");
             caseStandData.setSmall(false);
             caseStandData.setLocation(location);
             if (MCVersion.atLeast("1.19.4")) {

@@ -13,8 +13,17 @@ public class ArmorStandData {
     private EquipmentSlot equipmentSlot;
     private boolean isSmall;
     private EulerAngle rightArmPose;
+    private String displayType;
 
     public ArmorStandData(){
+    }
+
+    public void setDisplayType(String displayType) {
+        this.displayType = displayType;
+    }
+
+    public String getDisplayType() {
+        return displayType;
     }
 
     public Location getLocation() {

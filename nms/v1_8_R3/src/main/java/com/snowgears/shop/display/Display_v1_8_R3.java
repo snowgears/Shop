@@ -75,12 +75,29 @@ public class Display_v1_8_R3 extends AbstractDisplay {
         nbtTagCompound.setBoolean("Gravity", false);
         nbtTagCompound.setBoolean("Invulnerable", true);
 
+        String displayType = armorStandData.getDisplayType();
+        // https://bugs.mojang.com/browse/MC/issues/MC-107529
+        // Apply visual lighting glitch fix for glass case by disabling marker.
+        if (displayType.equals("GLASS_CASE")) {
+            // Unfortunately this means we will have a large hitbox 
+            // preventing the player from opening the chest from the top
+            nbtTagCompound.setBoolean("Marker", false);
+            // Lower the glass case down a tad, so that the hitbox preventing
+            // the player from opening the chest is at least in line with the glass case
+            location.setY(location.getY() - 0.065);
+        }
+        // https://bugs.mojang.com/browse/MC/issues/MC-107529
+        // Apply visual lighting glitch fix for held large items by disabling marker.
+        if (displayType.equals("LARGE_ITEM") 
+            && armorStandData.getEquipmentSlot() == EquipmentSlot.HAND
+            && !armorStandData.isSmall()) {
+            // Luckily since just the hand is shown, disabling the marker doesn't
+            // make the hitbox collide with the chest :D
+            nbtTagCompound.setBoolean("Marker", false);
+        }
+
         EntityArmorStand armorStand = new EntityArmorStand(worldServer, location.getX(), location.getY(), location.getZ());
-        // If we are just a text display we need an offset to make the text not appear in the air
-        // For some reason, using `f` seems to alter the position of the armor stand, so since we disabled
-        // it we have to manually offset the position of the armor stand.
-        float textYOffset = text != null ? 1.8f : 0.0f;
-        armorStand.setLocation(location.getX(), location.getY() - (textYOffset), location.getZ(), (float)armorStandData.getYaw(), 0);
+        armorStand.setLocation(location.getX(), location.getY(), location.getZ(), (float)armorStandData.getYaw(), 0);
         if(text != null) {
             armorStand.setCustomName(ChatColor.translateAlternateColorCodes('&', text));
             //armorStand.setCustomName(IChatBaseComponent.ChatSerializer.a("{\"text\": \"" + text + "\"}"));
@@ -110,7 +127,10 @@ public class Display_v1_8_R3 extends AbstractDisplay {
         // For some reason, using `f` makes glass on armor stand head appear with lighting glitch
         // Disabling this caused an odd issue where the nametag now displays high up in the air
         // so we added a manual offset to the y position of the armor stand up above.
-        // armorStand.f(nbtTagCompound);
+        // https://github.com/Attano/Spigot-1.8/blob/master/net/minecraft/server/v1_8_R3/Entity.java#L1226
+        armorStand.f(nbtTagCompound);
+        armorStand.setOnFire((short) 32767);
+        armorStand.setGravity(false);
 
         if(armorStandData.isSmall()) {
             armorStand.setSmall(true);
