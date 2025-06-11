@@ -77,7 +77,8 @@ public class Display_v1_8_R3 extends AbstractDisplay {
 
         EntityArmorStand armorStand = new EntityArmorStand(worldServer, location.getX(), location.getY(), location.getZ());
         // If we are just a text display we need an offset to make the text not appear in the air
-        // This is because we are not doing armorstand.f() for some reason.
+        // For some reason, using `f` seems to alter the position of the armor stand, so since we disabled
+        // it we have to manually offset the position of the armor stand.
         float textYOffset = text != null ? 1.8f : 0.0f;
         armorStand.setLocation(location.getX(), location.getY() - (textYOffset), location.getZ(), (float)armorStandData.getYaw(), 0);
         if(text != null) {
@@ -104,11 +105,11 @@ public class Display_v1_8_R3 extends AbstractDisplay {
         armorStand.setHeadPose(new Vector3f(0.0F, 0.0F, 0.0F));
         armorStand.setGravity(false);
         armorStand.setInvisible(true);
-        armorStand.setOnFire(32767); // Fix lighting glitch for glass case by setting armor stand on fire
         //armorStand.collides = false;
         armorStand.c(nbtTagCompound);
-        // For some reason, using `f` overwrites `setOnFire` which makes items on armor stand head appear with lighting glitch
+        // For some reason, using `f` makes glass on armor stand head appear with lighting glitch
         // Disabling this caused an odd issue where the nametag now displays high up in the air
+        // so we added a manual offset to the y position of the armor stand up above.
         // armorStand.f(nbtTagCompound);
 
         if(armorStandData.isSmall()) {
