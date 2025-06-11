@@ -555,7 +555,7 @@ public abstract class AbstractShop {
     public void delete() {
         display.remove(null);
 
-        if(UtilMethods.isMCVersion17Plus() && Shop.getPlugin().getDisplayLightLevel() > 0) {
+        if(MCVersion.atLeast("1.17") && Shop.getPlugin().getDisplayLightLevel() > 0) {
             Block displayBlock = this.getChestLocation().getBlock().getRelative(BlockFace.UP);
             if(UtilMethods.materialIsNonIntrusive(displayBlock.getType())) {
                 displayBlock.setType(Material.AIR);

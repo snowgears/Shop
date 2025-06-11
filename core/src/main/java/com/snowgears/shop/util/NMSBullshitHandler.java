@@ -33,37 +33,26 @@ public class NMSBullshitHandler {
     }
 
     public void init() {
-        String mcVersion = plugin.getServer().getClass().getPackage().getName();
-        Shop.getPlugin().getShopLogger().debug("mcVersion: " + mcVersion);
+        MCVersion.logVersionInfo();
 
-        // Check if we are on Paper 1.20.5 or later, it will not include the CB relocation version (i.e. "1_20_R3")
-        if (!mcVersion.equals("org.bukkit.craftbukkit")) {
-            Shop.getPlugin().getShopLogger().warning("Minecraft version is old or Spigot, loaded version is: " + mcVersion);
-
-            String[] mcVersionSplit = mcVersion.replace(".", ",").split(",");
-            // Convert mcVersion into a number like 120.4 (1_20_R4) or 121.1 (1_21_R1) so that we can use it later
-            serverVersion = Double.parseDouble(mcVersionSplit[mcVersionSplit.length-1].replace("_R", ".").replaceAll("[rvV_]*", ""));
+        String cbClassLocation = "org.bukkit.craftbukkit";
+        if (!MCVersion.getRevision().isEmpty()) {
+            Shop.getPlugin().getShopLogger().helpful("Loading NMS classes for revision: " + MCVersion.getRevision());
+            cbClassLocation += "." + MCVersion.getRevision();
         }
 
-        // log the server version we are on, it will be 0 when we are on a Paper server
-        Shop.getPlugin().getShopLogger().debug("Server Version: " + this.getServerVersion());
-        Shop.getPlugin().getShopLogger().debug("Is Server Version over 117.0D: " + (Math.floor(this.getServerVersion()) >= 117.0D));
-
         try {
-            this.craftItemStackClass = Class.forName(mcVersion + ".inventory.CraftItemStack");
-            this.craftChatMessageClass = Class.forName(mcVersion + ".util.CraftChatMessage");
+            this.craftItemStackClass = Class.forName(cbClassLocation + ".inventory.CraftItemStack");
+            this.craftChatMessageClass = Class.forName(cbClassLocation + ".util.CraftChatMessage");
             // Server Version will be 0 for Paper
             if (Math.floor(this.getServerVersion()) >= 117.0D || this.getServerVersion() == 0) {
-                this.craftWorldClass = Class.forName(mcVersion + ".CraftWorld");
-                this.craftPlayerClass = Class.forName(mcVersion + ".entity.CraftPlayer");
-
-                // java.lang.ClassNotFoundException: net.minecraft.server.v1_17_R1.ItemStack
+                this.craftWorldClass = Class.forName(cbClassLocation + ".CraftWorld");
+                this.craftPlayerClass = Class.forName(cbClassLocation + ".entity.CraftPlayer");
 
                 Shop.getPlugin().getShopLogger().debug("CraftItemStack: " + this.craftItemStackClass.toString());
                 Shop.getPlugin().getShopLogger().debug("CraftWorld: " + this.craftWorldClass.toString());
                 Shop.getPlugin().getShopLogger().debug("CraftPlayer: " + this.craftPlayerClass.toString());
                 
-                // Cache the commonly used methods
                 try {
                     chatMessageFromStringMethod = craftChatMessageClass.getMethod("fromStringOrNull", String.class);
                     asNMSCopyMethod = craftItemStackClass.getMethod("asNMSCopy", org.bukkit.inventory.ItemStack.class);
@@ -75,13 +64,7 @@ public class NMSBullshitHandler {
                     Shop.getPlugin().getShopLogger().warning("Failed to cache some reflection methods: " + e.getMessage());
                 }
             }
-        } catch (ClassNotFoundException e) {
-            Shop.getPlugin().getShopLogger().severe("Unable to retrieve a NMS class used for NBT data.");
-            e.printStackTrace();
-        } catch (Exception e) {
-            Shop.getPlugin().getShopLogger().severe("Unable to retrieve a NMS class used for NBT data.");
-            e.printStackTrace();
-        } catch (Error e) {
+        } catch (Error | Exception e) {
             Shop.getPlugin().getShopLogger().severe("Unable to retrieve a NMS class used for NBT data.");
             e.printStackTrace();
         }

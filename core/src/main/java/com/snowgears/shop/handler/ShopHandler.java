@@ -29,6 +29,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
+import com.snowgears.shop.util.MCVersion;
 
 import java.io.File;
 import java.io.IOException;
@@ -110,28 +111,13 @@ public class ShopHandler {
     }
 
     private boolean initDisplayClass(){
-        String packageName = plugin.getServer().getClass().getPackage().getName();
-
-        // Check if we are on a Paper 1.20.6+ server, or if we are running Spigot v1.20.6 or later :)
-        // Now that our new Display class purely uses Class loading to get the appropriate class, we don't
-        // need to load a specific revision version class (unless we are old)
+        String packageName = plugin.getServer().getClass().getPackage().getName();        
+        // Check to see if the craftbukkit classes are exposed directly at "org.bukkit.craftbukkit"
+        // or if they are in a relocated package under the revision (like "org.bukkit.craftbukkit.v1_20_R1")
+        boolean isNotRelocated = packageName.equals("org.bukkit.craftbukkit");
+        Shop.getPlugin().getShopLogger().info("Detected Minecraft version: " + MCVersion.getCurrent());
         
-        boolean isNewVersion = false;
-        try {
-            // Try to get server version - could be double (modern) or String (legacy)
-            Object serverVersion = plugin.getNmsBullshitHandler().getServerVersion();
-            if (serverVersion instanceof Double) {
-                isNewVersion = ((Double) serverVersion) >= 120.6D;
-            } else if (serverVersion instanceof String) {
-                // Legacy versions return String - treat as old version
-                isNewVersion = false;
-            }
-        } catch (Exception e) {
-            // Fallback to legacy behavior if something goes wrong
-            isNewVersion = false;
-        }
-        
-        if (packageName.equals("org.bukkit.craftbukkit") || isNewVersion) {
+        if (MCVersion.atLeast("1.20.6") || isNotRelocated) {
             // We are on a newer version that does not relocate CB classes, load the default display package
             try {
                 Shop.getPlugin().getShopLogger().info("Using item display handler - com.snowgears.shop.display.Display");
@@ -141,7 +127,7 @@ public class ShopHandler {
                     return true;
                 }
             } catch (final Error | Exception e) {
-                Shop.getPlugin().getShopLogger().severe("Error while loading 'com.snowgears.shop.display.Display'. " + e.getMessage());
+                Shop.getPlugin().getShopLogger().severe("Error while loading 'com.snowgears.shop.display.Display' " + e.getMessage());
                 e.printStackTrace();
                 disableDisplayClass();
                 return false;
@@ -151,27 +137,14 @@ public class ShopHandler {
             // We are still on an older version, so go ahead
             String nmsVersion = packageName.substring(packageName.lastIndexOf('.') + 1);
 
-            // version did remap even though version number didn't increase
-            String mcVersion = Bukkit.getBukkitVersion().substring(0, Bukkit.getBukkitVersion().indexOf('-'));
-            //im not doing this right now. I'm only going to support 1.17.1 for now
-            //        if (mcVersion.equals("1.17.1")) {
-            //            nmsVersion =  "v1_17_R1_2";
-            //        }
-
             try {
-                Shop.getPlugin().getShopLogger().info( "Minecraft version is old or Spigot, watch out for bugs!");
-                Shop.getPlugin().getShopLogger().info("Using display class - com.snowgears.shop.display.Display_" + nmsVersion);
+                Shop.getPlugin().getShopLogger().info("Using legacy NMS display class - com.snowgears.shop.display.Display_" + nmsVersion);
                 final Class<?> clazz = Class.forName("com.snowgears.shop.display.Display_" + nmsVersion);
                 if (AbstractDisplay.class.isAssignableFrom(clazz)) {
                     this.displayClass = clazz;
                     return true;
                 }
-            } catch (final Exception e) {
-                Shop.getPlugin().getShopLogger().severe("Error while loading com.snowgears.shop.display.Display_" + nmsVersion + " " + e.getMessage());
-                e.printStackTrace();
-                disableDisplayClass();
-                return false;
-            } catch (Error e) {
+            } catch (final Error | Exception e) {
                 Shop.getPlugin().getShopLogger().severe("Error while loading com.snowgears.shop.display.Display_" + nmsVersion + " " + e.getMessage());
                 e.printStackTrace();
                 disableDisplayClass();

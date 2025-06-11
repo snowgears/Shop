@@ -4,7 +4,6 @@ import com.snowgears.shop.Shop;
 import com.snowgears.shop.shop.AbstractShop;
 import com.snowgears.shop.shop.ShopType;
 import com.snowgears.shop.util.ArmorStandData;
-import com.snowgears.shop.util.CompatibilityUtil;
 import com.snowgears.shop.util.DisplayUtil;
 import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.util.UtilMethods;
@@ -20,7 +19,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.*;
@@ -170,7 +168,7 @@ public abstract class AbstractDisplay {
                         frameLocation = shop.getChestLocation().clone().add(0,1,0);
                     }
 
-                    if(UtilMethods.isMCVersion17Plus() && Shop.getPlugin().getGlowingItemFrame()){
+                    if(MCVersion.atLeast("1.17") && Shop.getPlugin().getGlowingItemFrame()){
                         spawnItemFramePacket(player, shop.getItemStack(), frameLocation, shop.getFacing(), true);
                     }
                     else {
@@ -203,7 +201,7 @@ public abstract class AbstractDisplay {
             lowerTagLocation = UtilMethods.pushLocationInDirection(lowerTagLocation, this.getShop().getFacing(), 0.2);
 
             Block displayBlock = lowerTagLocation.getBlock();
-            if(UtilMethods.isMCVersion14Plus() && this.isChunkLoaded()) {
+            if(MCVersion.atLeast("1.14") && this.isChunkLoaded()) {
                 if (displayBlock.getType() == Material.valueOf("BARREL") || displayBlock.getRelative(BlockFace.DOWN).getType() == Material.valueOf("BARREL")) {
                     lowerTagLocation = lowerTagLocation.add(0, .25, 0);
                 }

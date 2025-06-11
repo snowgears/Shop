@@ -1,6 +1,7 @@
 package com.snowgears.shop.util;
 
 import org.bukkit.Bukkit;
+import com.snowgears.shop.Shop;
 
 /**
  * Utility class for checking Minecraft version compatibility.
@@ -50,6 +51,17 @@ public class MCVersion {
     public static String getCurrent() {
         ensureInitialized();
         return currentVersion != null ? currentVersion : "unknown";
+    }
+
+    /**
+     * Gets the current Minecraft revision as a clean string. Used for NMS class loading.
+     * 
+     * @return Current revision string (e.g., "1_20_R1") or "" if Paper/Folia post 1.20.5
+     */
+    public static String getRevision() {
+        String packageName = Bukkit.getServer().getClass().getPackage().getName();   
+        if (packageName.equals("org.bukkit.craftbukkit")) return ""; // Paper/Folia post 1.20.5
+        return packageName.substring(packageName.lastIndexOf('.') + 1);
     }
     
     /**
@@ -187,5 +199,14 @@ public class MCVersion {
         }
         
         return 0; // Versions are equal
+    }
+
+    public static void logVersionInfo() {
+        Shop.getPlugin().getShopLogger().helpful(
+            "Detected Version Minecraft: " + MCVersion.getCurrent() 
+            + " | Revision: " + MCVersion.getRevision() 
+            + " | isSpigot: " + Shop.getPlugin().getFoliaLib().isSpigot() 
+            + " | isPaper: " + Shop.getPlugin().getFoliaLib().isPaper() 
+            + " | isFolia: " + Shop.getPlugin().getFoliaLib().isFolia());
     }
 } 

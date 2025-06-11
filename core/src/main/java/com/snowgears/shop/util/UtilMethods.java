@@ -761,17 +761,6 @@ public class UtilMethods {
         try { nonIntrusiveMaterials.add(MaterialUtil.of("LIGHT")); } catch(NoSuchFieldError e) {}
     }
 
-    //returns if Minecraft version 1.17 or above
-    public static boolean isMCVersion17Plus(){
-        //LIGHT only available in MC 1.17+
-        return MCVersion.atLeast("1.17");
-    }
-
-    //returns if Minecraft version 1.14 or above
-    public static boolean isMCVersion14Plus(){
-        return MCVersion.atLeast("1.14");
-    }
-
     //this takes a dirty (pre-cleaned) string and finds how much to multiply the final by
     //this utility allows the input of numbers like 1.2k (1200)
     public static double getMultiplyValue(String text){

@@ -14,20 +14,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.material.MaterialData;
-
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
-import com.snowgears.shop.gui.ListPlayersWindow;
-import com.snowgears.shop.gui.ListPlayerShopsWindow;
-import com.snowgears.shop.gui.ListSearchResultsWindow;
-import com.snowgears.shop.gui.ListShopsWindow;
-import com.snowgears.shop.gui.PlayerSettingsWindow;
-import com.snowgears.shop.gui.ShopGuiWindow;
-import com.snowgears.shop.shop.AbstractShop;
 import com.snowgears.shop.util.CompatibilityUtil;
 import com.snowgears.shop.util.EconomyUtils;
 import com.snowgears.shop.util.PlayerSettings;
