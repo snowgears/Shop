@@ -42,7 +42,7 @@ public class Shop extends JavaPlugin {
     private static final String CONFIG_PATH_PLOT_SQUARED_ENABLED = "plotSquared.enabled";
     private static final String CONFIG_PATH_BOLT_TRUST_INTEGRATION_ENABLED = "bolt.trustIntegration.enabled";
     private static final String CONFIG_PATH_BLOCK_PROT_TRUST_INTEGRATION_ENABLED = "blockProt.trustIntegration.enabled";
-    private static final String  CONFIG_PATH_GRIEF_PREV_TRUST_INTEGRATION_ENABLED = "griefprevention.trustIntegration.enabled";
+    private static final String CONFIG_PATH_GRIEF_PREVENTION_ENABLED = "griefprevention.enabled";
 
 
     private ShopListener shopListener;
@@ -353,7 +353,7 @@ public class Shop extends JavaPlugin {
         plotSquaredIntegrationEnabled = config.getBoolean(CONFIG_PATH_PLOT_SQUARED_ENABLED, true);
         boltTrustIntegrationEnabled = config.getBoolean(CONFIG_PATH_BOLT_TRUST_INTEGRATION_ENABLED, true);
         blockProtTrustIntegrationEnabled = config.getBoolean(CONFIG_PATH_BLOCK_PROT_TRUST_INTEGRATION_ENABLED, true);
-        griefPreventionIntegrationEnabled = config.getBoolean(CONFIG_PATH_GRIEF_PREV_TRUST_INTEGRATION_ENABLED, true);
+        griefPreventionIntegrationEnabled = config.getBoolean(CONFIG_PATH_GRIEF_PREVENTION_ENABLED, true);
 
         // WorldGuard integration is only active if the plugin is installed AND the integration toggle is enabled.
         boolean worldGuardDetected = getServer().getPluginManager().getPlugin("WorldGuard") != null;
@@ -645,12 +645,12 @@ public class Shop extends JavaPlugin {
                 try {
                     griefPreventionHookListener = new GriefPreventionHookListener();
                     getServer().getPluginManager().registerEvents(griefPreventionHookListener, this);
-                    this.getLogger().notice("GriefPrevention is installed, enabling trust integration for opening shop containers");
+                    this.getLogger().notice("GriefPrevention is installed, enabling GriefPrevention integration");
                 } catch (Exception e) {
-                    this.getLogger().warning("GriefPrevention detected but could not enable trust integration: " + e.getMessage());
+                    this.getLogger().warning("GriefPrevention detected but could not enable GriefPrevention integration: " + e.getMessage());
                 }
             } else {
-                this.getLogger().notice("GriefPrevention detected, but Shop GriefPrevention trust integration is disabled via `" + CONFIG_PATH_GRIEF_PREV_TRUST_INTEGRATION_ENABLED + ": false`");
+                this.getLogger().notice("GriefPrevention detected, but Shop GriefPrevention integration is disabled via `" + CONFIG_PATH_GRIEF_PREVENTION_ENABLED + ": false`");
             }
         }
 

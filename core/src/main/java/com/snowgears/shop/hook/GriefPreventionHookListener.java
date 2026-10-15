@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -18,6 +19,7 @@ import com.snowgears.shop.event.PlayerCreateShopEvent;
 import com.snowgears.shop.event.PlayerDestroyShopEvent;
 import com.snowgears.shop.event.PlayerResizeShopEvent;
 import com.snowgears.shop.shop.AbstractShop;
+import com.snowgears.shop.util.ShopMessage;
 import com.snowgears.shop.event.PlayerOpenShopEvent;
 
 import me.ryanhamshire.GriefPrevention.Claim;
@@ -30,8 +32,8 @@ import me.ryanhamshire.GriefPrevention.events.ClaimTransferEvent;
 
 public class GriefPreventionHookListener implements Listener {
 
-    private static final String OTHERS_SHOPS_MESSAGE = "You may not claim other players' shops.";
-    private static final String ADMIN_SHOPS_MESSAGE = "Admin shops must exist in admin claims only.";
+    private static final String OTHERS_SHOPS_MESSAGE = "claimOtherPlayerShop";
+    private static final String ADMIN_SHOPS_MESSAGE = "claimAdminShop";
 
     private GriefPrevention gpPlugin = null;
     private Shop plugin = null;
@@ -131,16 +133,20 @@ public class GriefPreventionHookListener implements Listener {
     }
 
     /**
-     * Cancels a claim change refused by {@code result}, unless the actor is the console or a shop operator.
+     * Cancels a claim change refused with the {@code interactionIssue} message {@code result}, unless the actor is the
+     * console or a shop operator.
      */
     private void refuseClaimOverOthersShops(Cancellable e, @Nullable String result, @Nullable CommandSender actor) {
         if (result == null || (actor != null && (!(actor instanceof Player) || isShopOperator(actor))))
             return;
         e.setCancelled(true);
-        if (actor != null)
-            actor.sendMessage(result);
-        else
-            plugin.getLogger().info("Refused GriefPrevention claim change: " + result);
+        if (actor != null) {
+            ShopMessage.sendMessage("interactionIssue", result, (Player) actor, null);
+        } else {
+            String message = ShopMessage.getUnformattedMessage("interactionIssue", result);
+            plugin.getLogger().info("Refused GriefPrevention claim change: "
+                    + ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', String.valueOf(message))));
+        }
     }
 
     private boolean isShopOperator(CommandSender sender) {
@@ -151,7 +157,7 @@ public class GriefPreventionHookListener implements Listener {
      * Checks the shops the claim covers that {@code previous} did not: each owner must be able to build in the claim,
      * and admin shops may only be in admin claims.
      *
-     * @return an error message, or null if every such shop may be in the claim
+     * @return the {@code interactionIssue} message key, or null if every such shop may be in the claim
      */
     private @Nullable String verifyShopsWithinClaim(Claim c, @Nullable Claim previous) {
         for (AbstractShop s : shopsWithin(c)) {
