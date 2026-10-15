@@ -183,6 +183,11 @@ public class ShopGUIListener implements Listener {
                             if(shop != null){
                                 if(Shop.getPlugin().usePerms()){
                                     if(player.hasPermission("shop.operator") || player.hasPermission("shop.gui.teleport")){
+                                        if(shop.getTeleportLocation() == null){
+                                            ShopMessage.sendMessage("interactionIssue", "teleportNoSafeSpot", player, shop);
+                                            plugin.getGuiHandler().closeWindow(player);
+                                            return;
+                                        }
                                         if(!player.isOp()){
                                             if(plugin.getTeleportCost() > 0) {
                                                 if (EconomyUtils.hasSufficientFunds(player, player.getInventory(), plugin.getTeleportCost())) {

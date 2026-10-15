@@ -578,19 +578,23 @@ public abstract class AbstractShop {
         if(player == null)
             return;
 
-        if(chestLocation == null) {
-            this.load();
-            Location loc = this.getSignLocation().getBlock().getRelative(BlockFace.UP).getLocation().add(0.5, 0, 0.5);
-            player.teleport(loc);
+        Location loc = getTeleportLocation();
+        if(loc == null) {
+            ShopMessage.sendMessage("interactionIssue", "teleportNoSafeSpot", player, this);
+            return;
         }
-        else {
-            Location loc = this.getSignLocation().getBlock().getRelative(facing).getLocation().add(0.5, 0, 0.5);
-            loc.setYaw(UtilMethods.faceToYaw(facing.getOppositeFace()));
-            loc.setPitch(25.0f);
-
-            player.teleport(loc);
-        }
+        player.teleport(loc);
         Shop.getPlugin().getShopListener().addTeleportCooldown(player);
+    }
+
+    /**
+     * A spot in front of the sign where a player can stand safely, facing the shop, or null if there is none.
+     */
+    public Location getTeleportLocation(){
+        if(chestLocation == null)
+            this.load();
+        Block chest = chestLocation == null ? null : chestLocation.getBlock();
+        return SafeTeleport.findStandingSpot(this.getSignLocation().getBlock(), facing, chest);
     }
 
     public void printSalesInfo(Player player) {

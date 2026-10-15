@@ -189,6 +189,7 @@ interaction_issue:
    destroyInsufficientFunds: "&cYou do not have the funds required to destroy this shop."
    teleportInsufficientFunds: "&cYou do not have the funds required to teleport to this shop."
    teleportInsufficientCooldown: "&cYou must wait another [tp time remaining] seconds to teleport to a shop."
+   teleportNoSafeSpot: "&cThere is no safe place to stand near this shop."
    initializeOtherShop: "&cYou may not initialize another players shop with an item."
    useShopAlreadyInUse: "&cThis shop is in the middle of a transaction."
    destroyChest: "&cYou must remove the sign from this shop to break it."
