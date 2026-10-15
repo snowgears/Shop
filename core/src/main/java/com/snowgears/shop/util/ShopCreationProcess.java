@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.type.WallSign;
@@ -166,6 +167,7 @@ public class ShopCreationProcess {
         Shop.getPlugin().getFoliaLib().getScheduler().runAtLocation(clickedChest.getLocation(), task -> {
             //TODO do some calculation here if clickedFace is filled with a block or UP / DOWN was clicked
             Block signBlock = clickedChest.getRelative(clickedFace);
+            BlockData replacedBlock = signBlock.getBlockData();
             signBlock.setType(Material.OAK_WALL_SIGN);
 
             if(signBlock.getBlockData() instanceof WallSign) {
@@ -176,6 +178,7 @@ public class ShopCreationProcess {
 
             AbstractShop shop = Shop.getPlugin().getShopCreationUtil().createShop(Bukkit.getPlayer(playerUUID), clickedChest, signBlock, getPricePair(), getItemAmount(), isAdmin, shopType, clickedFace, true);
             if(shop == null) {
+                signBlock.setBlockData(replacedBlock);
                 return;
             }
 

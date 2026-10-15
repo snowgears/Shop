@@ -972,6 +972,8 @@ public class ShopMessage {
         messageMap.put("interactionIssue_adminOpen", chatConfig.getString("interaction_issue.adminOpen"));
         messageMap.put("interactionIssue_worldBlacklist", chatConfig.getString("interaction_issue.worldBlacklist"));
         messageMap.put("interactionIssue_regionRestriction", chatConfig.getString("interaction_issue.regionRestriction"));
+        messageMap.put("interactionIssue_claimOtherPlayerShop", chatConfig.getString("interaction_issue.claimOtherPlayerShop"));
+        messageMap.put("interactionIssue_claimAdminShop", chatConfig.getString("interaction_issue.claimAdminShop"));
         messageMap.put("interactionIssue_itemListDeny", chatConfig.getString("interaction_issue.itemListDeny"));
         messageMap.put("interactionIssue_createHitChestTimeout", chatConfig.getString("interaction_issue.createHitChestTimeout"));
 

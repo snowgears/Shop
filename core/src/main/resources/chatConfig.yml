@@ -198,6 +198,8 @@ interaction_issue:
    adminOpen: "&7Admin shops are not able to be opened."
    worldBlacklist: "&cShops are not allowed to be created in this world."
    regionRestriction: "&cYou do not have permission to do that in this region."
+   claimOtherPlayerShop: "&cYou may not claim other players' shops."
+   claimAdminShop: "&cAdmin shops must exist in admin claims only."
    itemListDeny: "&cShops on this server are denied from listing this item"
    createHitChestTimeout: "&7The shop you started to create at [location] has timed out."
    createOtherPlayer: "&cYou are not allowed to create a shop on this chest."

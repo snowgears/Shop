@@ -10,3 +10,7 @@ scripts/diff-cover.html
 scripts/diff-cover.md
 /.m2
 /build/maven-repo
+.project
+.settings
+.classpath
+.factorypath

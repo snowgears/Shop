@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-		 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
@@ -283,6 +282,14 @@
             <version>2.11.0</version>
             <scope>provided</scope>
         </dependency>
+        <!-- for GriefPrevention -->
+        <dependency>
+            <groupId>com.github.GriefPrevention</groupId>
+            <artifactId>GriefPrevention</artifactId>
+            <version>16.18.2</version>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 
     <!--  this shade plugin is to shade in hikari so that database connections can be used -->
@@ -294,7 +301,8 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>3.1.2</version>
                     <configuration>
-                        <!-- When we eventually drop the compile target to Java 8, MockBukkit (still on 21) may
+                        <!-- When we eventually drop the compile target to Java 8, MockBukkit (still
+                        on 21) may
                              need reflective access to JDK internals.  Keep the add-opens flag now so we don’t
                              forget later.  Harmless on 17+ runtimes. -->
                         <argLine>${argLine} --add-opens java.base/java.lang=ALL-UNNAMED</argLine>
@@ -312,7 +320,8 @@
             </plugins>
         </pluginManagement>
         <plugins>
-            <!-- Toolchains plugin: ensure JDK 21 is available for tests because MockBukkit 4 requires 21, but we still want to compile with a lower Java target in mind -->
+            <!-- Toolchains plugin: ensure JDK 21 is available for tests because MockBukkit 4
+            requires 21, but we still want to compile with a lower Java target in mind -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-toolchains-plugin</artifactId>
@@ -413,7 +422,7 @@
     </build>
 
     <profiles>
-        
+
         <profile>
             <id>coverage-report</id>
             <build>

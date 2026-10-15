@@ -5,7 +5,7 @@ version: ${project.version}
 api-version: 1.14
 folia-supported: true
 main: com.snowgears.shop.Shop
-softdepend: [NBTAPI, Vault, WorldGuard, Towny, LWC, DynMap, BlueMap, BentoBox, AdvancedRegionMarket, Multiverse-Core, Bolt, BlockProt]
+softdepend: [NBTAPI, Vault, WorldGuard, Towny, LWC, DynMap, BlueMap, BentoBox, AdvancedRegionMarket, Multiverse-Core, Bolt, BlockProt, GriefPrevention]
 permissions:
     shop.use:
         description: Allows player to use all shops.
