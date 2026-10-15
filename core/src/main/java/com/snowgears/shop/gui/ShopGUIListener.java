@@ -184,7 +184,7 @@ public class ShopGUIListener implements Listener {
                                 if(Shop.getPlugin().usePerms()){
                                     if(player.hasPermission("shop.operator") || player.hasPermission("shop.gui.teleport")){
                                         if(shop.getTeleportLocation() == null){
-                                            player.sendMessage(AbstractShop.NO_SAFE_SPOT_MESSAGE);
+                                            ShopMessage.sendMessage("interactionIssue", "teleportNoSafeSpot", player, shop);
                                             plugin.getGuiHandler().closeWindow(player);
                                             return;
                                         }

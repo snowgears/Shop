@@ -963,6 +963,7 @@ public class ShopMessage {
         messageMap.put("interactionIssue_createCancel", chatConfig.getString("interaction_issue.createCancel"));
         messageMap.put("interactionIssue_teleportInsufficientFunds", chatConfig.getString("interaction_issue.teleportInsufficientFunds"));
         messageMap.put("interactionIssue_teleportInsufficientCooldown", chatConfig.getString("interaction_issue.teleportInsufficientCooldown"));
+        messageMap.put("interactionIssue_teleportNoSafeSpot", chatConfig.getString("interaction_issue.teleportNoSafeSpot"));
         messageMap.put("interactionIssue_initialize", chatConfig.getString("interaction_issue.initializeOtherShop"));
         messageMap.put("interactionIssue_destroyChest", chatConfig.getString("interaction_issue.destroyChest"));
         messageMap.put("interactionIssue_destroyUninitializedChest", chatConfig.getString("interaction_issue.destroyUninitializedChest"));
